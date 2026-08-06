@@ -170,7 +170,7 @@ const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function customList(){
   let pc = window.PC;
   if(!pc){ try{ pc = JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){} }
-  return (pc && pc.srs) ? pc.srs.filter(s=>s.productCode) : [];
+  return (pc && Array.isArray(pc.srs)) ? pc.srs.filter(s=>s.productCode) : [];
 }
 function customByCode(code){
   code = String(code||'').toUpperCase();
@@ -341,7 +341,7 @@ function render(){
         +'<td class="num">'+hhmm(c.totMins)+'</td>'
         +'<td class="num">'+gbp(c.lab)+'</td>'
         +'<td class="num">'+gbp(c.fab+c.tr)+'</td>'
-        +'<td class="num"><b>'+gbp(c.newUnit)+'</b><div class="desc" style="max-width:none">legacy '+gbp(c.legacyUnit)+'</div></td>'
+        +'<td class="num"><b>'+gbp(c.newUnit)+'</b>'+(S.legacy?'<div class="desc" style="max-width:none">legacy '+gbp(c.legacyUnit)+'</div>':'')+'</td>'
         +'<td class="num"><b>'+gbp(c.totNew)+'</b></td>'
         +'<td><button class="del" data-k="'+k+'" title="Remove">✕</button></td></tr>';
     }
@@ -351,7 +351,7 @@ function render(){
     +'<td class="num">'+gbp(tFab)+(anyNoFab?'<span class="warn">*</span>':'')+'</td><td></td>'
     +'<td class="num">'+gbp(tNew)+'</td><td></td></tr></tfoot></table>';
   if(anyNoFab) h+='<div class="hint" style="padding:8px 12px">* one or more lines have no fabric cost in the source sheet — fabric excluded for those lines.</div>';
-  if(anyCustom) h+='<div class="hint" style="padding:8px 12px">SPECIAL lines come from the Product creator: the fabric column includes trims, labour covers machining + finishing + cutting share at the PW rate, and the smaller price is the legacy method (fabric + machining, +80.5%).</div>';
+  if(anyCustom) h+='<div class="hint" style="padding:8px 12px">SPECIAL lines come from the Product creator: the fabric column includes trims, and labour covers machining + finishing + cutting share at the PW rate.'+(S.legacy?' The smaller price is the legacy method (fabric + machining, +80.5%).':'')+'</div>';
   w.innerHTML=h;
   w.querySelectorAll('tbody tr').forEach(tr=>{
     tr.onclick=e=>{ if(e.target.closest('.qtyEd,.del')) return; openModal(+tr.dataset.k); };
@@ -428,10 +428,10 @@ function openCustomModal(l){
     +'<div class="ln"><span class="l">Labour per unit</span><span class="v">'+gbp(c.lab)+'</span></div></div>';
   h+='<div class="sec"><h3>Prices per unit</h3>'
     +'<div class="ln"><span class="l">New method<small>materials + all labour</small></span><span class="v gold">'+gbp(c.newUnit)+'</span></div>'
-    +'<div class="ln"><span class="l">Legacy method<small>(fabric + machining) + 80.5% uplift</small></span><span class="v">'+gbp(c.legacyUnit)+'</span></div></div>';
+    +(S.legacy?'<div class="ln"><span class="l">Legacy method<small>(fabric + machining) + 80.5% uplift</small></span><span class="v">'+gbp(c.legacyUnit)+'</span></div>':'')+'</div>';
   h+='<div class="sec"><h3>Order totals ('+l.qty.toLocaleString()+' units)</h3>'
     +'<div class="ln"><span class="l">New method</span><span class="v">'+gbp(c.totNew)+'</span></div>'
-    +'<div class="ln sub"><span class="l">Legacy method</span><span class="v">'+gbp(c.totLegacy)+'</span></div>'
+    +(S.legacy?'<div class="ln sub"><span class="l">Legacy method</span><span class="v">'+gbp(c.totLegacy)+'</span></div>':'')
     +'<div class="ln sub"><span class="l">Total time</span><span class="v">'+hhmm(c.totMins)+'</span></div></div>';
   h+='<div class="note">This product was created in the Product creator ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour uses the PW conversion rate from Settings. The legacy price uplifts only fabric + machining by 80.5%, matching the old All Costings method.</div>';
   document.getElementById('mBody').innerHTML=h;
@@ -529,12 +529,10 @@ var PC_CATS=[["CJ","Chef jacket"],["CT","Chef trousers"],["AP","Apron"],["AC","A
 var PC_BRAND_LETTER='B';                      // letter inserted for customer-branded codes, e.g. CJB0001
 var PC_NUMW=4;                                // digits in generated product numbers
 
-function pcLoad(){
-  var d=null;
-  try{ d=JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){}
-  if(!d) d={srSeq:0, qSeq:0, prodSeq:{}, srs:[], trimsList:[], fabricsList:[]};
-  d.qSeq=d.qSeq||0; d.prodSeq=d.prodSeq||{}; d.srs=d.srs||[]; d.trimsList=d.trimsList||[]; d.fabricsList=d.fabricsList||[];
-  d.srs.forEach(function(s){            // older records from before the quote stage
+function pcNormalize(d){                 // shared by initial load and Restore — older data pre-dates the quote stage
+  d.srSeq=d.srSeq||0; d.qSeq=d.qSeq||0; d.prodSeq=d.prodSeq||{};
+  d.srs=Array.isArray(d.srs)?d.srs:[]; d.trimsList=Array.isArray(d.trimsList)?d.trimsList:[]; d.fabricsList=Array.isArray(d.fabricsList)?d.fabricsList:[];
+  d.srs.forEach(function(s){
     if(s.quoteRef===undefined) s.quoteRef='';
     if(s.ref===undefined) s.ref='';
     if(s.markerLen===undefined) s.markerLen='';
@@ -545,6 +543,23 @@ function pcLoad(){
     if(s.quotePrintedAt===undefined) s.quotePrintedAt='';
   });
   return d;
+}
+function pcLoad(){
+  var d=null;
+  try{ d=JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){}
+  if(!d) d={srSeq:0, qSeq:0, prodSeq:{}, srs:[], trimsList:[], fabricsList:[]};
+  return pcNormalize(d);
+}
+function pcRate(){                       // current PW rate from the costing calculator's saved settings
+  try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}'); if(pcNum(s.rate)>0) return pcNum(s.rate); }catch(e){}
+  return 12.71;
+}
+function pcPos(v){ v=parseFloat(v); return (isNaN(v)||v<=0)?0:v; }
+var PC_SHEET=null;
+function pcSheetHas(code){
+  if(typeof COSTDATA==='undefined'||!COSTDATA.rows) return false;
+  if(!PC_SHEET){ PC_SHEET={}; COSTDATA.rows.forEach(function(r){ PC_SHEET[String(r[0]).toUpperCase()]=1; }); }
+  return !!PC_SHEET[String(code||'').toUpperCase()];
 }
 function pcRefLabel(s){ return s.ref ? (s.quoteRef? s.quoteRef+' → '+s.ref : s.ref) : (s.quoteRef||''); }
 var PC=pcLoad();
@@ -743,7 +758,7 @@ function pcOpen(i){
     +'</div></div></div>';
 
   var layNote='';
-  (function(){ var ml=pcNum(s.markerLen), lq=pcNum(s.layQty), q=pcNum(s.sampleQty)||1;
+  (function(){ var ml=pcPos(s.markerLen), lq=pcPos(s.layQty), q=pcNum(s.sampleQty)||1;
     if(ml&&lq){ var plies=Math.ceil(q/lq);
       layNote='Marker covers '+lq+' garment'+(lq===1?'':'s')+' per lay ≈ '+(ml/lq).toFixed(2)+' m per unit. For qty '+q+': '+plies+' pl'+(plies===1?'y':'ies')+' of '+ml+' m = '+(plies*ml).toFixed(2)+' m fabric.'; } })();
   h+='<div class="pcsec"><h4>Cutting room</h4><div class="in"><div class="pcrow" style="grid-template-columns:repeat(4,1fr)">'
@@ -841,7 +856,7 @@ function pcCost(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
-  var rate=(typeof S!=='undefined'&&S.rate)?pcNum(S.rate):12.71;
+  var rate=pcRate();
   var box=document.getElementById('pcCostBox');
   var whatif=JSON.parse(JSON.stringify(s.fabrics));
   function draw(){
@@ -894,12 +909,19 @@ function pcConvert(){
   var code;
   if(choice.trim()){
     code=choice.trim().toUpperCase();
+    if(pcSheetHas(code)){ alert('Code '+code+' already exists in the All Costings sheet, so the calculator would price it from the sheet instead of this sample costing.\n\nUse a different code, or leave blank to auto-generate a specials code.'); return; }
+    if(PC.srs.some(function(x){ return x.productCode===code; })){ alert('Code '+code+' is already used by another SR.'); return; }
   } else {
-    if(!key){ alert('Pick a garment name from the dropdown first — it sets the code prefix (e.g. Chef jacket → CJ).'); return; }
-    PC.prodSeq[key]=(PC.prodSeq[key]||0)+1;
-    code=key+String(PC.prodSeq[key]).padStart(PC_NUMW,'0');
+    if(!key){
+      var cat2=prompt('Garment name "'+(s.garment||'')+'" is not one of the standard categories.\nType the category prefix for the code — one of:\n'+PC_CATS.map(function(c){return c[0]+' = '+c[1];}).join('\n'),'CJ');
+      if(cat2===null) return;
+      cat2=cat2.trim().toUpperCase();
+      if(!PC_CATS.some(function(c){return c[0]===cat2;})){ alert('Unknown category '+cat2); return; }
+      key=cat2+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:'');
+    }
+    do{ PC.prodSeq[key]=(PC.prodSeq[key]||0)+1; code=key+String(PC.prodSeq[key]).padStart(PC_NUMW,'0'); }
+    while(pcSheetHas(code)||PC.srs.some(function(x){ return x.productCode===code; }));
   }
-  if(PC.srs.some(function(x){ return x.productCode===code; })){ alert('Code '+code+' is already used by another SR.'); return; }
   s.productCode=code; s.status='production'; s.convertedAt=pcToday();
   pcSaveData(); pcOpen(PC_CUR); pcRender();
 }
@@ -915,7 +937,7 @@ function pcExport(){
     desc:s.desc||s.garment||'',
     lectra:s.lectra||'', variant:s.variant||'',
     markerMain:s.markerMain||'', markerMesh:s.markerMesh||'',
-    markerLen:pcNum(s.markerLen)||null, layQty:pcNum(s.layQty)||null,
+    markerLen:pcPos(s.markerLen)||null, layQty:pcPos(s.layQty)||null,
     chart:s.meas.length?(s.productCode+'-MEAS'):'',
     chartCols:s.meas.length?["Measurement","Value"]:null,
     chartRows:s.meas.map(function(m){ return [m.label,m.value]; }),
@@ -950,7 +972,7 @@ function pcPrint(){
   var qty=Math.max(1, pcNum(s.sampleQty)||1);
   var today=new Date().toLocaleDateString('en-GB');
   var cutTot=Math.ceil(qty/(pcNum(s.cutBatch)||35))*(pcNum(s.cutMins)||15);
-  var mkLen=pcNum(s.markerLen), layQ=pcNum(s.layQty);
+  var mkLen=pcPos(s.markerLen), layQ=pcPos(s.layQty);
   var plies=(mkLen&&layQ)?Math.ceil(qty/layQ):null;
   var mach=pcNum(s.machMins), fin=pcNum(s.finMins);
   var machTot=mach?mach*qty:null, finTot=fin?fin*qty:null;
@@ -1036,13 +1058,15 @@ function pcQuotePrint(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
-  var rate=(typeof S!=='undefined'&&S.rate)?pcNum(S.rate):12.71;
+  var rate=pcRate();
   var c=pcCostCalc(s, rate, s.fabrics);
   var mk=(s.quoteMarkup==null||s.quoteMarkup==='')?60:pcNum(s.quoteMarkup);
   var sell=c.total*(1+mk/100);
   var showSell=s.quoteShowSell!==false;
-  var mkLen=pcNum(s.markerLen), layQ=pcNum(s.layQty);
+  var mkLen=pcPos(s.markerLen), layQ=pcPos(s.layQty);
   var qref=s.quoteRef||s.ref;
+  var missingLab=(pcNum(s.machMins)<=0||pcNum(s.finMins)<=0);
+  if(missingLab && !confirm('Machining or finishing minutes are not set, so the printed cost will be missing that labour.\n\nPrint the quote anyway?')) return;
   function e(x){ return pcE(x); }
   var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Quote '+e(qref)+'</title><style>'
     +'@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
@@ -1067,6 +1091,7 @@ function pcQuotePrint(){
     +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType||'None')+(s.brandPlace?' — '+e(s.brandPlace):'')+'</td></tr></table>'
     +'<div class="band">PRICE</div><table>'
     +'<tr><th>Cost per unit</th><td style="font-weight:700;font-size:15px">£'+c.total.toFixed(2)+'</td></tr>'
+    +(missingLab?'<tr><td colspan="2" style="color:#C00000;font-weight:700">Warning: machining/finishing time not set — labour is incomplete in this cost</td></tr>':'')
     +(showSell?'<tr class="tot"><td>Quoted price per unit (cost + '+mk+'%)</td><td>£'+sell.toFixed(2)+'</td></tr>':'')
     +'</table>'
     +'<div class="band">MOQ / CUTTING</div><table>'
@@ -1129,7 +1154,7 @@ function pcRestoreFile(ev){
       var d=JSON.parse(r.result);
       if(!d.srs) throw new Error('not a Product Creator backup');
       if(!confirm('Replace ALL Product Creator data with this backup ('+d.srs.length+' SRs)?')) return;
-      PC=d; pcSaveData(); pcRender(); alert('Restored.');
+      PC=pcNormalize(d); pcSaveData(); pcRender(); alert('Restored.');
     }catch(e){ alert('Could not read that file: '+e.message); }
   };
   r.readAsText(f);
