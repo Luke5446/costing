@@ -165,6 +165,32 @@ const rows = COSTDATA.rows, tabs = COSTDATA.tabs, fabrics = COSTDATA.fabrics;
 const byCode = new Map();
 rows.forEach((r,i)=>byCode.set(r[0].toUpperCase(), i));
 
+// ---- specials created in the Product creator (searchable alongside the All Costings rows) ----
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function customList(){
+  let pc = window.PC;
+  if(!pc){ try{ pc = JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){} }
+  return (pc && pc.srs) ? pc.srs.filter(s=>s.productCode) : [];
+}
+function customByCode(code){
+  code = String(code||'').toUpperCase();
+  return customList().find(s=>String(s.productCode).toUpperCase()===code) || null;
+}
+function customCalc(s, qty){
+  const num = v=>{ const f=parseFloat(v); return isNaN(f)?0:f; };
+  let fab=0; (s.fabrics||[]).forEach(f=>{ fab += num(f.rating)*num(f.cost); });
+  let tr=0; (s.trims||[]).forEach(t=>{ tr += (num(t.qty)||1)*num(t.cost); });
+  const mach=num(s.machMins), fin=num(s.finMins);
+  const cutShare=num(s.cutMins)/(num(s.cutBatch)||35);
+  const mins=mach+fin+cutShare;
+  const lab=mins/60*S.rate;
+  const newUnit=fab+tr+lab;
+  const legacyUnit=(fab + mach/60*S.rate)*1.805;
+  return {fab,tr,mins,mach,fin,cutShare,lab,newUnit,legacyUnit,
+          totMins:mins*qty, totLab:lab*qty, totFab:fab*qty, totTr:tr*qty,
+          totNew:newUnit*qty, totLegacy:legacyUnit*qty};
+}
+
 // ---- settings ----
 const DEF = {rate:12.71, lab:16.26, legacy:1};
 let S = Object.assign({}, DEF);
@@ -217,31 +243,45 @@ function doSuggest(){
   const starts=[], contains=[], indesc=[];
   for(let i=0;i<rows.length;i++){
     const c=rows[i][0].toUpperCase();
-    if(c.startsWith(q)) starts.push(i);
-    else if(c.includes(q)) contains.push(i);
-    else if(rows[i][2] && rows[i][2].toUpperCase().includes(q)) indesc.push(i);
+    if(c.startsWith(q)) starts.push({t:'std',i});
+    else if(c.includes(q)) contains.push({t:'std',i});
+    else if(rows[i][2] && rows[i][2].toUpperCase().includes(q)) indesc.push({t:'std',i});
     if(starts.length>60) break;
   }
-  suggIdx=starts.concat(contains,indesc).slice(0,60);
+  const cust=[];
+  customList().forEach(s=>{
+    const c=String(s.productCode).toUpperCase();
+    const hay=((s.garment||'')+' '+(s.customer||'')+' '+(s.desc||'')).toUpperCase();
+    if(c.includes(q)||hay.includes(q)) cust.push({t:'pc',s});
+  });
+  suggIdx=cust.concat(starts,contains,indesc).slice(0,60);
   if(!suggIdx.length){ sugg.style.display='none'; return; }
-  suggIdx.forEach((i,k)=>{
-    const r=rows[i], d=document.createElement('div');
+  suggIdx.forEach((it,k)=>{
+    const d=document.createElement('div');
     d.className='sg';
-    d.innerHTML='<span class="c">'+r[0]+'</span><span class="d">'+(r[2]||'—')+'</span><span class="p">PW '+gbp(r[3]||0)+'</span>';
-    d.onmousedown=e=>{e.preventDefault(); pick(i);};
+    if(it.t==='std'){
+      const r=rows[it.i];
+      d.innerHTML='<span class="c">'+r[0]+'</span><span class="d">'+(r[2]||'—')+'</span><span class="p">PW '+gbp(r[3]||0)+'</span>';
+    } else {
+      const s=it.s, cc=customCalc(s,1);
+      d.innerHTML='<span class="c">'+esc(s.productCode)+'</span><span class="d">'+esc(((s.garment||'')+(s.customer?' — '+s.customer:''))||'—')+' <span class="tag">SPECIAL</span></span><span class="p">'+gbp(cc.newUnit)+'</span>';
+    }
+    d.onmousedown=e=>{e.preventDefault(); pick(k);};
     sugg.appendChild(d);
   });
   sugg.style.display='block';
 }
-function pick(i){ codeIn.value=rows[i][0]; sugg.style.display='none'; qtyIn.focus(); qtyIn.select(); }
+function pick(k){ const it=suggIdx[k]; if(!it) return;
+  codeIn.value = it.t==='std' ? rows[it.i][0] : it.s.productCode;
+  sugg.style.display='none'; qtyIn.focus(); qtyIn.select(); }
 codeIn.addEventListener('input',doSuggest);
 codeIn.addEventListener('keydown',e=>{
   const items=sugg.children;
   if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(sel+1,items.length-1); hl(); }
   else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(sel-1,0); hl(); }
   else if(e.key==='Enter'){ e.preventDefault();
-    if(sel>=0&&suggIdx[sel]!=null) pick(suggIdx[sel]);
-    else if(suggIdx.length===1) pick(suggIdx[0]);
+    if(sel>=0&&suggIdx[sel]!=null) pick(sel);
+    else if(suggIdx.length===1) pick(0);
     else addLine(); }
   else if(e.key==='Escape'){ sugg.style.display='none'; }
   function hl(){ for(let k=0;k<items.length;k++) items[k].classList.toggle('act',k===sel);
@@ -252,14 +292,14 @@ qtyIn.addEventListener('keydown',e=>{ if(e.key==='Enter') addLine(); });
 
 // ---- lines ----
 let lines=[];
-try{ const s=localStorage.getItem('tibardCostLines'); if(s) lines=JSON.parse(s).filter(l=>byCode.has(l.code)); }catch(e){}
+try{ const s=localStorage.getItem('tibardCostLines'); if(s) lines=JSON.parse(s).filter(l=>byCode.has(l.code)||customByCode(l.code)); }catch(e){}
 function saveL(){ try{ localStorage.setItem('tibardCostLines', JSON.stringify(lines)); }catch(e){} }
 
 function addLine(){
   const code=codeIn.value.trim().toUpperCase();
   if(!code) return;
   const i=byCode.get(code);
-  if(i==null){ alert('Code "'+code+'" is not in the All Costings sheet.'); return; }
+  if(i==null && !customByCode(code)){ alert('Code "'+code+'" is not in the All Costings sheet or the specials list.'); return; }
   const qty=Math.max(1, parseInt(qtyIn.value)||1);
   const ex=lines.find(l=>l.code===code);
   if(ex) ex.qty+=qty; else lines.push({code, qty});
@@ -273,27 +313,45 @@ function render(){
     'PW @ £'+S.rate.toFixed(2)+'/hr ('+gbp(S.rate/60)+'/min) · labour @ £'+S.lab.toFixed(2)+'/hr';
   const w=document.getElementById('tblWrap');
   if(!lines.length){ w.innerHTML='<div class="empty">No lines yet — search a code above to begin.</div>'; return; }
-  let tMins=0,tLab=0,tFab=0,tNew=0,tQty=0, anyNoFab=false;
+  let tMins=0,tLab=0,tFab=0,tNew=0,tQty=0, anyNoFab=false, anyCustom=false;
   let h='<table><thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Mins / unit</th><th class="num">Total time</th><th class="num">Sewing £ / unit</th><th class="num">Fabric £ / unit</th><th class="num">Cost / unit</th><th class="num">Total cost</th><th></th></tr></thead><tbody>';
   lines.forEach((l,k)=>{
-    const r=rows[byCode.get(l.code)], c=calc(r,l.qty);
-    tMins+=c.totMins; tLab+=c.totLab; tNew+=c.totNew; tQty+=l.qty;
-    if(c.fab!=null) tFab+=c.totFab; else anyNoFab=true;
-    h+='<tr data-k="'+k+'"><td><div class="code">'+r[0]+'</div><div class="desc">'+(r[2]||'<span class="warn">no description in source</span>')+'</div></td>'
-      +'<td class="num"><input class="qtyEd" data-k="'+k+'" type="number" min="1" value="'+l.qty+'"></td>'
-      +'<td class="num">'+n1(c.mins)+'</td>'
-      +'<td class="num">'+hhmm(c.totMins)+'</td>'
-      +'<td class="num">'+gbp(c.labUnit)+'</td>'
-      +'<td class="num">'+(c.fab!=null?gbp(c.fab):'<span class="warn">n/a</span>')+'</td>'
-      +'<td class="num"><b>'+gbp(c.newUnit)+'</b></td>'
-      +'<td class="num"><b>'+gbp(c.totNew)+'</b></td>'
-      +'<td><button class="del" data-k="'+k+'" title="Remove">✕</button></td></tr>';
+    const si=byCode.get(l.code);
+    if(si!=null){
+      const r=rows[si], c=calc(r,l.qty);
+      tMins+=c.totMins; tLab+=c.totLab; tNew+=c.totNew; tQty+=l.qty;
+      if(c.fab!=null) tFab+=c.totFab; else anyNoFab=true;
+      h+='<tr data-k="'+k+'"><td><div class="code">'+r[0]+'</div><div class="desc">'+(r[2]||'<span class="warn">no description in source</span>')+'</div></td>'
+        +'<td class="num"><input class="qtyEd" data-k="'+k+'" type="number" min="1" value="'+l.qty+'"></td>'
+        +'<td class="num">'+n1(c.mins)+'</td>'
+        +'<td class="num">'+hhmm(c.totMins)+'</td>'
+        +'<td class="num">'+gbp(c.labUnit)+'</td>'
+        +'<td class="num">'+(c.fab!=null?gbp(c.fab):'<span class="warn">n/a</span>')+'</td>'
+        +'<td class="num"><b>'+gbp(c.newUnit)+'</b></td>'
+        +'<td class="num"><b>'+gbp(c.totNew)+'</b></td>'
+        +'<td><button class="del" data-k="'+k+'" title="Remove">✕</button></td></tr>';
+    } else {
+      const s=customByCode(l.code); if(!s) return;
+      const c=customCalc(s,l.qty);
+      anyCustom=true;
+      tMins+=c.totMins; tLab+=c.totLab; tFab+=c.totFab+c.totTr; tNew+=c.totNew; tQty+=l.qty;
+      h+='<tr data-k="'+k+'"><td><div class="code">'+esc(s.productCode)+' <span class="tag">SPECIAL</span></div><div class="desc">'+esc(((s.garment||'')+(s.customer?' — '+s.customer:''))||'no details')+'</div></td>'
+        +'<td class="num"><input class="qtyEd" data-k="'+k+'" type="number" min="1" value="'+l.qty+'"></td>'
+        +'<td class="num">'+n1(c.mins)+'</td>'
+        +'<td class="num">'+hhmm(c.totMins)+'</td>'
+        +'<td class="num">'+gbp(c.lab)+'</td>'
+        +'<td class="num">'+gbp(c.fab+c.tr)+'</td>'
+        +'<td class="num"><b>'+gbp(c.newUnit)+'</b><div class="desc" style="max-width:none">legacy '+gbp(c.legacyUnit)+'</div></td>'
+        +'<td class="num"><b>'+gbp(c.totNew)+'</b></td>'
+        +'<td><button class="del" data-k="'+k+'" title="Remove">✕</button></td></tr>';
+    }
   });
   h+='</tbody><tfoot><tr><td>Total</td><td class="num">'+tQty.toLocaleString()+'</td><td></td>'
     +'<td class="num">'+hhmm(tMins)+'</td><td class="num">'+gbp(tLab)+'</td>'
     +'<td class="num">'+gbp(tFab)+(anyNoFab?'<span class="warn">*</span>':'')+'</td><td></td>'
     +'<td class="num">'+gbp(tNew)+'</td><td></td></tr></tfoot></table>';
   if(anyNoFab) h+='<div class="hint" style="padding:8px 12px">* one or more lines have no fabric cost in the source sheet — fabric excluded for those lines.</div>';
+  if(anyCustom) h+='<div class="hint" style="padding:8px 12px">SPECIAL lines come from the Product creator: the fabric column includes trims, labour covers machining + finishing + cutting share at the PW rate, and the smaller price is the legacy method (fabric + machining, +80.5%).</div>';
   w.innerHTML=h;
   w.querySelectorAll('tbody tr').forEach(tr=>{
     tr.onclick=e=>{ if(e.target.closest('.qtyEd,.del')) return; openModal(+tr.dataset.k); };
@@ -310,7 +368,9 @@ function render(){
 // ---- modal ----
 const ov=document.getElementById('ov');
 function openModal(k){
-  const l=lines[k], r=rows[byCode.get(l.code)], c=calc(r,l.qty);
+  const l=lines[k];
+  if(byCode.get(l.code)==null){ openCustomModal(l); return; }
+  const r=rows[byCode.get(l.code)], c=calc(r,l.qty);
   const fabRef=r[4]>=0?fabrics[r[4]]:null;
   document.getElementById('mCode').textContent=r[0];
   document.getElementById('mDesc').textContent=(r[2]||'No description in source')+' · '+tabs[r[1]]+' · qty '+l.qty.toLocaleString();
@@ -348,6 +408,35 @@ function openModal(k){
   document.getElementById('mBody').innerHTML=h;
   ov.classList.add('show');
 }
+function openCustomModal(l){
+  const s=customByCode(l.code); if(!s) return;
+  const num=v=>{ const f=parseFloat(v); return isNaN(f)?0:f; };
+  const c=customCalc(s,l.qty);
+  document.getElementById('mCode').textContent=s.productCode;
+  document.getElementById('mDesc').textContent=(s.garment||'Special')+(s.customer?' · '+s.customer:'')+' · qty '+l.qty.toLocaleString();
+  let h='';
+  h+='<div class="sec"><h3>Materials</h3>';
+  (s.fabrics||[]).forEach(f=>{
+    h+='<div class="ln"><span class="l">Fabric<small>'+esc((f.code?f.code+' — ':'')+(f.name||''))+' · '+esc(f.rating||'0')+' m × '+gbp(num(f.cost))+'/m</small></span><span class="v">'+gbp(num(f.rating)*num(f.cost))+'</span></div>';
+  });
+  h+='<div class="ln"><span class="l">Trims ('+(s.trims||[]).length+' line'+((s.trims||[]).length===1?'':'s')+')</span><span class="v">'+gbp(c.tr)+'</span></div>'
+    +'<div class="ln tot"><span class="l">Materials per unit</span><span class="v">'+gbp(c.fab+c.tr)+'</span></div></div>';
+  h+='<div class="sec"><h3>Labour ('+n1(c.mins)+' min/unit @ £'+S.rate.toFixed(2)+'/hr)</h3>'
+    +'<div class="ln sub"><span class="l">Machining</span><span class="v">'+n1(c.mach)+' min</span></div>'
+    +'<div class="ln sub"><span class="l">Finishing</span><span class="v">'+n1(c.fin)+' min</span></div>'
+    +'<div class="ln sub"><span class="l">Cutting share</span><span class="v">'+n1(c.cutShare)+' min</span></div>'
+    +'<div class="ln"><span class="l">Labour per unit</span><span class="v">'+gbp(c.lab)+'</span></div></div>';
+  h+='<div class="sec"><h3>Prices per unit</h3>'
+    +'<div class="ln"><span class="l">New method<small>materials + all labour</small></span><span class="v gold">'+gbp(c.newUnit)+'</span></div>'
+    +'<div class="ln"><span class="l">Legacy method<small>(fabric + machining) + 80.5% uplift</small></span><span class="v">'+gbp(c.legacyUnit)+'</span></div></div>';
+  h+='<div class="sec"><h3>Order totals ('+l.qty.toLocaleString()+' units)</h3>'
+    +'<div class="ln"><span class="l">New method</span><span class="v">'+gbp(c.totNew)+'</span></div>'
+    +'<div class="ln sub"><span class="l">Legacy method</span><span class="v">'+gbp(c.totLegacy)+'</span></div>'
+    +'<div class="ln sub"><span class="l">Total time</span><span class="v">'+hhmm(c.totMins)+'</span></div></div>';
+  h+='<div class="note">This product was created in the Product creator ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour uses the PW conversion rate from Settings. The legacy price uplifts only fabric + machining by 80.5%, matching the old All Costings method.</div>';
+  document.getElementById('mBody').innerHTML=h;
+  ov.classList.add('show');
+}
 document.getElementById('mClose').onclick=()=>ov.classList.remove('show');
 ov.onclick=e=>{ if(e.target===ov) ov.classList.remove('show'); };
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') ov.classList.remove('show'); });
@@ -372,6 +461,7 @@ initSettings(); render();
 .pcbadge{font-size:9px;font-weight:800;border-radius:8px;padding:1px 7px;vertical-align:middle;margin-left:6px}
 .pcb-red{background:#b91c1c;color:#fff}.pcb-green{background:#d1fae5;color:#065f46}
 .pcst{display:inline-block;font-size:10px;font-weight:800;border-radius:8px;padding:2px 8px;margin-top:5px}
+.pcs-quote{background:#f3e8c8;color:#7A5B14}
 .pcs-sampling{background:#dbeafe;color:#1e40af}.pcs-feedback{background:#fef3c7;color:#92400e}
 .pcs-hold{background:#e5e7eb;color:#374151}.pcs-approved{background:#d1fae5;color:#065f46}
 .pcs-production{background:#1F3864;color:#fff}.pcs-rejected{background:#fee2e2;color:#991b1b}
@@ -410,16 +500,16 @@ initSettings(); render();
 
 <main id="pcMain" style="display:none">
   <div class="pcbar">
-    <div class="field"><label>Search</label><input id="pcSearch" placeholder="SR number, customer, garment, product code…" style="min-width:250px"></div>
-    <div class="field"><label>Status</label><select id="pcFilter"><option value="">All statuses</option><option value="sampling">In sampling</option><option value="feedback">Awaiting customer feedback</option><option value="hold">On hold</option><option value="approved">Approved</option><option value="production">In production</option><option value="rejected">Rejected</option></select></div>
+    <div class="field"><label>Search</label><input id="pcSearch" placeholder="Q / SR number, customer, garment, product code…" style="min-width:250px"></div>
+    <div class="field"><label>Status</label><select id="pcFilter"><option value="">All statuses</option><option value="quote">Quote — awaiting approval</option><option value="sampling">In sampling</option><option value="feedback">Awaiting customer feedback</option><option value="hold">On hold</option><option value="approved">Approved</option><option value="production">In production</option><option value="rejected">Rejected</option></select></div>
     <div style="flex:1"></div>
-    <button class="btn btn-gold" id="pcNewBtn" style="display:none">+ New sample (SR)</button>
+    <button class="btn btn-gold" id="pcNewBtn" style="display:none">+ New quote</button>
     <button class="btn btn-ghost2" id="pcBackupBtn" style="background:#e8ecf3;color:var(--navy)">Backup</button>
     <button class="btn btn-ghost2" id="pcRestoreBtn" style="background:#e8ecf3;color:var(--navy);display:none">Restore</button>
     <button class="btn btn-ghost2" id="pcListsBtn" style="background:#e8ecf3;color:var(--navy);display:none">Trim &amp; fabric lists</button>
   </div>
   <div id="pcBoard" class="pcgrid"></div>
-  <p class="pcnote" id="pcEmpty" style="display:none">No samples yet. Click <strong>+ New sample</strong> to raise the first SR.</p>
+  <p class="pcnote" id="pcEmpty" style="display:none">No quotes or samples yet. Click <strong>+ New quote</strong> to raise the first one.</p>
   <input type="file" id="pcFileIn" accept=".json" style="display:none">
 </main>
 
@@ -442,10 +532,21 @@ var PC_NUMW=4;                                // digits in generated product num
 function pcLoad(){
   var d=null;
   try{ d=JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){}
-  if(!d) d={srSeq:0, prodSeq:{}, srs:[], trimsList:[], fabricsList:[]};
-  d.prodSeq=d.prodSeq||{}; d.srs=d.srs||[]; d.trimsList=d.trimsList||[]; d.fabricsList=d.fabricsList||[];
+  if(!d) d={srSeq:0, qSeq:0, prodSeq:{}, srs:[], trimsList:[], fabricsList:[]};
+  d.qSeq=d.qSeq||0; d.prodSeq=d.prodSeq||{}; d.srs=d.srs||[]; d.trimsList=d.trimsList||[]; d.fabricsList=d.fabricsList||[];
+  d.srs.forEach(function(s){            // older records from before the quote stage
+    if(s.quoteRef===undefined) s.quoteRef='';
+    if(s.ref===undefined) s.ref='';
+    if(s.markerLen===undefined) s.markerLen='';
+    if(s.layQty===undefined) s.layQty='';
+    if(s.quoteMarkup===undefined) s.quoteMarkup=60;
+    if(s.quoteShowSell===undefined) s.quoteShowSell=true;
+    if(s.quotePrinted===undefined) s.quotePrinted=false;
+    if(s.quotePrintedAt===undefined) s.quotePrintedAt='';
+  });
   return d;
 }
+function pcRefLabel(s){ return s.ref ? (s.quoteRef? s.quoteRef+' → '+s.ref : s.ref) : (s.quoteRef||''); }
 var PC=pcLoad();
 function pcSaveData(){ try{ localStorage.setItem('pcData',JSON.stringify(PC)); }catch(e){ alert('Could not save — browser storage full or blocked.'); } }
 function pcE(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -494,7 +595,7 @@ function pcApplyMode(){
 }
 
 /* ── board ── */
-var PC_STATUS={sampling:'In sampling',feedback:'Awaiting customer feedback',hold:'On hold',approved:'Approved',production:'In production',rejected:'Rejected'};
+var PC_STATUS={quote:'Quote — awaiting approval',sampling:'In sampling',feedback:'Awaiting customer feedback',hold:'On hold',approved:'Approved',production:'In production',rejected:'Rejected'};
 function pcRender(){
   var srch=(document.getElementById('pcSearch').value||'').trim().toUpperCase();
   var filt=document.getElementById('pcFilter').value;
@@ -503,13 +604,15 @@ function pcRender(){
   PC.srs.forEach(function(s,i){
     if(filt && s.status!==filt) return;
     if(srch){
-      var hay=(s.ref+' '+(s.customer||'')+' '+(s.garment||'')+' '+(s.productCode||'')+' '+(s.desc||'')).toUpperCase();
+      var hay=((s.quoteRef||'')+' '+(s.ref||'')+' '+(s.customer||'')+' '+(s.garment||'')+' '+(s.productCode||'')+' '+(s.desc||'')).toUpperCase();
       if(hay.indexOf(srch)<0) return;
     }
     shown++;
-    var badge=s.printed?'<span class="pcbadge pcb-green">&#128424; Printed</span>':'<span class="pcbadge pcb-red">NOT PRINTED</span>';
+    var badge;
+    if(!s.ref) badge=s.quotePrinted?'<span class="pcbadge pcb-green">&#128424; Quote printed</span>':'<span class="pcbadge pcb-red">QUOTE NOT PRINTED</span>';
+    else badge=s.printed?'<span class="pcbadge pcb-green">&#128424; Printed</span>':'<span class="pcbadge pcb-red">NOT PRINTED</span>';
     var t=document.createElement('div'); t.className='pctile';
-    t.innerHTML='<div class="pcref">'+pcE(s.ref)+badge+'</div>'
+    t.innerHTML='<div class="pcref">'+pcE(pcRefLabel(s))+badge+'</div>'
       +(s.productCode?'<div class="pccode">'+pcE(s.productCode)+'</div>':'')
       +'<span class="pcst pcs-'+s.status+'">'+PC_STATUS[s.status]+'</span>'
       +'<div class="pcmeta">'+pcE(s.customer||'\u2014')+' \u00b7 '+pcE(s.garment||'no garment name')
@@ -529,7 +632,7 @@ function pcRowsHTML(id, cols, rows, addLabel){
 }
 function pcRowHTML(cols,r){
   return '<tr>'+cols.map(function(c,ix){
-    return '<td><input data-k="'+c.k+'" value="'+pcE(r?r[c.k]:'')+'" placeholder="'+(c.p||'')+'"'+(c.on?' oninput="'+c.on+'(this)"':'')+'></td>';
+    return '<td><input data-k="'+c.k+'" value="'+pcE(r?r[c.k]:'')+'" placeholder="'+(c.p||'')+'"'+(c.on?' oninput="'+c.on+'(this)"':'')+(c.list?' list="'+c.list+'"':'')+'></td>';
   }).join('')+'<td style="text-align:center"><button type="button" class="btn pcmini" style="background:#fee2e2;color:#991b1b" onclick="this.closest(\'tr\').remove()">\u00d7</button></td></tr>';
 }
 var PC_COLDEFS={};
@@ -568,13 +671,14 @@ var PC_CUR=-1;
 function pcClose(){ document.getElementById('pcOv').classList.remove('on'); PC_CUR=-1; }
 function pcNew(){
   if(!PC_IS_EDITOR) return;
-  var s={ref:'SR'+String(PC.srSeq+1).padStart(4,'0'), status:'sampling', created:pcToday(), due:'',
+  var s={quoteRef:'Q'+String(PC.qSeq+1).padStart(4,'0'), ref:'', status:'quote', created:pcToday(), due:'',
     customer:'', garment:'', desc:'', brandType:'None', brandPlace:'',
     fabrics:[], trims:[], meas:[], mfg:'', fin:'',
     machMins:'', finMins:'', cutBatch:35, cutMins:15, sampleQty:1,
-    markerMain:'', markerMesh:'', lectra:'', variant:'',
+    markerMain:'', markerMesh:'', markerLen:'', layQty:'', lectra:'', variant:'',
+    quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
     printed:false, printedAt:'', productCode:null, convertedAt:''};
-  PC.srs.unshift(s); PC.srSeq++; pcSaveData();
+  PC.srs.unshift(s); PC.qSeq++; pcSaveData();
   pcOpen(0);
 }
 function pcOpen(i){
@@ -582,27 +686,49 @@ function pcOpen(i){
   var s=PC.srs[i];
   var locked=!!s.productCode;
   var ro=(!PC_IS_EDITOR)||locked;
-  document.getElementById('pcMTitle').innerHTML=pcE(s.ref)+(s.productCode?' &nbsp;\u2192&nbsp; '+pcE(s.productCode):'')+' <span style="font-weight:400;font-size:12px;opacity:.8">'+PC_STATUS[s.status]+'</span>';
+  document.getElementById('pcMTitle').innerHTML=pcE(pcRefLabel(s))+(s.productCode?' &nbsp;→&nbsp; '+pcE(s.productCode):'')+' <span style="font-weight:400;font-size:12px;opacity:.8">'+PC_STATUS[s.status]+'</span>';
   var b=document.getElementById('pcMBody');
 
-  PC_COLDEFS.pcFabT=[{h:'Fabric code (Sage)',k:'code',w:'16%',p:'PC2109',on:'pcFabFill'},{h:'Description',k:'name',p:'Coral X133…'},{h:'Rating (m per unit)',k:'rating',w:'12%',p:'0.20'},{h:'Cost \u00a3/m',k:'cost',w:'10%',p:'3.45'},{h:'Location',k:'loc',w:'9%',p:'B3'}];
-  PC_COLDEFS.pcTrimT=[{h:'Trim code (Sage)',k:'code',w:'16%',p:'blank if not set up yet',on:'pcTrimFill'},{h:'Description',k:'desc',p:'Velcro black 16mm…'},{h:'Qty per unit',k:'qty',w:'10%',p:'1'},{h:'Cost \u00a3 each',k:'cost',w:'10%',p:'0.12'}];
+  PC_COLDEFS.pcFabT=[{h:'Fabric code (Sage)',k:'code',w:'16%',p:'PC2109',on:'pcFabFill',list:'pcFabDL'},{h:'Description',k:'name',p:'Coral X133…'},{h:'Rating (m per unit)',k:'rating',w:'12%',p:'0.20'},{h:'Cost £/m',k:'cost',w:'10%',p:'3.45'},{h:'Location',k:'loc',w:'9%',p:'B3'}];
+  PC_COLDEFS.pcTrimT=[{h:'Trim code (Sage)',k:'code',w:'16%',p:'blank if not set up yet',on:'pcTrimFill',list:'pcTrimDL'},{h:'Description',k:'desc',p:'Velcro black 16mm…'},{h:'Qty per unit',k:'qty',w:'10%',p:'1'},{h:'Cost £ each',k:'cost',w:'10%',p:'0.12'}];
   PC_COLDEFS.pcMeasT=[{h:'Measurement',k:'label',p:'Width of bow'},{h:'Value',k:'value',w:'30%',p:'14.5 cm'}];
 
-  var h='';
-  if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> \u2014 it is searchable and printable but no longer editable.</div>';
-  h+='<div class="pcsec"><h4>Sample details</h4><div class="in">'
+  /* searchable dropdowns: uploaded fabric/trim lists + fabrics already in the costing data */
+  var dlSeen={}, dl='<datalist id="pcFabDL">';
+  PC.fabricsList.forEach(function(f){ var k=String(f.code||'').toUpperCase(); if(!k||dlSeen[k])return; dlSeen[k]=1; dl+='<option value="'+pcE(f.code)+'">'+pcE(f.name||'')+'</option>'; });
+  if(typeof COSTDATA!=='undefined'&&COSTDATA.fabrics) COSTDATA.fabrics.forEach(function(f){ var k=String(f[0]||'').toUpperCase(); if(!k||dlSeen[k])return; dlSeen[k]=1; dl+='<option value="'+pcE(f[0])+'">'+pcE(f[1]||'')+'</option>'; });
+  dl+='</datalist><datalist id="pcTrimDL">';
+  PC.trimsList.forEach(function(t){ if(t.code) dl+='<option value="'+pcE(t.code)+'">'+pcE(t.name||'')+'</option>'; });
+  dl+='</datalist>';
+
+  var gOpts='<option value="">— select —</option>', gFound=false;
+  PC_CATS.forEach(function(c){ var seld=(s.garment===c[1]); if(seld) gFound=true; gOpts+='<option value="'+pcE(c[1])+'"'+(seld?' selected':'')+'>'+pcE(c[1])+' ('+c[0]+')</option>'; });
+  if(s.garment && !gFound) gOpts+='<option value="'+pcE(s.garment)+'" selected>'+pcE(s.garment)+' (legacy)</option>';
+
+  var stKeys = s.ref? ['sampling','feedback','hold','approved','production','rejected'] : ['quote','hold','rejected'];
+  if(stKeys.indexOf(s.status)<0) stKeys.unshift(s.status);
+  var stOpts=stKeys.map(function(k){return '<option value="'+k+'"'+(s.status===k?' selected':'')+(k==='production'&&!s.productCode?' disabled':'')+'>'+PC_STATUS[k]+'</option>';}).join('');
+
+  var h=dl;
+  if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> — it is searchable and printable but no longer editable.</div>';
+  h+='<div class="pcsec"><h4>Quote / sample details</h4><div class="in">'
     +'<div class="pcrow" style="grid-template-columns:1fr 1fr 1fr 1fr">'
     +'<div><div class="pclab">Customer</div><input id="pcF_customer" value="'+pcE(s.customer)+'"></div>'
-    +'<div><div class="pclab">Garment name</div><input id="pcF_garment" value="'+pcE(s.garment)+'" placeholder="e.g. Ladies wrap apron"></div>'
+    +'<div><div class="pclab">Garment name</div><select id="pcF_garment">'+gOpts+'</select></div>'
     +'<div><div class="pclab">Due date</div><input id="pcF_due" type="date" value="'+pcE(s.due)+'"></div>'
-    +'<div><div class="pclab">Status</div><select id="pcF_status">'+Object.keys(PC_STATUS).map(function(k){return '<option value="'+k+'"'+(s.status===k?' selected':'')+(k==='production'&&!s.productCode?' disabled':'')+'>'+PC_STATUS[k]+'</option>';}).join('')+'</select></div>'
+    +'<div><div class="pclab">Status</div><select id="pcF_status">'+stOpts+'</select></div>'
     +'</div>'
     +'<div class="pcrow"><div><div class="pclab">Garment description</div><textarea id="pcF_desc" style="min-height:52px">'+pcE(s.desc)+'</textarea></div></div>'
     +'<div class="pcrow" style="grid-template-columns:180px 1fr">'
     +'<div><div class="pclab">Customer branding</div><select id="pcF_brandType"><option'+(s.brandType==='None'?' selected':'')+'>None</option><option'+(s.brandType==='EMB'?' selected':'')+'>EMB</option><option'+(s.brandType==='DTF'?' selected':'')+'>DTF</option></select></div>'
     +'<div><div class="pclab">Logo / branding placement</div><input id="pcF_brandPlace" value="'+pcE(s.brandPlace)+'" placeholder="e.g. customer logo left chest, 8 cm wide"></div>'
-    +'</div></div></div>';
+    +'</div>'
+    +'<div class="pcrow" style="grid-template-columns:180px 1fr">'
+    +'<div><div class="pclab">Quote markup %</div><input id="pcF_qmk" type="number" step="1" value="'+pcE(s.quoteMarkup==null?60:s.quoteMarkup)+'"></div>'
+    +'<div style="align-self:end;font-size:12px;color:var(--mut);padding-bottom:8px"><label><input type="checkbox" id="pcF_qsell"'+(s.quoteShowSell!==false?' checked':'')+'> Show sell price (cost + markup) on the printed quote</label></div>'
+    +'</div>'
+    +'<p class="pcnote">The garment name sets the specials code prefix (e.g. Chef jacket → CJ). Branding EMB/DTF adds the '+PC_BRAND_LETTER+' automatically (CJ'+PC_BRAND_LETTER+'…); None leaves it out.</p>'
+    +'</div></div>';
 
   h+='<div class="pcsec"><h4>Fabrics</h4><div class="in">'+pcRowsHTML('pcFabT',PC_COLDEFS.pcFabT,s.fabrics,'Add fabric')+'</div></div>';
   h+='<div class="pcsec"><h4>Trims</h4><div class="in">'+pcRowsHTML('pcTrimT',PC_COLDEFS.pcTrimT,s.trims,'Add trim')
@@ -616,12 +742,18 @@ function pcOpen(i){
     +'<div><div class="pclab">Sample qty</div><input id="pcF_sqty" type="number" min="1" value="'+pcE(s.sampleQty||1)+'"></div>'
     +'</div></div></div>';
 
+  var layNote='';
+  (function(){ var ml=pcNum(s.markerLen), lq=pcNum(s.layQty), q=pcNum(s.sampleQty)||1;
+    if(ml&&lq){ var plies=Math.ceil(q/lq);
+      layNote='Marker covers '+lq+' garment'+(lq===1?'':'s')+' per lay ≈ '+(ml/lq).toFixed(2)+' m per unit. For qty '+q+': '+plies+' pl'+(plies===1?'y':'ies')+' of '+ml+' m = '+(plies*ml).toFixed(2)+' m fabric.'; } })();
   h+='<div class="pcsec"><h4>Cutting room</h4><div class="in"><div class="pcrow" style="grid-template-columns:repeat(4,1fr)">'
     +'<div><div class="pclab">Marker number (main)</div><input id="pcF_mkMain" value="'+pcE(s.markerMain)+'"></div>'
     +'<div><div class="pclab">Marker number (mesh)</div><input id="pcF_mkMesh" value="'+pcE(s.markerMesh)+'"></div>'
+    +'<div><div class="pclab">Marker length (m)</div><input id="pcF_mkLen" type="number" step="0.01" value="'+pcE(s.markerLen)+'" placeholder="1.70"></div>'
+    +'<div><div class="pclab">Lay qty (garments per lay)</div><input id="pcF_layQty" type="number" step="1" min="1" value="'+pcE(s.layQty)+'" placeholder="2"></div>'
     +'<div><div class="pclab">Lectra pattern (optional)</div><input id="pcF_lectra" value="'+pcE(s.lectra)+'"></div>'
     +'<div><div class="pclab">Variant (optional)</div><input id="pcF_variant" value="'+pcE(s.variant)+'"></div>'
-    +'</div></div></div>';
+    +'</div>'+(layNote?'<p class="pcnote">'+layNote+'</p>':'')+'</div></div>';
 
   h+='<div class="pcsec"><h4>Measurements</h4><div class="in">'+pcRowsHTML('pcMeasT',PC_COLDEFS.pcMeasT,s.meas,'Add measurement')+'</div></div>';
 
@@ -631,12 +763,14 @@ function pcOpen(i){
   h+='<div id="pcCostBox"></div>';
 
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
-  if(PC_IS_EDITOR && !locked) h+='<button class="btn btn-gold" onclick="pcSave()">Save</button>';
+  if(PC_IS_EDITOR && !locked) h+='<button class="btn btn-gold" onclick="pcSave()">Save &amp; close</button>';
   h+='<button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCost()">Costing</button>';
-  if(PC_IS_EDITOR) h+='<button class="btn" style="background:var(--navy);color:#fff" onclick="pcPrint()">&#128424; Print sample WO</button>';
-  if(PC_IS_EDITOR && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
+  h+='<button class="btn" style="background:#C9A24B;color:#22262e" onclick="pcQuotePrint()">&#128424; Print quote</button>';
+  if(PC_IS_EDITOR && !s.ref) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcToSR()">Customer approved \u2192 raise SR</button>';
+  if(PC_IS_EDITOR && s.ref) h+='<button class="btn" style="background:var(--navy);color:#fff" onclick="pcPrint()">&#128424; Print sample WO</button>';
+  if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
   if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Export for buffer app</button>';
-  if(PC_IS_EDITOR && !locked) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete SR</button>';
+  if(PC_IS_EDITOR && !locked) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
   h+='</div><div id="pcExportBox"></div>';
   b.innerHTML=h;
   document.getElementById('pcOv').classList.add('on');
@@ -661,22 +795,38 @@ function pcCollect(s){
   s.sampleQty=pcNum(document.getElementById('pcF_sqty').value)||1;
   s.markerMain=document.getElementById('pcF_mkMain').value.trim();
   s.markerMesh=document.getElementById('pcF_mkMesh').value.trim();
+  s.markerLen=document.getElementById('pcF_mkLen').value.trim();
+  s.layQty=document.getElementById('pcF_layQty').value.trim();
   s.lectra=document.getElementById('pcF_lectra').value.trim();
   s.variant=document.getElementById('pcF_variant').value.trim();
   s.mfg=document.getElementById('pcF_mfg').value;
   s.fin=document.getElementById('pcF_fin2').value;
+  var qmk=document.getElementById('pcF_qmk').value;
+  s.quoteMarkup = qmk===''?60:pcNum(qmk);
+  s.quoteShowSell=document.getElementById('pcF_qsell').checked;
 }
 function pcSave(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
-  pcCollect(s); pcSaveData(); pcRender();
-  document.getElementById('pcMTitle').innerHTML=pcE(s.ref)+' <span style="font-weight:400;font-size:12px;opacity:.8">'+PC_STATUS[s.status]+' \u2014 saved \u2713</span>';
+  pcCollect(s); pcSaveData(); pcClose(); pcRender();
 }
 function pcDelete(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
-  if(!confirm('Delete '+s.ref+' completely? This cannot be undone.')) return;
+  if(!confirm('Delete '+pcRefLabel(s)+' completely? This cannot be undone.')) return;
   PC.srs.splice(PC_CUR,1); pcSaveData(); pcClose(); pcRender();
+}
+/* \u2500\u2500 quote approved \u2192 raise the SR sample works order \u2500\u2500 */
+function pcToSR(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s=PC.srs[PC_CUR];
+  if(s.ref) return;
+  pcCollect(s);
+  var next='SR'+String(PC.srSeq+1).padStart(4,'0');
+  if(!confirm('Customer has approved '+s.quoteRef+'?\n\nThis raises sample works order '+next+' \u2014 the record keeps its quote number and moves to In sampling.')) return;
+  s.ref=next; PC.srSeq++;
+  s.status='sampling'; s.srRaisedAt=pcToday();
+  pcSaveData(); pcOpen(PC_CUR); pcRender();
 }
 
 /* ── costing ── */
@@ -697,11 +847,11 @@ function pcCost(){
   function draw(){
     var c=pcCostCalc(s, rate, whatif);
     var base=pcCostCalc(s, rate, s.fabrics);
-    var h='<div class="pccost"><strong style="color:var(--navy)">Costing \u2014 '+pcE(s.ref)+(s.productCode?' / '+pcE(s.productCode):'')+'</strong>'
+    var h='<div class="pccost"><strong style="color:var(--navy)">Costing \u2014 '+pcE(pcRefLabel(s))+(s.productCode?' / '+pcE(s.productCode):'')+'</strong>'
       +'<div class="pcrow" style="grid-template-columns:220px 1fr;margin:8px 0"><div><div class="pclab">Labour rate \u00a3/hr</div><input id="pcCRate" type="number" step="0.01" value="'+rate+'"></div><div class="pcnote" style="align-self:end">Change the rate or any fabric line below to see a what-if price \u2014 nothing is saved.</div></div>'
       +'<table><tr><th>Fabric (what-if editable)</th><th style="width:90px">Rating m</th><th style="width:90px">\u00a3/m</th><th style="width:90px">\u00a3</th></tr>';
     whatif.forEach(function(f,ix){
-      h+='<tr><td><input class="pcWCode" data-ix="'+ix+'" value="'+pcE(f.code)+'" style="width:130px;background:#fffbea;border:1px solid var(--line);border-radius:4px;padding:3px 6px"> '+pcE((f.name||'').slice(0,44))+'</td>'
+      h+='<tr><td><input class="pcWCode" list="pcFabDL" data-ix="'+ix+'" value="'+pcE(f.code)+'" style="width:130px;background:#fffbea;border:1px solid var(--line);border-radius:4px;padding:3px 6px"> '+pcE((f.name||'').slice(0,44))+'</td>'
         +'<td style="text-align:right"><input class="pcWRat" data-ix="'+ix+'" value="'+pcE(f.rating)+'" style="width:70px;text-align:right;background:#fffbea;border:1px solid var(--line);border-radius:4px;padding:3px 6px"></td>'
         +'<td style="text-align:right"><input class="pcWCost" data-ix="'+ix+'" value="'+pcE(f.cost)+'" style="width:70px;text-align:right;background:#fffbea;border:1px solid var(--line);border-radius:4px;padding:3px 6px"></td>'
         +'<td>\u00a3'+(pcNum(f.rating)*pcNum(f.cost)).toFixed(2)+'</td></tr>';
@@ -731,22 +881,21 @@ function pcCost(){
 function pcConvert(){
   if(PC_CUR<0||!PC_IS_EDITOR) return;
   var s=PC.srs[PC_CUR];
+  if(!s.ref){ alert('Approve the quote and raise the SR sample first.'); return; }
   pcCollect(s);
   var missing=s.trims.filter(function(t){ return !t.code; });
-  if(missing.length){ alert('Cannot convert yet \u2014 '+missing.length+' trim line(s) have no Sage code:\n\n'+missing.map(function(t){return '\u2022 '+(t.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
+  if(missing.length){ alert('Cannot convert yet — '+missing.length+' trim line(s) have no Sage code:\n\n'+missing.map(function(t){return '• '+(t.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
   if(s.status!=='approved'){ if(!confirm(s.ref+' is not marked Approved. Convert anyway?')) return; }
-  var choice=prompt('Product code:\n\n\u2022 Leave BLANK to auto-generate a specials code (category '+'\u2014 next prompt)\n\u2022 Or type a stock product code to use it exactly (e.g. OHCJSMNEWSTYLE--01)');
+  var cat=null;
+  PC_CATS.forEach(function(c){ if(c[1].toUpperCase()===String(s.garment||'').trim().toUpperCase()) cat=c[0]; });
+  var key=cat?cat+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:''):null;
+  var choice=prompt('Product code:\n\n• Leave BLANK to auto-generate a specials code from the garment name and branding'+(key?' ('+key+'…)':'')+'\n• Or type a stock product code to use it exactly (e.g. OHCJSMNEWSTYLE--01)');
   if(choice===null) return;
   var code;
   if(choice.trim()){
     code=choice.trim().toUpperCase();
   } else {
-    var cat=prompt('Category prefix \u2014 one of:\n'+PC_CATS.map(function(c){return c[0]+' = '+c[1];}).join('\n'),'CJ');
-    if(cat===null) return;
-    cat=cat.trim().toUpperCase();
-    if(!PC_CATS.some(function(c){return c[0]===cat;})){ alert('Unknown category '+cat); return; }
-    var branded=confirm('Customer branded (embroidery / DTF)?\n\nOK = yes ('+cat+PC_BRAND_LETTER+'\u2026)   Cancel = plain '+cat);
-    var key=cat+(branded?PC_BRAND_LETTER:'');
+    if(!key){ alert('Pick a garment name from the dropdown first — it sets the code prefix (e.g. Chef jacket → CJ).'); return; }
     PC.prodSeq[key]=(PC.prodSeq[key]||0)+1;
     code=key+String(PC.prodSeq[key]).padStart(PC_NUMW,'0');
   }
@@ -766,6 +915,7 @@ function pcExport(){
     desc:s.desc||s.garment||'',
     lectra:s.lectra||'', variant:s.variant||'',
     markerMain:s.markerMain||'', markerMesh:s.markerMesh||'',
+    markerLen:pcNum(s.markerLen)||null, layQty:pcNum(s.layQty)||null,
     chart:s.meas.length?(s.productCode+'-MEAS'):'',
     chartCols:s.meas.length?["Measurement","Value"]:null,
     chartRows:s.meas.map(function(m){ return [m.label,m.value]; }),
@@ -800,6 +950,8 @@ function pcPrint(){
   var qty=Math.max(1, pcNum(s.sampleQty)||1);
   var today=new Date().toLocaleDateString('en-GB');
   var cutTot=Math.ceil(qty/(pcNum(s.cutBatch)||35))*(pcNum(s.cutMins)||15);
+  var mkLen=pcNum(s.markerLen), layQ=pcNum(s.layQty);
+  var plies=(mkLen&&layQ)?Math.ceil(qty/layQ):null;
   var mach=pcNum(s.machMins), fin=pcNum(s.finMins);
   var machTot=mach?mach*qty:null, finTot=fin?fin*qty:null;
   var grand=(machTot!=null&&finTot!=null)?cutTot+machTot+finTot:null;
@@ -826,6 +978,7 @@ function pcPrint(){
     +'<tr><th>Customer</th><td>'+e(s.customer||'\u2014')+'</td><th>Sample qty</th><td>'+qty+'</td></tr>'
     +'<tr><th>Garment</th><td colspan="3">'+e(s.garment||'\u2014')+'</td></tr>'
     +(s.productCode?'<tr><th>Product code</th><td colspan="3">'+e(s.productCode)+'</td></tr>':'')
+    +(s.quoteRef?'<tr><th>Quote ref</th><td colspan="3">'+e(s.quoteRef)+'</td></tr>':'')
     +'</table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'\u2014')+'</td></tr></table>'
     +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType)+'</td></tr>'
@@ -833,6 +986,9 @@ function pcPrint(){
     +'<div class="band">CUTTING</div><table>'
     +'<tr><th>Marker number (main)</th><td style="font-weight:700;font-size:15px">'+e(s.markerMain||'\u2014')+'</td></tr>'
     +'<tr><th>Marker number (mesh)</th><td style="font-weight:700">'+e(s.markerMesh||'\u2014')+'</td></tr>'
+    +'<tr><th>Marker length</th><td style="font-weight:700;font-size:15px">'+(mkLen? mkLen+' m':'\u2014')+'</td></tr>'
+    +'<tr><th>Lay qty</th><td style="font-weight:700;font-size:15px">'+(layQ? layQ+' garment'+(layQ===1?'':'s')+' per lay':'\u2014')+'</td></tr>'
+    +(plies?'<tr><th>Lay plan (qty '+qty+')</th><td style="font-weight:700">'+plies+' pl'+(plies===1?'y':'ies')+' of '+mkLen+' m \u2014 total '+(plies*mkLen).toFixed(2)+' m</td></tr>':'')
     +(s.lectra?'<tr><th>Lectra pattern</th><td>'+e(s.lectra)+(s.variant?' \u00b7 variant '+e(s.variant):'')+'</td></tr>':'')
     +'</table>'
     +'<div class="band">FABRIC</div><table><tr><th style="width:56%">Fabric</th><th>Sage code</th><th>Rating</th><th>Location</th></tr>';
@@ -871,6 +1027,58 @@ function pcPrint(){
   if(!w){ alert('Pop-up blocked \u2014 allow pop-ups for this site and try again.'); return false; }
   w.document.open(); w.document.write(h); w.document.close();
   if(PC_IS_EDITOR){ s.printed=true; s.printedAt=pcToday(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
+  return true;
+}
+
+
+/* ── printable quote for the sales rep ── */
+function pcQuotePrint(){
+  if(PC_CUR<0) return;
+  var s=PC.srs[PC_CUR];
+  if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
+  var rate=(typeof S!=='undefined'&&S.rate)?pcNum(S.rate):12.71;
+  var c=pcCostCalc(s, rate, s.fabrics);
+  var mk=(s.quoteMarkup==null||s.quoteMarkup==='')?60:pcNum(s.quoteMarkup);
+  var sell=c.total*(1+mk/100);
+  var showSell=s.quoteShowSell!==false;
+  var mkLen=pcNum(s.markerLen), layQ=pcNum(s.layQty);
+  var qref=s.quoteRef||s.ref;
+  function e(x){ return pcE(x); }
+  var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Quote '+e(qref)+'</title><style>'
+    +'@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    +'body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0;font-size:13px}'
+    +'.hdr{background:#fff;color:#1F3864;padding:0 0 10px;border-bottom:4px solid #1F3864;display:flex;justify-content:space-between;align-items:center}'
+    +'.hdr h1{margin:0;font-size:24px;letter-spacing:.5px}'
+    +'.band{background:#5b7ba6;color:#fff;font-weight:700;font-size:14px;padding:6px 10px;margin:14px 0 0}'
+    +'table{width:100%;border-collapse:collapse}th,td{border:1px solid #B7BEC8;padding:6px 9px;text-align:left;vertical-align:top;font-size:13px}'
+    +'th{background:#EEF1F5;color:#44546A;width:26%;font-size:12px}'
+    +'.kv td{font-weight:700;font-size:14px}'
+    +'.tot td{background:#5b7ba6;color:#fff;font-weight:700;font-size:15px}'
+    +'.note{font-size:11px;color:#666;margin-top:14px;line-height:1.5}'
+    +'</style></head><body>';
+  h+='<div class="hdr"><h1>QUOTATION &nbsp;&middot;&nbsp; '+e(qref)+'</h1>'
+    +'<img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px"></div>'
+    +'<table class="kv" style="margin-top:12px">'
+    +'<tr><th>Date</th><td>'+e(pcFmtD(pcToday()))+'</td><th style="width:26%">Quote raised</th><td>'+e(pcFmtD(s.created))+'</td></tr>'
+    +'<tr><th>Customer</th><td>'+e(s.customer||'—')+'</td><th>Garment</th><td>'+e(s.garment||'—')+'</td></tr>'
+    +(s.ref||s.productCode?'<tr><th>Sample ref</th><td>'+e(s.ref||'—')+'</td><th>Product code</th><td>'+e(s.productCode||'—')+'</td></tr>':'')
+    +'</table>'
+    +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'—')+'</td></tr></table>'
+    +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType||'None')+(s.brandPlace?' — '+e(s.brandPlace):'')+'</td></tr></table>'
+    +'<div class="band">PRICE</div><table>'
+    +'<tr><th>Cost per unit</th><td style="font-weight:700;font-size:15px">£'+c.total.toFixed(2)+'</td></tr>'
+    +(showSell?'<tr class="tot"><td>Quoted price per unit (cost + '+mk+'%)</td><td>£'+sell.toFixed(2)+'</td></tr>':'')
+    +'</table>'
+    +'<div class="band">MOQ / CUTTING</div><table>'
+    +'<tr><th>Lay qty</th><td style="font-weight:700">'+(layQ? layQ+' garment'+(layQ===1?'':'s')+' cut per lay — set the MOQ in multiples of '+layQ : '—')+'</td></tr>'
+    +'<tr><th>Marker length</th><td>'+(mkLen? mkLen+' m per lay'+(layQ?' (≈ '+(mkLen/layQ).toFixed(2)+' m fabric per unit)':''):'—')+'</td></tr>'
+    +'</table>'
+    +'<p class="note">Internal quotation sheet — prices exclude VAT and carriage. Cost per unit is fabric + trims + labour at the current rates; check with production before committing to lead times.</p>';
+  h+='<script>window.onload=function(){window.print();};<\/script></body></html>';
+  var w=window.open('','_blank');
+  if(!w){ alert('Pop-up blocked — allow pop-ups for this site and try again.'); return false; }
+  w.document.open(); w.document.write(h); w.document.close();
+  if(PC_IS_EDITOR){ s.quotePrinted=true; s.quotePrintedAt=pcToday(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
   return true;
 }
 
