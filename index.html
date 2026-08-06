@@ -94,7 +94,7 @@ tfoot td{font-weight:700;background:#f7f9fc;border-top:2px solid var(--line)}
   <h1>TIBARD <span>|</span> Costing Calculator</h1>
   <div class="sub" id="srcNote"></div>
   <div class="spacer"></div>
-  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">Product creator</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
+  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">Product creator</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
   <button class="btn btn-ghost" id="clearBtn">Clear all</button>
 </header>
 <main id="costMain">
@@ -116,6 +116,11 @@ tfoot td{font-weight:700;background:#f7f9fc;border-top:2px solid var(--line)}
         <label>Actual labour cost (£/hr)</label>
         <input type="number" id="labRate" step="0.01">
         <div class="exp" id="labExp"></div>
+      </div>
+      <div class="field">
+        <label>OH uplift % (Tibard → Oliver Harvey)</label>
+        <input type="number" id="ohPctIn" step="0.5" min="0">
+        <div class="exp">Used on the OH Costing tab only: OH price = Tibard cost + this uplift. Default 25%.</div>
       </div>
       <div class="field">
         <label>Show legacy +80.5% comparison</label>
@@ -197,13 +202,17 @@ function customCalc(s, qty){
 }
 
 // ---- settings ----
-const DEF = {rate:12.71, lab:16.26, legacy:1};
+const DEF = {rate:12.71, lab:16.26, legacy:1, ohPct:25};
 let S = Object.assign({}, DEF);
 try{ const s = localStorage.getItem('tibardCostSettings'); if(s) S = Object.assign({},DEF,JSON.parse(s)); }catch(e){}
 function saveS(){ try{ localStorage.setItem('tibardCostSettings', JSON.stringify(S)); }catch(e){} }
 
 const rateSel=document.getElementById('rateSel'), rateCustom=document.getElementById('rateCustom'),
-      labRate=document.getElementById('labRate'), legacySel=document.getElementById('legacySel');
+      labRate=document.getElementById('labRate'), legacySel=document.getElementById('legacySel'),
+      ohPctIn=document.getElementById('ohPctIn');
+let OH=false;
+const ohF=()=>OH?1+(S.ohPct||0)/100:1;
+window.costSetOH=function(on){ OH=!!on; render(); };
 document.getElementById('labExp').textContent =
  'Default £16.26/hr = £85,000/month ÷ ~5,226 paid hours (30 staff × 37h + 3 × 32h, ×52/12). Paid-hour basis for all production staff — before efficiency/absence, and cutting/finishing time is not included in the sewing minutes it is applied to.';
 document.getElementById('srcNote').textContent = 'Source: ' + COSTDATA.updated;
@@ -212,13 +221,14 @@ function initSettings(){
   const std=['12.71','12.21','11.44'];
   if(std.includes(String(S.rate))){ rateSel.value=String(S.rate); rateCustom.style.display='none'; }
   else { rateSel.value='custom'; rateCustom.style.display='block'; rateCustom.value=S.rate; }
-  labRate.value=S.lab; legacySel.value=String(S.legacy);
+  labRate.value=S.lab; legacySel.value=String(S.legacy); ohPctIn.value=S.ohPct;
 }
 rateSel.onchange=()=>{ if(rateSel.value==='custom'){rateCustom.style.display='block';rateCustom.focus();}
   else {rateCustom.style.display='none'; S.rate=parseFloat(rateSel.value); saveS(); render();} };
 rateCustom.oninput=()=>{ const v=parseFloat(rateCustom.value); if(v>0){S.rate=v; saveS(); render();} };
 labRate.oninput=()=>{ const v=parseFloat(labRate.value); if(v>0){S.lab=v; saveS(); render();} };
 legacySel.onchange=()=>{ S.legacy=+legacySel.value; saveS(); };
+ohPctIn.oninput=()=>{ const v=parseFloat(ohPctIn.value); if(!isNaN(v)&&v>=0){ S.ohPct=v; saveS(); render(); } };
 document.getElementById('setBtn').onclick=()=>document.getElementById('setPanel').classList.toggle('show');
 
 // ---- helpers ----
@@ -337,8 +347,10 @@ document.getElementById('addBtn').onclick=addLine;
 document.getElementById('clearBtn').onclick=()=>{ if(lines.length&&confirm('Clear all lines?')){ lines=[]; saveL(); render(); } };
 
 function render(){
+  const F=ohF();
   document.getElementById('rateNote').textContent =
-    'PW @ £'+S.rate.toFixed(2)+'/hr ('+gbp(S.rate/60)+'/min) · labour @ £'+S.lab.toFixed(2)+'/hr';
+    (OH?'OH prices = Tibard cost +'+(S.ohPct||0)+'% · ':'')
+    +'PW @ £'+S.rate.toFixed(2)+'/hr ('+gbp(S.rate/60)+'/min) · labour @ £'+S.lab.toFixed(2)+'/hr';
   const w=document.getElementById('tblWrap');
   if(!lines.length){ w.innerHTML='<div class="empty">No lines yet — search a code above to begin.</div>'; return; }
   let tMins=0,tLab=0,tFab=0,tNew=0,tQty=0, anyNoFab=false, anyCustom=false;
@@ -353,10 +365,10 @@ function render(){
         +'<td class="num"><input class="qtyEd" data-k="'+k+'" type="number" min="1" value="'+l.qty+'"></td>'
         +'<td class="num">'+n1(c.mins)+'</td>'
         +'<td class="num">'+hhmm(c.totMins)+'</td>'
-        +'<td class="num">'+gbp(c.labUnit)+'</td>'
-        +'<td class="num">'+(c.fab!=null?gbp(c.fab):'<span class="warn">n/a</span>')+'</td>'
-        +'<td class="num"><b>'+gbp(c.newUnit)+'</b></td>'
-        +'<td class="num"><b>'+gbp(c.totNew)+'</b></td>'
+        +'<td class="num">'+gbp(c.labUnit*F)+'</td>'
+        +'<td class="num">'+(c.fab!=null?gbp(c.fab*F):'<span class="warn">n/a</span>')+'</td>'
+        +'<td class="num"><b>'+gbp(c.newUnit*F)+'</b></td>'
+        +'<td class="num"><b>'+gbp(c.totNew*F)+'</b></td>'
         +'<td><button class="del" data-k="'+k+'" title="Remove">✕</button></td></tr>';
     } else {
       const s=customByCode(l.code); if(!s) return;
@@ -367,18 +379,19 @@ function render(){
         +'<td class="num"><input class="qtyEd" data-k="'+k+'" type="number" min="1" value="'+l.qty+'"></td>'
         +'<td class="num">'+n1(c.mins)+'</td>'
         +'<td class="num">'+hhmm(c.totMins)+'</td>'
-        +'<td class="num">'+gbp(c.lab)+'</td>'
-        +'<td class="num">'+gbp(c.fab+c.tr)+'</td>'
-        +'<td class="num"><b>'+gbp(c.newUnit)+'</b>'+(S.legacy?'<div class="desc" style="max-width:none">legacy '+gbp(c.legacyUnit)+'</div>':'')+'</td>'
-        +'<td class="num"><b>'+gbp(c.totNew)+'</b></td>'
+        +'<td class="num">'+gbp(c.lab*F)+'</td>'
+        +'<td class="num">'+gbp((c.fab+c.tr)*F)+'</td>'
+        +'<td class="num"><b>'+gbp(c.newUnit*F)+'</b>'+(S.legacy?'<div class="desc" style="max-width:none">legacy '+gbp(c.legacyUnit*F)+'</div>':'')+'</td>'
+        +'<td class="num"><b>'+gbp(c.totNew*F)+'</b></td>'
         +'<td><button class="del" data-k="'+k+'" title="Remove">✕</button></td></tr>';
     }
   });
-  h+='</tbody><tfoot><tr><td>Total</td><td class="num">'+tQty.toLocaleString()+'</td><td></td>'
-    +'<td class="num">'+hhmm(tMins)+'</td><td class="num">'+gbp(tLab)+'</td>'
-    +'<td class="num">'+gbp(tFab)+(anyNoFab?'<span class="warn">*</span>':'')+'</td><td></td>'
-    +'<td class="num">'+gbp(tNew)+'</td><td></td></tr></tfoot></table>';
+  h+='</tbody><tfoot><tr><td>Total'+(OH?' (OH +'+(S.ohPct||0)+'%)':'')+'</td><td class="num">'+tQty.toLocaleString()+'</td><td></td>'
+    +'<td class="num">'+hhmm(tMins)+'</td><td class="num">'+gbp(tLab*F)+'</td>'
+    +'<td class="num">'+gbp(tFab*F)+(anyNoFab?'<span class="warn">*</span>':'')+'</td><td></td>'
+    +'<td class="num">'+gbp(tNew*F)+'</td><td></td></tr></tfoot></table>';
   if(anyNoFab) h+='<div class="hint" style="padding:8px 12px">* one or more lines have no fabric cost in the source sheet — fabric excluded for those lines.</div>';
+  if(OH) h+='<div class="hint" style="padding:8px 12px">OH Costing: every price shown includes the +'+(S.ohPct||0)+'% Tibard → Oliver Harvey uplift (editable in Settings).</div>';
   if(anyCustom) h+='<div class="hint" style="padding:8px 12px">SPECIAL lines come from the Product creator: the fabric column includes trims, and labour covers machining + finishing + cutting share at the PW rate.'+(S.legacy?' The smaller price is the legacy method (fabric + machining, +80.5%).':'')+'</div>';
   w.innerHTML=h;
   w.querySelectorAll('tbody tr').forEach(tr=>{
@@ -432,6 +445,14 @@ function openModal(k){
     +'<div class="ln tot"><span class="l">Identified cost</span><span class="v">'+gbp(c.totNew)+'</span></div>'
     +(S.legacy&&c.totLegacy!=null?'<div class="ln sub"><span class="l">Legacy method total</span><span class="v">'+gbp(c.totLegacy)+'</span></div>':'')
     +'</div>';
+  if(OH){
+    const F=ohF();
+    h+='<div class="sec"><h3>Oliver Harvey price (+'+(S.ohPct||0)+'%)</h3>'
+      +'<div class="ln sub"><span class="l">Tibard cost per unit</span><span class="v">'+gbp(c.newUnit)+'</span></div>'
+      +'<div class="ln sub"><span class="l">+'+(S.ohPct||0)+'% uplift</span><span class="v">'+gbp(c.newUnit*F-c.newUnit)+'</span></div>'
+      +'<div class="ln tot"><span class="l">OH price per unit</span><span class="v gold">'+gbp(c.newUnit*F)+'</span></div>'
+      +'<div class="ln"><span class="l">OH order total ('+l.qty.toLocaleString()+' units)</span><span class="v">'+gbp(c.totNew*F)+'</span></div></div>';
+  }
   h+='<div class="note">Sewing minutes are reverse-engineered from the PW piece price and depend on the wage rate in Settings. Fabric is per All Costings usage × cost/metre. The "identified cost" deliberately excludes the old 80.5% uplift — trims and cutting/finishing labour are still to be costed properly.</div>';
   document.getElementById('mBody').innerHTML=h;
   ov.classList.add('show');
@@ -461,6 +482,14 @@ function openCustomModal(l){
     +'<div class="ln"><span class="l">New method</span><span class="v">'+gbp(c.totNew)+'</span></div>'
     +(S.legacy?'<div class="ln sub"><span class="l">Legacy method</span><span class="v">'+gbp(c.totLegacy)+'</span></div>':'')
     +'<div class="ln sub"><span class="l">Total time</span><span class="v">'+hhmm(c.totMins)+'</span></div></div>';
+  if(OH){
+    const F=ohF();
+    h+='<div class="sec"><h3>Oliver Harvey price (+'+(S.ohPct||0)+'%)</h3>'
+      +'<div class="ln sub"><span class="l">Tibard cost per unit</span><span class="v">'+gbp(c.newUnit)+'</span></div>'
+      +'<div class="ln tot"><span class="l">OH price per unit</span><span class="v gold">'+gbp(c.newUnit*F)+'</span></div>'
+      +(S.legacy?'<div class="ln sub"><span class="l">OH legacy price per unit</span><span class="v">'+gbp(c.legacyUnit*F)+'</span></div>':'')
+      +'<div class="ln"><span class="l">OH order total ('+l.qty.toLocaleString()+' units)</span><span class="v">'+gbp(c.totNew*F)+'</span></div></div>';
+  }
   h+='<div class="note">This product was created in the Product creator ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour uses the PW conversion rate from Settings. The legacy price uplifts only fabric + machining by 80.5%, matching the old All Costings method.</div>';
   document.getElementById('mBody').innerHTML=h;
   ov.classList.add('show');
@@ -623,9 +652,14 @@ function pcTrimLookup(code){
 /* ── nav / mode ── */
 function pcShow(which){
   var c=document.getElementById('costMain'), p=document.getElementById('pcMain');
-  var bc=document.getElementById('navCostBtn'), bp=document.getElementById('navPCBtn');
-  if(which==='pc'){ c.style.display='none'; p.style.display='block'; bp.classList.add('on'); bc.classList.remove('on'); pcRender(); }
-  else { c.style.display='block'; p.style.display='none'; bc.classList.add('on'); bp.classList.remove('on'); }
+  var bc=document.getElementById('navCostBtn'), bo=document.getElementById('navOHBtn'), bp=document.getElementById('navPCBtn');
+  [bc,bo,bp].forEach(function(b){ if(b) b.classList.remove('on'); });
+  if(which==='pc'){ c.style.display='none'; p.style.display='block'; bp.classList.add('on'); pcRender(); }
+  else {
+    c.style.display='block'; p.style.display='none';
+    (which==='oh'?bo:bc).classList.add('on');
+    if(window.costSetOH) window.costSetOH(which==='oh');
+  }
 }
 function pcToggleEditor(){
   if(PC_IS_EDITOR){
