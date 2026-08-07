@@ -193,7 +193,7 @@ function customCalc(s, qty){
   const mach=num(s.machMins), fin=num(s.finMins);
   const cutShare=num(s.cutMins)/(num(s.cutBatch)||35);
   const mins=mach+fin+cutShare;
-  const lab=mins/60*S.rate;
+  const lab=mins/60*S.lab;
   const newUnit=fab+tr+lab;
   const legacyUnit=(fab + mach/60*S.rate)*1.805;
   return {fab,tr,mins,mach,fin,cutShare,lab,newUnit,legacyUnit,
@@ -202,9 +202,10 @@ function customCalc(s, qty){
 }
 
 // ---- settings ----
-const DEF = {rate:12.71, lab:16.26, legacy:1, ohPct:25};
+const DEF = {rate:12.71, lab:18, legacy:1, ohPct:25};
 let S = Object.assign({}, DEF);
 try{ const s = localStorage.getItem('tibardCostSettings'); if(s) S = Object.assign({},DEF,JSON.parse(s)); }catch(e){}
+if(S.lab===16.26) S.lab=18;   // old default bumped to the £18/hr production rate
 function saveS(){ try{ localStorage.setItem('tibardCostSettings', JSON.stringify(S)); }catch(e){} }
 
 const rateSel=document.getElementById('rateSel'), rateCustom=document.getElementById('rateCustom'),
@@ -214,7 +215,7 @@ let OH=false;
 const ohF=()=>OH?1+(S.ohPct||0)/100:1;
 window.costSetOH=function(on){ OH=!!on; render(); };
 document.getElementById('labExp').textContent =
- 'Default £16.26/hr = £85,000/month ÷ ~5,226 paid hours (30 staff × 37h + 3 × 32h, ×52/12). Paid-hour basis for all production staff — before efficiency/absence, and cutting/finishing time is not included in the sewing minutes it is applied to.';
+ 'Default £18.00/hr — the production labour rate used for costing lines, specials and quotes.';
 document.getElementById('srcNote').textContent = 'Source: ' + COSTDATA.updated;
 
 function initSettings(){
@@ -470,7 +471,7 @@ function openCustomModal(l){
   });
   h+='<div class="ln"><span class="l">Trims ('+(s.trims||[]).length+' line'+((s.trims||[]).length===1?'':'s')+')</span><span class="v">'+gbp(c.tr)+'</span></div>'
     +'<div class="ln tot"><span class="l">Materials per unit</span><span class="v">'+gbp(c.fab+c.tr)+'</span></div></div>';
-  h+='<div class="sec"><h3>Labour ('+n1(c.mins)+' min/unit @ £'+S.rate.toFixed(2)+'/hr)</h3>'
+  h+='<div class="sec"><h3>Labour ('+n1(c.mins)+' min/unit @ £'+S.lab.toFixed(2)+'/hr)</h3>'
     +'<div class="ln sub"><span class="l">Machining</span><span class="v">'+n1(c.mach)+' min</span></div>'
     +'<div class="ln sub"><span class="l">Finishing</span><span class="v">'+n1(c.fin)+' min</span></div>'
     +'<div class="ln sub"><span class="l">Cutting share</span><span class="v">'+n1(c.cutShare)+' min</span></div>'
@@ -490,7 +491,7 @@ function openCustomModal(l){
       +(S.legacy?'<div class="ln sub"><span class="l">OH legacy price per unit</span><span class="v">'+gbp(c.legacyUnit*F)+'</span></div>':'')
       +'<div class="ln"><span class="l">OH order total ('+l.qty.toLocaleString()+' units)</span><span class="v">'+gbp(c.totNew*F)+'</span></div></div>';
   }
-  h+='<div class="note">This product was created in the Product creator ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour uses the PW conversion rate from Settings. The legacy price uplifts only fabric + machining by 80.5%, matching the old All Costings method.</div>';
+  h+='<div class="note">This product was created in the Product creator ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour is costed at the labour rate from Settings. The legacy price uplifts only fabric + machining (at the PW rate) by 80.5%, matching the old All Costings method.</div>';
   document.getElementById('mBody').innerHTML=h;
   ov.classList.add('show');
 }
@@ -519,6 +520,12 @@ initSettings(); render();
 .pcb-red{background:#b91c1c;color:#fff}.pcb-green{background:#d1fae5;color:#065f46}
 .pcst{display:inline-block;font-size:10px;font-weight:800;border-radius:8px;padding:2px 8px;margin-top:5px}
 .pcs-quote{background:#f3e8c8;color:#7A5B14}
+.pcstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:2px 0 10px}
+.pcstat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:center}
+.pcstat .n{font-size:24px;font-weight:800;color:var(--navy)}
+.pcstat .l{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.pcstat.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,75,.35)}
+.pcstat.late .n{color:var(--red)}
 .pctbl.pcsteps{counter-reset:pcstep}
 .pctbl.pcsteps tr:not(:first-child){counter-increment:pcstep}
 .pctbl.pcsteps tr:not(:first-child) td:first-child::before{content:"Step " counter(pcstep);display:block;font-size:10px;font-weight:800;color:var(--steel);margin-bottom:2px}
@@ -564,18 +571,21 @@ initSettings(); render();
     <div class="field"><label>Status</label><select id="pcFilter"><option value="">All statuses</option><option value="quote">Quote — awaiting approval</option><option value="sampling">In sampling</option><option value="feedback">Awaiting customer feedback</option><option value="hold">On hold</option><option value="approved">Approved</option><option value="production">In production</option><option value="rejected">Rejected</option></select></div>
     <div style="flex:1"></div>
     <button class="btn btn-gold" id="pcNewBtn" style="display:none">+ New quote</button>
+    <button class="btn btn-ghost2" id="pcCopyBtn" style="background:#e8ecf3;color:var(--navy);display:none">Copy from existing product\u2026</button>
     <button class="btn btn-ghost2" id="pcBackupBtn" style="background:#e8ecf3;color:var(--navy)">Backup</button>
     <button class="btn btn-ghost2" id="pcRestoreBtn" style="background:#e8ecf3;color:var(--navy);display:none">Restore</button>
     <button class="btn btn-ghost2" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none">Reset all</button>
     <button class="btn btn-ghost2" id="pcListsBtn" style="background:#e8ecf3;color:var(--navy);display:none">Trim &amp; fabric lists</button>
   </div>
+  <div id="pcStats" class="pcstats"></div>
+  <p class="pcnote" id="pcShowing" style="margin:2px 0 10px"></p>
   <div id="pcBoard" class="pcgrid"></div>
   <p class="pcnote" id="pcEmpty" style="display:none">No quotes or samples yet. Click <strong>+ New quote</strong> to raise the first one.</p>
   <input type="file" id="pcFileIn" accept=".json" style="display:none">
 </main>
 
 <div class="pcov" id="pcOv"><div class="pcmodal">
-  <div class="pcmh"><h3 id="pcMTitle">Sample</h3><button class="mx" onclick="pcClose()">&times;</button></div>
+  <div class="pcmh"><h3 id="pcMTitle">Sample</h3><button class="mx" onclick="pcCloseX()">&times;</button></div>
   <div class="pcmb" id="pcMBody"></div>
 </div></div>
 
@@ -588,6 +598,7 @@ try{ PC_IS_EDITOR = localStorage.getItem('pcEditor')==='1'; }catch(e){}
 
 var PC_CATS=[["CJ","Chef jacket"],["CT","Chef trousers"],["AP","Apron"],["AC","Accessory (hats, ties…)"],["BL","Blouse"],["SH","Shirt"],["DR","Dress"],["TA","Tabard"],["WJ","Waistcoat"],["CA","Coat"]];
 var PC_BRAND_LETTER='B';                      // letter inserted for customer-branded codes, e.g. CJB0001
+var PC_EMB_CHARGE=4.50;                       // £ per unit added to quoted price when branding is EMB
 var PC_NUMW=4;                                // digits in generated product numbers
 
 function pcNormalize(d){                 // shared by initial load and Restore — older data pre-dates the quote stage
@@ -617,6 +628,10 @@ function pcLoad(){
 function pcRate(){                       // current PW rate from the costing calculator's saved settings
   try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}'); if(pcNum(s.rate)>0) return pcNum(s.rate); }catch(e){}
   return 12.71;
+}
+function pcLabRate(){                    // labour rate used for quote costing (£18/hr default)
+  try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}'); if(pcNum(s.lab)>0&&pcNum(s.lab)!==16.26) return pcNum(s.lab); }catch(e){}
+  return 18;
 }
 function pcPos(v){ v=parseFloat(v); return (isNaN(v)||v<=0)?0:v; }
 var PC_SHEET=null;
@@ -675,19 +690,45 @@ function pcToggleEditor(){
 function pcApplyMode(){
   var eb=document.getElementById('pcEditorBtn');
   if(eb) eb.textContent=PC_IS_EDITOR?'Editor \u2713 (log out)':'View only \u2014 log in';
-  ['pcNewBtn','pcRestoreBtn','pcListsBtn','pcResetBtn'].forEach(function(id){
+  ['pcNewBtn','pcCopyBtn','pcRestoreBtn','pcListsBtn','pcResetBtn'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=PC_IS_EDITOR?'':'none';
   });
 }
 
 /* ── board ── */
 var PC_STATUS={quote:'Quote — awaiting approval',sampling:'In sampling',feedback:'Awaiting customer feedback',hold:'On hold',approved:'Approved',production:'In production',rejected:'Rejected'};
+var PC_TILE=null;
+function pcIsOpenQuote(s){ return !s.ref && !s.quotePrinted && s.status!=='rejected'; }
+function pcIsLiveSR(s){ return !!s.ref && !s.productCode && s.status!=='rejected'; }
+function pcIsLateSR(s){ return pcIsLiveSR(s) && s.due && s.due<pcToday(); }
+function pcTileToggle(which){ PC_TILE=(PC_TILE===which)?null:which; pcRender(); }
+function pcRenderStats(){
+  var q=PC.srs.filter(pcIsOpenQuote).length,
+      live=PC.srs.filter(pcIsLiveSR).length,
+      late=PC.srs.filter(pcIsLateSR).length;
+  document.getElementById('pcStats').innerHTML=
+    '<div class="pcstat'+(PC_TILE==='quotes'?' on':'')+'" onclick="pcTileToggle(\'quotes\')"><div class="n">'+q+'</div><div class="l">Quotes not printed</div></div>'
+    +'<div class="pcstat'+(PC_TILE==='live'?' on':'')+'" onclick="pcTileToggle(\'live\')"><div class="n">'+live+'</div><div class="l">Live SR works orders</div></div>'
+    +'<div class="pcstat late'+(PC_TILE==='late'?' on':'')+'" onclick="pcTileToggle(\'late\')"><div class="n">'+late+'</div><div class="l">Late SR works orders</div></div>';
+}
 function pcRender(){
   var srch=(document.getElementById('pcSearch').value||'').trim().toUpperCase();
   var filt=document.getElementById('pcFilter').value;
   var board=document.getElementById('pcBoard'); board.innerHTML='';
   var shown=0;
+  pcRenderStats();
+  var dflt=(!srch && !filt && !PC_TILE);
+  document.getElementById('pcShowing').textContent = dflt
+    ? 'Showing unprinted quotes and sample works orders \u2014 use search, the status filter or the tiles above to find everything else.'
+    : (PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':'');
   PC.srs.forEach(function(s,i){
+    if(PC_TILE==='quotes' && !pcIsOpenQuote(s)) return;
+    if(PC_TILE==='live' && !pcIsLiveSR(s)) return;
+    if(PC_TILE==='late' && !pcIsLateSR(s)) return;
+    if(dflt){
+      var unprinted = s.ref ? !s.printed : !s.quotePrinted;
+      if(!unprinted) return;
+    }
     if(filt && s.status!==filt) return;
     if(srch){
       var hay=((s.quoteRef||'')+' '+(s.ref||'')+' '+(s.customer||'')+' '+(s.garment||'')+' '+(s.productCode||'')+' '+(s.desc||'')).toUpperCase();
@@ -706,7 +747,10 @@ function pcRender(){
     t.onclick=function(){ pcOpen(i); };
     board.appendChild(t);
   });
-  document.getElementById('pcEmpty').style.display=(PC.srs.length===0)?'':'none';
+  var emp=document.getElementById('pcEmpty');
+  if(PC.srs.length===0){ emp.style.display=''; emp.innerHTML='No quotes or samples yet. Click <strong>+ New quote</strong> to raise the first one.'; }
+  else if(shown===0){ emp.style.display=''; emp.innerHTML='Nothing to show here \u2014 everything is printed. Use search or the status filter to find any record.'; }
+  else emp.style.display='none';
 }
 
 /* ── form helpers ── */
@@ -757,6 +801,13 @@ function pcTrimFill(inp){
 /* ── open / edit ── */
 var PC_CUR=-1;
 function pcClose(){ document.getElementById('pcOv').classList.remove('on'); PC_CUR=-1; }
+function pcCloseX(){
+  var s=(PC_CUR>=0)?PC.srs[PC_CUR]:null;
+  if(PC_IS_EDITOR && s && !s.productCode){
+    if(!confirm('Close without saving?\n\nAnything you typed since your last Save will be lost. Use Save & close to keep it.')) return;
+  }
+  pcClose();
+}
 function pcNew(){
   if(!PC_IS_EDITOR) return;
   var s={quoteRef:'Q'+String(PC.qSeq+1).padStart(4,'0'), ref:'', status:'quote', created:pcToday(), due:'',
@@ -770,7 +821,7 @@ function pcNew(){
   pcOpen(0);
 }
 function pcOpen(i){
-  PC_CUR=i; PC_SAVE_WARNED=false;
+  PC_CUR=i;
   var s=PC.srs[i];
   var locked=!!s.productCode;
   var ro=(!PC_IS_EDITOR)||locked;
@@ -779,7 +830,7 @@ function pcOpen(i){
 
   PC_COLDEFS.pcFabT=[{h:'Fabric code (Sage)',k:'code',w:'16%',on:'pcFabFill',list:'pcFabDL'},{h:'Description',k:'name'},{h:'Rating (m per unit)',k:'rating',w:'12%',on:'pcNumOnly'},{h:'Cost £/m',k:'cost',w:'10%',on:'pcNumOnly'},{h:'Location',k:'loc',w:'9%'}];
   PC_COLDEFS.pcTrimT=[{h:'Trim code (Sage)',k:'code',w:'16%',on:'pcTrimFill',list:'pcTrimDL'},{h:'Description',k:'desc'},{h:'Qty per unit',k:'qty',w:'10%',on:'pcNumOnly'},{h:'Cost £ each',k:'cost',w:'10%',on:'pcNumOnly'}];
-  PC_COLDEFS.pcMeasT=[{h:'Measurement',k:'label'},{h:'Value',k:'value',w:'30%',on:'pcNumOnly'}];
+  PC_COLDEFS.pcMeasT=[{h:'Measurement',k:'label'},{h:'Value',k:'value',w:'18%',on:'pcNumOnly'},{h:'Value 2 (optional)',k:'value2',w:'18%',on:'pcNumOnly'}];
   PC_COLDEFS.pcMfgT=[{h:'Step',k:'step'}];
   PC_COLDEFS.pcFinT=[{h:'Step',k:'step'}];
 
@@ -918,7 +969,6 @@ function pcNumOnly(inp){
   if(i>=0) v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,'');
   inp.value=v;
 }
-var PC_SAVE_WARNED=false;
 function pcValidate(){
   var missing=[];
   function flag(el,bad){ if(!el) return; el.style.borderColor=bad?'#c0392b':''; if(el.tagName!=='SELECT') el.style.background=bad?'#fdecea':''; }
@@ -946,12 +996,6 @@ function pcValidate(){
 function pcSave(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
-  var missing=pcValidate();
-  if(missing.length && !PC_SAVE_WARNED){
-    PC_SAVE_WARNED=true;
-    alert('Some required fields are blank (highlighted in red):\n\n\u2022 '+missing.join('\n\u2022 ')+'\n\nFill them in, or click Save again to save anyway.');
-    return;
-  }
   pcCollect(s); pcSaveData(); pcClose(); pcRender();
 }
 function pcDelete(){
@@ -988,7 +1032,7 @@ function pcCost(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
-  var rate=pcRate();
+  var rate=pcLabRate();
   var box=document.getElementById('pcCostBox');
   var whatif=JSON.parse(JSON.stringify(s.fabrics));
   function draw(){
@@ -1073,7 +1117,7 @@ function pcExport(){
     hasMesh:!!s.hasMesh, meshLen:pcPos(s.meshLen)||null, meshLay:pcPos(s.meshLay)||null,
     chart:s.meas.length?(s.productCode+'-MEAS'):'',
     chartCols:s.meas.length?["Measurement","Value"]:null,
-    chartRows:s.meas.map(function(m){ return [m.label,m.value]; }),
+    chartRows:s.meas.map(function(m){ return [m.label,m.value+(m.value2?' \u00d7 '+m.value2:'')]; }),
     fabrics:s.fabrics.map(function(f){ return [f.name||f.code, f.code||'', f.loc||'']; }),
     trims:s.trims.map(function(t){ return [t.code||'', t.desc||'', t.qty||'']; }),
     mfg:s.mfg.split('\n').map(function(x){return x.trim();}).filter(Boolean),
@@ -1175,7 +1219,7 @@ function pcPrint(){
   h+='</table>';
   if(s.meas.length){
     h+='<div class="band">MEASUREMENTS</div><table><tr><th>Measurement</th><th>Value</th></tr>';
-    s.meas.forEach(function(m){ h+='<tr><td>'+e(m.label)+'</td><td>'+e(m.value)+'</td></tr>'; });
+    s.meas.forEach(function(m){ h+='<tr><td>'+e(m.label)+'</td><td>'+e(m.value)+(m.value2?' \u00d7 '+e(m.value2):'')+'</td></tr>'; });
     h+='</table>';
   }
   h+='</div>';
@@ -1193,10 +1237,16 @@ function pcQuotePrint(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
-  var rate=pcRate();
+  var reqMissing=pcValidate();
+  if(reqMissing.length){
+    alert('Cannot print the quote yet \u2014 these required fields are blank (highlighted in red):\n\n\u2022 '+reqMissing.join('\n\u2022 ')+'\n\nOptional fields (Lectra, Variant\u2026) can stay empty. Save part-done quotes any time \u2014 only printing needs everything filled in.');
+    return;
+  }
+  var rate=pcLabRate();
   var c=pcCostCalc(s, rate, s.fabrics);
   var mk=(s.quoteMarkup==null||s.quoteMarkup==='')?60:pcNum(s.quoteMarkup);
-  var sell=c.total*(1+mk/100);
+  var isEMB=s.brandType==='EMB', isDTF=s.brandType==='DTF';
+  var sell=c.total*(1+mk/100)+(isEMB?PC_EMB_CHARGE:0);
   var showSell=s.quoteShowSell!==false;
   var mkLen=pcPos(s.markerLen), layQ=pcPos(s.layQty);
   var qref=s.quoteRef||s.ref;
@@ -1227,7 +1277,9 @@ function pcQuotePrint(){
     +'<div class="band">PRICE</div><table>'
     +'<tr><th>Cost per unit</th><td style="font-weight:700;font-size:15px">£'+c.total.toFixed(2)+'</td></tr>'
     +(missingLab?'<tr><td colspan="2" style="color:#C00000;font-weight:700">Warning: machining/finishing time not set — labour is incomplete in this cost</td></tr>':'')
-    +(showSell?'<tr class="tot"><td>Quoted price per unit (cost + '+mk+'%)</td><td>£'+sell.toFixed(2)+'</td></tr>':'')
+    +(showSell&&isEMB?'<tr><th>EMB embroidery charge</th><td>+ £'+PC_EMB_CHARGE.toFixed(2)+' per unit</td></tr>':'')
+    +(showSell?'<tr class="tot"><td>Quoted price per unit (cost + '+mk+'%'+(isEMB?' + £'+PC_EMB_CHARGE.toFixed(2)+' EMB':'')+')</td><td>£'+sell.toFixed(2)+'</td></tr>':'')
+    +(isDTF?'<tr><td colspan="2" style="font-weight:700;color:#7A5B14">DTF branding: logo charge to be added.</td></tr>':'')
     +'</table>'
     +'<div class="band">MOQ / CUTTING</div><table>'
     +'<tr><th>Lay qty</th><td style="font-weight:700">'+(layQ? layQ+' garment'+(layQ===1?'':'s')+' cut per lay — set the MOQ in multiples of '+layQ : '—')+'</td></tr>'
@@ -1239,6 +1291,89 @@ function pcQuotePrint(){
   w.document.open(); w.document.write(h); w.document.close();
   if(PC_IS_EDITOR){ s.quotePrinted=true; s.quotePrintedAt=pcToday(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
   return true;
+}
+
+/* ── copy a new quote from an existing product ── */
+var PC_SM=null;   // style master fetched from the Production plan app
+function pcStyleMasterLoad(cb){
+  if(PC_SM){ cb(); return; }
+  try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); if(c&&c.styles){ PC_SM=c.styles; } }catch(e){}
+  fetch('https://luke5446.github.io/Tibard-Productionplan/index.html')
+    .then(function(r){ return r.text(); })
+    .then(function(txt){
+      var m=txt.match(/var STYLE_MASTER=(\{[\s\S]*?\});?\n/);
+      if(m){ var d=JSON.parse(m[1]); PC_SM=d.styles||[];
+        try{ localStorage.setItem('pcStyleMaster',JSON.stringify({savedAt:pcToday(),styles:PC_SM})); }catch(e){}
+      }
+      cb();
+    })
+    .catch(function(){ cb(); });
+}
+function pcCopySources(){
+  var out=[];
+  (PC_SM||[]).forEach(function(st){ out.push({key:String(st.code).toUpperCase(), label:st.code+' \u2014 '+(st.name||''), src:'wo', st:st}); });
+  PC.srs.forEach(function(s,i){
+    var key=(s.productCode||s.ref||s.quoteRef);
+    if(key) out.push({key:String(key).toUpperCase(), label:key+' \u2014 '+(s.garment||'')+(s.customer?' ('+s.customer+')':''), src:'pc', st:s});
+  });
+  return out;
+}
+function pcCopyOpen(){
+  if(!PC_IS_EDITOR) return;
+  document.getElementById('pcMTitle').textContent='Copy from existing product';
+  var b=document.getElementById('pcMBody');
+  b.innerHTML='<div class="pcsec"><h4>Copy the works-order details of an existing product into a new quote</h4><div class="in">'
+    +'<p class="pcnote" id="pcCopyStatus">Loading the product list from the Production plan app\u2026</p>'
+    +'<div class="pcrow" style="grid-template-columns:1fr 130px;margin-top:8px">'
+    +'<input id="pcCopyCode" list="pcCopyDL" placeholder="Type a product code or style name\u2026" autocomplete="off">'
+    +'<button class="btn btn-gold" onclick="pcCopyDo()">Copy</button></div>'
+    +'<datalist id="pcCopyDL"></datalist>'
+    +'<p class="pcnote">Fabrics, trims, manufacturing &amp; finishing steps, times and cutting details are copied into a fresh quote \u2014 then adjust whatever the customer wants changed. Customer, due date and prices start blank.</p>'
+    +'</div></div>';
+  document.getElementById('pcOv').classList.add('on'); PC_CUR=-1;
+  pcStyleMasterLoad(function(){
+    var dl=document.getElementById('pcCopyDL'), stat=document.getElementById('pcCopyStatus');
+    if(!dl) return;
+    var srcs=pcCopySources(), h='';
+    srcs.forEach(function(x){ h+='<option value="'+pcE(x.key)+'">'+pcE(x.label)+'</option>'; });
+    dl.innerHTML=h;
+    if(stat) stat.textContent=(PC_SM?PC_SM.length+' works-order styles from the Production plan app':'Production plan list unavailable (offline?)')+' \u00b7 '+PC.srs.length+' local quotes/SRs \u2014 all searchable below.';
+  });
+}
+function pcCopyDo(){
+  if(!PC_IS_EDITOR) return;
+  var code=(document.getElementById('pcCopyCode').value||'').trim().toUpperCase();
+  if(!code){ alert('Type or pick a product code first.'); return; }
+  var src=pcCopySources().find(function(x){ return x.key===code; });
+  if(!src){ alert('Code '+code+' not found in the Production plan styles or your local quotes/SRs.'); return; }
+  var s={quoteRef:'Q'+String(PC.qSeq+1).padStart(4,'0'), ref:'', status:'quote', created:pcToday(), due:'',
+    customer:'', garment:'', desc:'', brandType:'None', brandPlace:'',
+    fabrics:[], trims:[], meas:[], mfg:'', fin:'',
+    machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
+    markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
+    quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
+    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code};
+  if(src.src==='wo'){
+    var st=src.st;
+    s.desc=((st.name?st.name+' \u2014 ':'')+(st.desc||'')).trim();
+    s.fabrics=(st.fabrics||[]).map(function(f){ var lk=pcFabricLookup(f[1]); return {name:f[0]||'', code:f[1]||'', loc:f[2]||(lk&&lk.loc)||'', rating:'', cost:(lk&&lk.cost!=null)?String(lk.cost):''}; });
+    s.trims=(st.trims||[]).map(function(tr){ return {code:'', desc:(tr[0]?tr[0]+': ':'')+(tr[1]||''), qty:'', cost:''}; });
+    s.mfg=(st.mfg||[]).join('\n'); s.fin=(st.fin||[]).join('\n');
+    s.machMins=st.machMins!=null?String(st.machMins):''; s.finMins=st.finMins!=null?String(st.finMins):'';
+    s.cutBatch=st.cutBatch!=null?String(st.cutBatch):''; s.cutMins=st.cutMins!=null?st.cutMins:15;
+    s.lectra=st.lectra||''; s.variant=st.variant||'';
+    PC_CATS.forEach(function(c){ if(code.indexOf(c[0])===2) s.garment=c[1]; });
+  } else {
+    var o=src.st;
+    ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
+     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','lectra','variant','quoteMarkup','quoteShowSell']
+      .forEach(function(k){ if(o[k]!==undefined) s[k]=o[k]; });
+    s.fabrics=JSON.parse(JSON.stringify(o.fabrics||[]));
+    s.trims=JSON.parse(JSON.stringify(o.trims||[]));
+    s.meas=JSON.parse(JSON.stringify(o.meas||[]));
+  }
+  PC.srs.unshift(s); PC.qSeq++; pcSaveData();
+  pcOpen(0);
 }
 
 /* ── trim & fabric price lists ── */
@@ -1307,12 +1442,12 @@ function pcRestoreFile(ev){
   document.getElementById('pcSearch').addEventListener('input',pcRender);
   document.getElementById('pcFilter').addEventListener('change',pcRender);
   document.getElementById('pcNewBtn').addEventListener('click',pcNew);
+  document.getElementById('pcCopyBtn').addEventListener('click',pcCopyOpen);
   document.getElementById('pcBackupBtn').addEventListener('click',pcBackup);
   document.getElementById('pcRestoreBtn').addEventListener('click',pcRestore);
   document.getElementById('pcResetBtn').addEventListener('click',pcResetAll);
   document.getElementById('pcListsBtn').addEventListener('click',pcLists);
   document.getElementById('pcFileIn').addEventListener('change',pcRestoreFile);
-  document.getElementById('pcOv').addEventListener('click',function(e){ if(e.target===this) pcClose(); });
   pcApplyMode();
 })();
 
