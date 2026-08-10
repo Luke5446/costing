@@ -87,9 +87,62 @@ tfoot td{font-weight:700;background:#f7f9fc;border-top:2px solid var(--line)}
 .set .field select,.set .field input{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:14px}
 .set .exp{font-size:11.5px;color:var(--mut);margin-top:4px;line-height:1.45}
 @media print{header .spacer,header button,.addbar,.set{display:none}}
+
+/* view gate — password required to open the app */
+#vGate{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+#vGate.off{display:none}
+.vgate-card{width:100%;max-width:380px;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:30px 28px;display:flex;flex-direction:column}
+.vgate-eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.vgate-card h1{font-size:22px;margin:6px 0 18px}
+.vgate-card h1 span{color:var(--gold)}
+#vGateIn{font-family:Consolas,monospace;font-size:16px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:6px;padding:11px 12px;margin:6px 0 12px;outline:none}
+#vGateIn:focus{border-color:var(--gold)}
+#vGateBtn{font-weight:700;font-size:15px;background:var(--gold);color:#22262e;border:none;border-radius:6px;padding:12px;cursor:pointer}
+#vGateMsg{font-size:12px;color:#f5b7ae;margin-top:12px;min-height:16px}
 </style>
 </head>
 <body>
+<div id="vGate">
+  <div class="vgate-card">
+    <span class="vgate-eyebrow">Tibard Costing · Restricted</span>
+    <h1>TIBARD <span>|</span> Costing Calculator</h1>
+    <label class="vgate-eyebrow" for="vGateIn">Password</label>
+    <input id="vGateIn" type="password" autocomplete="current-password">
+    <button id="vGateBtn">Unlock</button>
+    <div id="vGateMsg"></div>
+  </div>
+</div>
+<script>
+/* View password gate. VIEW_HASH is the SHA-256 of the view password, so the
+   password itself is not readable in this file. To change the password, open
+   the browser console (F12) and run:
+   crypto.subtle.digest('SHA-256',new TextEncoder().encode('NewPassword')).then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+   then paste the printed value into VIEW_HASH below. */
+var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242';
+(function(){
+  var g=document.getElementById('vGate'), inp=document.getElementById('vGateIn'),
+      btn=document.getElementById('vGateBtn'), msg=document.getElementById('vGateMsg');
+  var ok=false;
+  try{ ok=sessionStorage.getItem('costViewGate')==='1'; }catch(e){}
+  if(ok){ g.classList.add('off'); return; }
+  function sha(txt){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(x){ return x.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+  function go(){
+    var v=inp.value; if(!v) return;
+    msg.textContent='Checking\u2026';
+    sha(v).then(function(h){
+      if(h===VIEW_HASH){ try{ sessionStorage.setItem('costViewGate','1'); }catch(e){} g.classList.add('off'); msg.textContent=''; }
+      else { msg.textContent='Incorrect password.'; inp.select(); }
+    }).catch(function(){ msg.textContent='This browser cannot verify the password \u2014 open the app over HTTPS.'; });
+  }
+  btn.addEventListener('click',go);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter') go(); });
+  inp.focus();
+})();
+</script>
 <header>
   <h1>TIBARD <span>|</span> Costing Calculator</h1>
   <div class="sub" id="srcNote"></div>
