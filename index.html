@@ -669,6 +669,8 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.hasMesh===undefined) s.hasMesh=!!(s.markerMesh);
     if(s.meshLen===undefined) s.meshLen='';
     if(s.meshLay===undefined) s.meshLay='';
+    if(s.version===undefined) s.version=1;
+    if(!Array.isArray(s.history)) s.history=[];
   });
   return d;
 }
@@ -693,7 +695,11 @@ function pcSheetHas(code){
   if(!PC_SHEET){ PC_SHEET={}; COSTDATA.rows.forEach(function(r){ PC_SHEET[String(r[0]).toUpperCase()]=1; }); }
   return !!PC_SHEET[String(code||'').toUpperCase()];
 }
-function pcRefLabel(s){ return s.ref ? (s.quoteRef? s.quoteRef+' → '+s.ref : s.ref) : (s.quoteRef||''); }
+function pcRefLabel(s){
+  var base = s.ref ? (s.quoteRef? s.quoteRef+' → '+s.ref : s.ref) : (s.quoteRef||'');
+  if(s.ref && (s.version||1)>1) base+=' V'+s.version;
+  return base;
+}
 var PC=pcLoad();
 function pcSaveData(){ try{ localStorage.setItem('pcData',JSON.stringify(PC)); }catch(e){ alert('Could not save — browser storage full or blocked.'); } }
 function pcE(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -869,7 +875,7 @@ function pcNew(){
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:''};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[]};
   PC.srs.unshift(s); PC.qSeq++; pcSaveData();
   pcOpen(0);
 }
@@ -964,6 +970,16 @@ function pcOpen(i){
   h+='<div class="pcsec"><h4>Manufacturing details</h4><div class="in">'+pcRowsHTML('pcMfgT',PC_COLDEFS.pcMfgT,mfgRows,'Add step','pcsteps')+'</div></div>';
   h+='<div class="pcsec"><h4>Finishing details</h4><div class="in">'+pcRowsHTML('pcFinT',PC_COLDEFS.pcFinT,finRows,'Add step','pcsteps')+'</div></div>';
 
+  if(s.history && s.history.length){
+    h+='<div class="pcsec"><h4>Revision history</h4><div class="in">';
+    s.history.forEach(function(hv,ix){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #eef1f6">'
+        +'<span style="font-size:13px"><strong>V'+hv.version+'</strong> — revised '+pcFmtD(hv.revisedAt)
+        +(hv.note?' — amendments: '+pcE(hv.note):' — no amendment note')+'</span>'
+        +'<button type="button" class="btn pcmini" style="background:#e8ecf3;color:var(--navy);flex-shrink:0" onclick="pcViewRevision('+ix+')">View V'+hv.version+'</button></div>';
+    });
+    h+='<p class="pcnote">You are editing <strong>V'+(s.version||1)+'</strong>. Old versions are read-only snapshots.</p></div></div>';
+  }
   h+='<div id="pcCostBox"></div>';
 
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
@@ -972,6 +988,7 @@ function pcOpen(i){
   h+='<button class="btn" style="background:#C9A24B;color:#22262e" onclick="pcQuotePrint()">&#128424; Print quote</button>';
   if(PC_IS_EDITOR && !s.ref) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcToSR()">Customer approved \u2192 raise SR</button>';
   if(PC_IS_EDITOR && s.ref) h+='<button class="btn" style="background:var(--navy);color:#fff" onclick="pcPrint()">&#128424; Print sample WO</button>';
+  if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
   if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Export for buffer app</button>';
   if(PC_IS_EDITOR) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
@@ -1177,7 +1194,7 @@ function pcExport(){
     fin:s.fin.split('\n').map(function(x){return x.trim();}).filter(Boolean),
     machMins:pcNum(s.machMins)||null, finMins:pcNum(s.finMins)||null,
     cutBatch:pcNum(s.cutBatch)||35, cutMins:pcNum(s.cutMins)||15,
-    oneSize:true, sr:s.ref, customer:s.customer||''
+    oneSize:true, sr:s.ref, srVersion:s.version||1, customer:s.customer||''
   };
   var txt=JSON.stringify(entry,null,1);
   var box=document.getElementById('pcExportBox');
@@ -1222,7 +1239,8 @@ function pcPrint(){
     +'.tot td{background:#5b7ba6;color:#fff;font-weight:700}.sign td{height:34px}'
     +'.smp{background:#C9A24B;color:#22262e;font-weight:800;padding:2px 10px;border-radius:8px;font-size:13px}'
     +'</style></head><body>';
-  h+='<div class="page"><div class="hdr"><h1>SAMPLE WORKS ORDER &nbsp;&middot;&nbsp; '+e(s.ref)+'</h1>'
+  var lastRev=(s.history&&s.history.length)?s.history[s.history.length-1]:null;
+  h+='<div class="page"><div class="hdr"><h1>SAMPLE WORKS ORDER &nbsp;&middot;&nbsp; '+e(s.ref)+((s.version||1)>1?' &nbsp;&middot;&nbsp; V'+s.version:'')+'</h1>'
     +'<img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px"></div>'
     +'<p style="margin:10px 0 0"><span class="smp">SAMPLE \u2014 not for stock production</span></p>'
     +'<table class="kv" style="margin-top:12px">'
@@ -1235,6 +1253,7 @@ function pcPrint(){
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'\u2014')+'</td></tr></table>'
     +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType)+'</td></tr>'
     +(s.brandPlace?'<tr><th>Placement</th><td>'+e(s.brandPlace)+'</td></tr>':'')+'</table>'
+    +((s.version||1)>1&&lastRev?'<div class="band">AMENDMENTS \u2014 V'+(s.version-1)+' \u2192 V'+s.version+'</div><table><tr><td style="font-weight:700">'+e(lastRev.note||'\u2014')+'</td></tr></table>':'')
     +'<div class="band">CUTTING</div><table>'
     +'<tr><th>Marker number (main)</th><td style="font-weight:700;font-size:15px">'+e(s.markerMain||'\u2014')+'</td></tr>'
     +(s.hasMesh?'<tr><th>Marker number (mesh)</th><td style="font-weight:700">'+e(s.markerMesh||'\u2014')+'</td></tr>'
@@ -1346,6 +1365,67 @@ function pcQuotePrint(){
   return true;
 }
 
+/* ── revise an SR sample works order (V2, V3…) ── */
+function pcRevise(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s=PC.srs[PC_CUR];
+  if(!s.ref||s.productCode) return;
+  var note=prompt('Revise '+s.ref+' to V'+((s.version||1)+1)+'.\n\nWhat amendments has the customer asked for?\n(Kept in the history and printed on the new works order.)');
+  if(note===null) return;
+  var KEYS=['customer','garment','desc','brandType','brandPlace','due','fabrics','trims','meas','mfg','fin',
+            'machMins','finMins','cutBatch','cutMins','sampleQty','markerMain','markerMesh','markerLen','layQty',
+            'hasMesh','meshLen','meshLay','lectra','variant','status'];
+  var snap={};                       // snapshot the record AS LAST SAVED — before pulling in the form edits,
+  KEYS.forEach(function(k){ snap[k]=JSON.parse(JSON.stringify(s[k]===undefined?null:s[k])); });
+  pcCollect(s);                      // so anything already typed becomes part of the new version
+  s.history=s.history||[];
+  s.history.push({version:s.version||1, revisedAt:pcToday(), note:(note||'').trim(), printed:!!s.printed, data:snap});
+  s.version=(s.version||1)+1;
+  s.status='sampling'; s.printed=false; s.printedAt='';
+  pcSaveData(); pcOpen(PC_CUR); pcRender();
+}
+function pcViewRevision(ix){
+  if(PC_CUR<0) return;
+  var s=PC.srs[PC_CUR];
+  if(PC_IS_EDITOR && !s.productCode){ pcCollect(s); pcSaveData(); }
+  var hv=(s.history||[])[ix]; if(!hv) return;
+  var d=hv.data||{};
+  function e(x){ return pcE(x==null?'':x); }
+  document.getElementById('pcMTitle').innerHTML=pcE(s.ref)+' V'+hv.version+' <span style="font-weight:400;font-size:12px;opacity:.8">read-only snapshot</span>';
+  var h='<div class="pcok" style="background:#e8ecf3;color:var(--navy)">Snapshot of <strong>'+pcE(s.ref)+' V'+hv.version+'</strong>, revised '+pcFmtD(hv.revisedAt)+'.'
+    +(hv.note?'<br>Amendments the customer asked for after this version: <strong>'+pcE(hv.note)+'</strong>':'')+'</div>';
+  h+='<div class="pcsec"><h4>Details</h4><div class="in"><table class="pctbl">';
+  [['Customer',d.customer],['Garment',d.garment],['Description',d.desc],
+   ['Branding',(d.brandType||'None')+(d.brandPlace?' — '+d.brandPlace:'')],['Due date',pcFmtD(d.due)],
+   ['Sample qty',d.sampleQty],['Status at revision',PC_STATUS[d.status]||d.status||'—']].forEach(function(r){
+    h+='<tr><th style="width:26%">'+e(r[0])+'</th><td>'+e(r[1])+'</td></tr>'; });
+  h+='</table></div></div>';
+  h+='<div class="pcsec"><h4>Fabrics</h4><div class="in"><table class="pctbl"><tr><th>Code</th><th>Description</th><th>Rating (m)</th><th>£/m</th><th>Loc</th></tr>';
+  (d.fabrics||[]).forEach(function(f){ h+='<tr><td>'+e(f.code)+'</td><td>'+e(f.name)+'</td><td>'+e(f.rating)+'</td><td>'+e(f.cost)+'</td><td>'+e(f.loc)+'</td></tr>'; });
+  h+='</table></div></div>';
+  h+='<div class="pcsec"><h4>Trims</h4><div class="in"><table class="pctbl"><tr><th>Code</th><th>Description</th><th>Qty</th><th>£ each</th></tr>';
+  (d.trims||[]).forEach(function(tr){ h+='<tr><td>'+e(tr.code)+'</td><td>'+e(tr.desc)+'</td><td>'+e(tr.qty)+'</td><td>'+e(tr.cost)+'</td></tr>'; });
+  h+='</table></div></div>';
+  h+='<div class="pcsec"><h4>Times &amp; cutting</h4><div class="in"><table class="pctbl">';
+  [['Machining mins/unit',d.machMins],['Finishing mins/unit',d.finMins],['Cutting batch',d.cutBatch],['Cutting mins/batch',d.cutMins],
+   ['Marker number (main)',d.markerMain],['Marker length (m)',d.markerLen],['Lay qty',d.layQty],
+   ['Mesh marker',d.hasMesh?((d.markerMesh||'—')+' · '+(d.meshLen||'—')+' m · lay '+(d.meshLay||'—')):'—'],
+   ['Lectra',d.lectra],['Variant',d.variant]].forEach(function(r){
+    h+='<tr><th style="width:26%">'+e(r[0])+'</th><td>'+e(r[1])+'</td></tr>'; });
+  h+='</table></div></div>';
+  function steps(txt){ var L=String(txt||'').split('\n').filter(Boolean); if(!L.length) return '<tr><td>—</td></tr>';
+    return L.map(function(x,i){ return '<tr><td style="width:40px;text-align:center;color:var(--mut)">'+(i+1)+'</td><td>'+e(x)+'</td></tr>'; }).join(''); }
+  h+='<div class="pcsec"><h4>Manufacturing details</h4><div class="in"><table class="pctbl">'+steps(d.mfg)+'</table></div></div>';
+  h+='<div class="pcsec"><h4>Finishing details</h4><div class="in"><table class="pctbl">'+steps(d.fin)+'</table></div></div>';
+  if((d.meas||[]).length){
+    h+='<div class="pcsec"><h4>Measurements</h4><div class="in"><table class="pctbl"><tr><th>Measurement</th><th>Value</th></tr>';
+    d.meas.forEach(function(m){ h+='<tr><td>'+e(m.label)+'</td><td>'+e(m.value)+(m.value2?' × '+e(m.value2):'')+'</td></tr>'; });
+    h+='</table></div></div>';
+  }
+  h+='<div style="margin-top:14px"><button class="btn btn-gold" onclick="pcOpen('+PC_CUR+')">&larr; Back to '+pcE(s.ref)+' V'+(s.version||1)+'</button></div>';
+  document.getElementById('pcMBody').innerHTML=h;
+}
+
 /* ── copy a new quote from an existing product ── */
 var PC_SM=null;   // style master fetched from the Production plan app
 function pcStyleMasterLoad(cb){
@@ -1384,14 +1464,17 @@ function pcCopyOpen(){
     +'<p class="pcnote">Fabrics, trims, manufacturing &amp; finishing steps, times and cutting details are copied into a fresh quote \u2014 then adjust whatever the customer wants changed. Customer, due date and prices start blank.</p>'
     +'</div></div>';
   document.getElementById('pcOv').classList.add('on'); PC_CUR=-1;
-  pcStyleMasterLoad(function(){
+  function fill(){
     var dl=document.getElementById('pcCopyDL'), stat=document.getElementById('pcCopyStatus');
     if(!dl) return;
     var srcs=pcCopySources(), h='';
     srcs.forEach(function(x){ h+='<option value="'+pcE(x.key)+'">'+pcE(x.label)+'</option>'; });
     dl.innerHTML=h;
     if(stat) stat.textContent=(PC_SM?PC_SM.length+' works-order styles from the Production plan app':'Production plan list unavailable (offline?)')+' \u00b7 '+PC.srs.length+' local quotes/SRs \u2014 all searchable below.';
-  });
+  }
+  if(!PC_SM){ try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); if(c&&c.styles) PC_SM=c.styles; }catch(e){} }
+  fill();
+  pcStyleMasterLoad(fill);
 }
 function pcCopyDo(){
   if(!PC_IS_EDITOR) return;
@@ -1405,7 +1488,7 @@ function pcCopyDo(){
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[]};
   if(src.src==='wo'){
     var st=src.st;
     s.desc=((st.name?st.name+' \u2014 ':'')+(st.desc||'')).trim();
