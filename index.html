@@ -1026,6 +1026,11 @@ function pcOpen(i){
   if(PC_IS_EDITOR) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
   h+='</div><div id="pcExportBox"></div>';
   b.innerHTML=h;
+  /* backfill rows saved with a code but a blank description/cost (fill functions only touch blank fields) */
+  if(!ro){
+    b.querySelectorAll('#pcTrimT input[data-k=code]').forEach(function(inp){ if(inp.value.trim()) pcTrimFill(inp); });
+    b.querySelectorAll('#pcFabT input[data-k=code]').forEach(function(inp){ if(inp.value.trim()) pcFabFill(inp); });
+  }
   document.getElementById('pcOv').classList.add('on');
   if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); }
 }
