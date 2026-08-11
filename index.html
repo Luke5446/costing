@@ -712,19 +712,32 @@ function pcNum(v){ var f=parseFloat(v); return isNaN(f)?0:f; }
 /* fabric master = COSTDATA.fabrics (code,name) + user list (code,name,unit,cost) */
 function pcFabricLookup(code){
   code=(code||'').trim().toUpperCase();
-  for(var i=0;i<PC.fabricsList.length;i++) if(PC.fabricsList[i].code.toUpperCase()===code) return PC.fabricsList[i];
+  var fhit=null;
+  for(var i=0;i<PC.fabricsList.length;i++) if(String(PC.fabricsList[i].code||'').toUpperCase()===code){ fhit=PC.fabricsList[i]; break; }
   if(typeof FABCOSTS!=='undefined')
-    for(var k=0;k<FABCOSTS.length;k++) if(String(FABCOSTS[k][0]).toUpperCase()===code) return {code:FABCOSTS[k][0], name:FABCOSTS[k][1], cost:FABCOSTS[k][2], loc:FABCOSTS[k][3]};
+    for(var k=0;k<FABCOSTS.length;k++) if(String(FABCOSTS[k][0]).toUpperCase()===code){
+      var fb={code:FABCOSTS[k][0], name:FABCOSTS[k][1], cost:FABCOSTS[k][2], loc:FABCOSTS[k][3]};
+      if(!fhit) return fb;
+      /* uploaded list wins where it has data; blanks fall back to the built-in list */
+      return {code:fhit.code||fb.code, name:fhit.name||fb.name, cost:(pcNum(fhit.cost)>0?fhit.cost:fb.cost), loc:fhit.loc||fb.loc};
+    }
+  if(fhit) return fhit;
   if(typeof COSTDATA!=='undefined' && COSTDATA.fabrics)
     for(var j=0;j<COSTDATA.fabrics.length;j++) if(String(COSTDATA.fabrics[j][0]).toUpperCase()===code) return {code:COSTDATA.fabrics[j][0], name:COSTDATA.fabrics[j][1], cost:null};
   return null;
 }
 function pcTrimLookup(code){
   code=(code||'').trim().toUpperCase();
-  for(var i=0;i<PC.trimsList.length;i++) if(String(PC.trimsList[i].code||'').toUpperCase()===code) return PC.trimsList[i];
+  var hit=null;
+  for(var i=0;i<PC.trimsList.length;i++) if(String(PC.trimsList[i].code||'').toUpperCase()===code){ hit=PC.trimsList[i]; break; }
   if(typeof TRIMCOSTS!=='undefined')
-    for(var k=0;k<TRIMCOSTS.length;k++) if(String(TRIMCOSTS[k][0]).toUpperCase()===code) return {code:TRIMCOSTS[k][0], name:TRIMCOSTS[k][1], cost:TRIMCOSTS[k][2]};
-  return null;
+    for(var k=0;k<TRIMCOSTS.length;k++) if(String(TRIMCOSTS[k][0]).toUpperCase()===code){
+      var b={code:TRIMCOSTS[k][0], name:TRIMCOSTS[k][1], cost:TRIMCOSTS[k][2]};
+      if(!hit) return b;
+      /* uploaded list wins where it has data; blanks fall back to the built-in Sage list */
+      return {code:hit.code||b.code, name:hit.name||b.name, cost:(pcNum(hit.cost)>0?hit.cost:b.cost), unit:hit.unit, supplier:hit.supplier};
+    }
+  return hit;
 }
 
 /* ── nav / mode ── */
@@ -915,8 +928,9 @@ function pcOpen(i){
   if(typeof FABCOSTS!=='undefined') FABCOSTS.forEach(function(f){ var k=String(f[0]||'').toUpperCase(); if(!k||dlSeen[k])return; dlSeen[k]=1; dl+='<option value="'+pcE(f[0])+'">'+pcE(f[1]||'')+(f[2]>0?' — £'+f[2]+'/m':'')+'</option>'; });
   if(typeof COSTDATA!=='undefined'&&COSTDATA.fabrics) COSTDATA.fabrics.forEach(function(f){ var k=String(f[0]||'').toUpperCase(); if(!k||dlSeen[k])return; dlSeen[k]=1; dl+='<option value="'+pcE(f[0])+'">'+pcE(f[1]||'')+'</option>'; });
   dl+='</datalist><datalist id="pcTrimDL">';
-  var tlSeen={};
-  PC.trimsList.forEach(function(t){ var k=String(t.code||'').toUpperCase(); if(!k||tlSeen[k])return; tlSeen[k]=1; dl+='<option value="'+pcE(t.code)+'">'+pcE(t.name||'')+'</option>'; });
+  var tlSeen={}, tcMap={};
+  if(typeof TRIMCOSTS!=='undefined') TRIMCOSTS.forEach(function(t){ tcMap[String(t[0]).toUpperCase()]=t; });
+  PC.trimsList.forEach(function(t){ var k=String(t.code||'').toUpperCase(); if(!k||tlSeen[k])return; tlSeen[k]=1; var nm=t.name||(tcMap[k]?tcMap[k][1]:''); dl+='<option value="'+pcE(t.code)+'">'+pcE(nm)+'</option>'; });
   if(typeof TRIMCOSTS!=='undefined') TRIMCOSTS.forEach(function(t){ var k=String(t[0]||'').toUpperCase(); if(!k||tlSeen[k])return; tlSeen[k]=1; dl+='<option value="'+pcE(t[0])+'">'+pcE(t[1]||'')+(t[2]>0?' — £'+t[2]:'')+'</option>'; });
   dl+='</datalist>';
 
