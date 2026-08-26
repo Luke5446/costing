@@ -672,6 +672,7 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.meshLen===undefined) s.meshLen='';
     if(s.meshLay===undefined) s.meshLay='';
     if(s.logoImg===undefined) s.logoImg='';
+    if(s.isOH===undefined) s.isOH=false;
     if(s.version===undefined) s.version=1;
     if(!Array.isArray(s.history)) s.history=[];
   });
@@ -905,7 +906,7 @@ function pcNew(){
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[], draft:true};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[], draft:true, isOH:false};
   PC.srs.unshift(s); PC.qSeq++; pcSaveData();
   pcOpen(0);
 }
@@ -952,6 +953,7 @@ function pcOpen(i){
     +'<div><div class="pclab">Due date</div><input id="pcF_due" type="date" value="'+pcE(s.due)+'"></div>'
     +'<div><div class="pclab">Status</div><select id="pcF_status">'+stOpts+'</select></div>'
     +'</div>'
+    +'<div class="pcrow" style="grid-template-columns:1fr"><div style="padding:2px 0"><label style="font-size:12px;font-weight:700;color:var(--mut)"><input type="checkbox" id="pcF_isOH"'+(s.isOH?' checked':'')+'> Oliver Harvey product (OH trims \u2014 generated code starts OH\u2026, e.g. OHAPB0001)</label></div></div>'
     +'<div class="pcrow"><div><div class="pclab">Garment description</div><textarea id="pcF_desc" style="min-height:52px">'+pcE(s.desc)+'</textarea></div></div>'
     +'<div class="pcrow" style="grid-template-columns:180px 1fr">'
     +'<div><div class="pclab">Customer branding</div><select id="pcF_brandType" onchange="pcBrandToggle()"><option'+(s.brandType==='None'?' selected':'')+'>None</option><option'+(s.brandType==='EMB'?' selected':'')+'>EMB</option><option'+(s.brandType==='DTF'?' selected':'')+'>DTF</option></select></div>'
@@ -1049,6 +1051,7 @@ function pcCollect(s){
   s.status=document.getElementById('pcF_status').value;
   s.desc=document.getElementById('pcF_desc').value.trim();
   s.brandType=document.getElementById('pcF_brandType').value;
+  s.isOH=!!(document.getElementById('pcF_isOH')&&document.getElementById('pcF_isOH').checked);
   if(PC_LOGO_PENDING!==undefined) s.logoImg=PC_LOGO_PENDING;
   s.brandPlace=document.getElementById('pcF_brandPlace').value.trim();
   s.fabrics=pcReadRows('pcFabT');
@@ -1197,7 +1200,8 @@ function pcConvert(){
   if(s.status!=='approved'){ if(!confirm(s.ref+' is not marked Approved. Convert anyway?')) return; }
   var cat=null;
   PC_CATS.forEach(function(c){ if(c[1].toUpperCase()===String(s.garment||'').trim().toUpperCase()) cat=c[0]; });
-  var key=cat?cat+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:''):null;
+  var ohp=s.isOH?'OH':'';
+  var key=cat?ohp+cat+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:''):null;
   var choice=prompt('Product code:\n\n• Leave BLANK to auto-generate a specials code from the garment name and branding'+(key?' ('+key+'…)':'')+'\n• Or type a stock product code to use it exactly (e.g. OHCJSMNEWSTYLE--01)');
   if(choice===null) return;
   var code;
@@ -1211,7 +1215,7 @@ function pcConvert(){
       if(cat2===null) return;
       cat2=cat2.trim().toUpperCase();
       if(!PC_CATS.some(function(c){return c[0]===cat2;})){ alert('Unknown category '+cat2); return; }
-      key=cat2+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:'');
+      key=ohp+cat2+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:'');
     }
     do{ PC.prodSeq[key]=(PC.prodSeq[key]||0)+1; code=key+String(PC.prodSeq[key]).padStart(PC_NUMW,'0'); }
     while(pcSheetHas(code)||PC.srs.some(function(x){ return x.productCode===code; }));
@@ -1459,7 +1463,7 @@ function pcRevise(){
   if(note===null) return;
   var KEYS=['customer','garment','desc','brandType','brandPlace','due','fabrics','trims','meas','mfg','fin',
             'machMins','finMins','cutBatch','cutMins','sampleQty','markerMain','markerMesh','markerLen','layQty',
-            'hasMesh','meshLen','meshLay','lectra','variant','status','logoImg'];
+            'hasMesh','meshLen','meshLay','lectra','variant','status','logoImg','isOH'];
   var snap={};                       // snapshot the record AS LAST SAVED — before pulling in the form edits,
   KEYS.forEach(function(k){ snap[k]=JSON.parse(JSON.stringify(s[k]===undefined?null:s[k])); });
   pcCollect(s);                      // so anything already typed becomes part of the new version
@@ -1573,7 +1577,7 @@ function pcCopyDo(){
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[], draft:true};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[], draft:true, isOH:false};
   if(src.src==='wo'){
     var st=src.st;
     s.desc=((st.name?st.name+' \u2014 ':'')+(st.desc||'')).trim();
@@ -1583,11 +1587,12 @@ function pcCopyDo(){
     s.machMins=st.machMins!=null?String(st.machMins):''; s.finMins=st.finMins!=null?String(st.finMins):'';
     s.cutBatch=st.cutBatch!=null?String(st.cutBatch):''; s.cutMins=st.cutMins!=null?st.cutMins:15;
     s.lectra=st.lectra||''; s.variant=st.variant||'';
+    s.isOH=code.indexOf('OH')===0;
     PC_CATS.forEach(function(c){ if(code.indexOf(c[0])===2) s.garment=c[1]; });
   } else {
     var o=src.st;
     ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
-     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','lectra','variant','quoteMarkup','quoteShowSell']
+     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','lectra','variant','quoteMarkup','quoteShowSell','isOH']
       .forEach(function(k){ if(o[k]!==undefined) s[k]=o[k]; });
     s.fabrics=JSON.parse(JSON.stringify(o.fabrics||[]));
     s.trims=JSON.parse(JSON.stringify(o.trims||[]));
