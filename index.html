@@ -651,7 +651,7 @@ var PC_PASS='tibard26';                       // change the editor password here
 var PC_IS_EDITOR=false;
 try{ PC_IS_EDITOR = localStorage.getItem('pcEditor')==='1'; }catch(e){}
 
-var PC_CATS=[["CJ","Chef jacket"],["CT","Chef trousers"],["AP","Apron"],["AC","Accessory (hats, ties…)"],["BL","Blouse"],["SH","Shirt"],["DR","Dress"],["TA","Tabard"],["WJ","Waistcoat"],["CA","Coat"]];
+var PC_CATS=[["CJ","Chef jacket"],["CT","Chef trousers"],["AP","Apron"],["AC","Accessory (hats, ties…)"],["BL","Blouse"],["SH","Shirt"],["DR","Dress"],["TA","Tabard"],["WA","Waistcoat"],["CO","Coat"]];
 var PC_BRAND_LETTER='B';                      // letter inserted for customer-branded codes, e.g. CJB0001
 var PC_EMB_CHARGE=4.50;                       // £ per unit added to quoted price when branding is EMB
 var PC_NUMW=4;                                // digits in generated product numbers
@@ -671,6 +671,7 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.hasMesh===undefined) s.hasMesh=!!(s.markerMesh);
     if(s.meshLen===undefined) s.meshLen='';
     if(s.meshLay===undefined) s.meshLay='';
+    if(s.logoImg===undefined) s.logoImg='';
     if(s.version===undefined) s.version=1;
     if(!Array.isArray(s.history)) s.history=[];
   });
@@ -909,7 +910,7 @@ function pcNew(){
   pcOpen(0);
 }
 function pcOpen(i){
-  PC_CUR=i;
+  PC_CUR=i; PC_LOGO_PENDING=undefined;
   var s=PC.srs[i];
   var locked=!!s.productCode;
   var ro=(!PC_IS_EDITOR)||locked;
@@ -953,9 +954,15 @@ function pcOpen(i){
     +'</div>'
     +'<div class="pcrow"><div><div class="pclab">Garment description</div><textarea id="pcF_desc" style="min-height:52px">'+pcE(s.desc)+'</textarea></div></div>'
     +'<div class="pcrow" style="grid-template-columns:180px 1fr">'
-    +'<div><div class="pclab">Customer branding</div><select id="pcF_brandType"><option'+(s.brandType==='None'?' selected':'')+'>None</option><option'+(s.brandType==='EMB'?' selected':'')+'>EMB</option><option'+(s.brandType==='DTF'?' selected':'')+'>DTF</option></select></div>'
+    +'<div><div class="pclab">Customer branding</div><select id="pcF_brandType" onchange="pcBrandToggle()"><option'+(s.brandType==='None'?' selected':'')+'>None</option><option'+(s.brandType==='EMB'?' selected':'')+'>EMB</option><option'+(s.brandType==='DTF'?' selected':'')+'>DTF</option></select></div>'
     +'<div><div class="pclab">Logo / branding placement</div><input id="pcF_brandPlace" value="'+pcE(s.brandPlace)+'" placeholder="e.g. customer logo left chest, 8 cm wide"></div>'
     +'</div>'
+    +'<div class="pcrow" id="pcLogoRow" style="grid-template-columns:240px 1fr;display:'+(s.brandType&&s.brandType!=='None'?'grid':'none')+'">'
+    +'<div><div class="pclab">Customer logo (image file)</div><input type="file" id="pcF_logo" accept="image/*" onchange="pcLogoPick(this)"></div>'
+    +'<div style="align-self:end;padding-bottom:2px">'
+    +'<img id="pcLogoPrev" alt="logo preview" src="'+(s.logoImg?pcE(s.logoImg):'')+'" style="max-height:60px;max-width:220px;border:1px solid var(--line);border-radius:6px;background:#fff;vertical-align:middle;'+(s.logoImg?'':'display:none;')+'"> '
+    +'<button type="button" class="btn pcmini" id="pcLogoRm" style="background:#fee2e2;color:#991b1b;vertical-align:middle;'+(s.logoImg?'':'display:none;')+'" onclick="pcLogoRemove()">Remove logo</button>'
+    +'</div></div>'
     +'<div class="pcrow" style="grid-template-columns:180px 1fr">'
     +'<div><div class="pclab">Quote markup %</div><input id="pcF_qmk" type="number" step="1" value="'+pcE(s.quoteMarkup==null?60:s.quoteMarkup)+'"></div>'
     +'<div style="align-self:end;font-size:12px;color:var(--mut);padding-bottom:8px"><label><input type="checkbox" id="pcF_qsell"'+(s.quoteShowSell!==false?' checked':'')+'> Show sell price (cost + markup) on the printed quote</label></div>'
@@ -1042,6 +1049,7 @@ function pcCollect(s){
   s.status=document.getElementById('pcF_status').value;
   s.desc=document.getElementById('pcF_desc').value.trim();
   s.brandType=document.getElementById('pcF_brandType').value;
+  if(PC_LOGO_PENDING!==undefined) s.logoImg=PC_LOGO_PENDING;
   s.brandPlace=document.getElementById('pcF_brandPlace').value.trim();
   s.fabrics=pcReadRows('pcFabT');
   s.trims=pcReadRows('pcTrimT');
@@ -1292,7 +1300,8 @@ function pcPrint(){
     +'</table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'\u2014')+'</td></tr></table>'
     +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType)+'</td></tr>'
-    +(s.brandPlace?'<tr><th>Placement</th><td>'+e(s.brandPlace)+'</td></tr>':'')+'</table>'
+    +(s.brandPlace?'<tr><th>Placement</th><td>'+e(s.brandPlace)+'</td></tr>':'')
+    +(s.logoImg&&s.brandType!=='None'?'<tr><th>Customer logo</th><td><img src="'+s.logoImg+'" alt="customer logo" style="max-height:80px;max-width:240px"></td></tr>':'')+'</table>'
     +((s.version||1)>1&&lastRev?'<div class="band">AMENDMENTS \u2014 V'+(s.version-1)+' \u2192 V'+s.version+'</div><table><tr><td style="font-weight:700">'+e(lastRev.note||'\u2014')+'</td></tr></table>':'')
     +'<div class="band">CUTTING</div><table>'
     +'<tr><th>Marker number (main)</th><td style="font-weight:700;font-size:15px">'+e(s.markerMain||'\u2014')+'</td></tr>'
@@ -1385,7 +1394,8 @@ function pcQuotePrint(){
     +(s.ref||s.productCode?'<tr><th>Sample ref</th><td>'+e(s.ref||'—')+'</td><th>Product code</th><td>'+e(s.productCode||'—')+'</td></tr>':'')
     +'</table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'—')+'</td></tr></table>'
-    +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType||'None')+(s.brandPlace?' — '+e(s.brandPlace):'')+'</td></tr></table>'
+    +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType||'None')+(s.brandPlace?' — '+e(s.brandPlace):'')+'</td></tr>'
+    +(s.logoImg&&s.brandType!=='None'?'<tr><th>Customer logo</th><td><img src="'+s.logoImg+'" alt="customer logo" style="max-height:80px;max-width:240px"></td></tr>':'')+'</table>'
     +'<div class="band">PRICE</div><table>'
     +'<tr><th>Cost per unit</th><td style="font-weight:700;font-size:15px">£'+c.total.toFixed(2)+'</td></tr>'
     +(missingLab?'<tr><td colspan="2" style="color:#C00000;font-weight:700">Warning: machining/finishing time not set — labour is incomplete in this cost</td></tr>':'')
@@ -1405,6 +1415,41 @@ function pcQuotePrint(){
   return true;
 }
 
+/* ── customer logo upload (stored as a small data URL inside the record) ── */
+var PC_LOGO_PENDING;
+function pcBrandToggle(){
+  var bt=document.getElementById('pcF_brandType'), row=document.getElementById('pcLogoRow');
+  if(row) row.style.display=(bt&&bt.value!=='None')?'grid':'none';
+}
+function pcLogoPick(inp){
+  var f=inp.files&&inp.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=600, sc=Math.min(1, MAX/Math.max(img.width,img.height));
+      var cv=document.createElement('canvas');
+      cv.width=Math.max(1,Math.round(img.width*sc)); cv.height=Math.max(1,Math.round(img.height*sc));
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      var durl;
+      try{ durl=cv.toDataURL('image/png'); if(durl.length>400000) durl=cv.toDataURL('image/jpeg',0.85); }
+      catch(e){ durl=r.result; }
+      PC_LOGO_PENDING=durl;
+      var pv=document.getElementById('pcLogoPrev'); if(pv){ pv.src=durl; pv.style.display='inline-block'; }
+      var rm=document.getElementById('pcLogoRm'); if(rm) rm.style.display='inline-block';
+    };
+    img.onerror=function(){ alert('That file could not be read as an image.'); };
+    img.src=r.result;
+  };
+  r.readAsDataURL(f);
+}
+function pcLogoRemove(){
+  PC_LOGO_PENDING='';
+  var pv=document.getElementById('pcLogoPrev'); if(pv){ pv.src=''; pv.style.display='none'; }
+  var rm=document.getElementById('pcLogoRm'); if(rm) rm.style.display='none';
+  var fi=document.getElementById('pcF_logo'); if(fi) fi.value='';
+}
+
 /* ── revise an SR sample works order (V2, V3…) ── */
 function pcRevise(){
   if(PC_CUR<0||!PC_IS_EDITOR) return;
@@ -1414,7 +1459,7 @@ function pcRevise(){
   if(note===null) return;
   var KEYS=['customer','garment','desc','brandType','brandPlace','due','fabrics','trims','meas','mfg','fin',
             'machMins','finMins','cutBatch','cutMins','sampleQty','markerMain','markerMesh','markerLen','layQty',
-            'hasMesh','meshLen','meshLay','lectra','variant','status'];
+            'hasMesh','meshLen','meshLay','lectra','variant','status','logoImg'];
   var snap={};                       // snapshot the record AS LAST SAVED — before pulling in the form edits,
   KEYS.forEach(function(k){ snap[k]=JSON.parse(JSON.stringify(s[k]===undefined?null:s[k])); });
   pcCollect(s);                      // so anything already typed becomes part of the new version
