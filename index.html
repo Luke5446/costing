@@ -144,10 +144,11 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
 })();
 </script>
 <header>
-  <h1>TIBARD <span>|</span> Costing Calculator</h1>
+  <img id="hdrLogo" alt="Tibard" style="height:38px;background:#fff;border-radius:6px;padding:3px 9px;display:none">
+  <h1>Costing Calculator</h1>
   <div class="sub" id="srcNote"></div>
   <div class="spacer"></div>
-  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">Product creator</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
+  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
   <button class="btn btn-ghost" id="clearBtn">Clear all</button>
 </header>
 <main id="costMain">
@@ -447,7 +448,7 @@ function render(){
     +'<td class="num">'+gbp(tNew*F)+'</td><td></td></tr></tfoot></table>';
   if(anyNoFab) h+='<div class="hint" style="padding:8px 12px">* one or more lines have no fabric cost in the source sheet — fabric excluded for those lines.</div>';
   if(OH) h+='<div class="hint" style="padding:8px 12px">OH Costing: every price shown includes the +'+(S.ohPct||0)+'% Tibard → Oliver Harvey uplift (editable in Settings).</div>';
-  if(anyCustom) h+='<div class="hint" style="padding:8px 12px">SPECIAL lines come from the Product creator: the fabric column includes trims, and labour covers machining + finishing + cutting share at the PW rate.'+(S.legacy?' The smaller price is the legacy method (fabric + machining, +80.5%).':'')+'</div>';
+  if(anyCustom) h+='<div class="hint" style="padding:8px 12px">SPECIAL lines come from New costing: the fabric column includes trims, and labour covers machining + finishing + cutting share at the PW rate.'+(S.legacy?' The smaller price is the legacy method (fabric + machining, +80.5%).':'')+'</div>';
   w.innerHTML=h;
   w.querySelectorAll('tbody tr').forEach(tr=>{
     tr.onclick=e=>{ if(e.target.closest('.qtyEd,.del')) return; openModal(+tr.dataset.k); };
@@ -545,7 +546,7 @@ function openCustomModal(l){
       +(S.legacy?'<div class="ln sub"><span class="l">OH legacy price per unit</span><span class="v">'+gbp(c.legacyUnit*F)+'</span></div>':'')
       +'<div class="ln"><span class="l">OH order total ('+l.qty.toLocaleString()+' units)</span><span class="v">'+gbp(c.totNew*F)+'</span></div></div>';
   }
-  h+='<div class="note">This product was created in the Product creator ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour is costed at the labour rate from Settings. The legacy price uplifts only fabric + machining (at the PW rate) by 80.5%, matching the old All Costings method.</div>';
+  h+='<div class="note">This product was created in New costing ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour is costed at the labour rate from Settings. The legacy price uplifts only fabric + machining (at the PW rate) by 80.5%, matching the old All Costings method.</div>';
   document.getElementById('mBody').innerHTML=h;
   ov.classList.add('show');
 }
@@ -625,8 +626,8 @@ initSettings(); render();
     <div class="field"><label>Status</label><select id="pcFilter"><option value="">All statuses</option><option value="quote">Quote — awaiting approval</option><option value="sampling">In sampling</option><option value="feedback">Awaiting customer feedback</option><option value="hold">On hold</option><option value="approved">Approved</option><option value="production">In production</option><option value="rejected">Rejected</option></select></div>
     <div style="flex:1"></div>
     <button class="btn btn-gold" id="pcNewBtn" style="display:none">+ New quote</button>
-    <button class="btn btn-ghost2" id="pcCopyBtn" style="background:#e8ecf3;color:var(--navy);display:none">Copy from existing product\u2026</button>
-    <button class="btn btn-ghost2" id="pcPublishBtn" style="background:#d1fae5;color:#065f46;display:none">Publish for teams\u2026</button>
+    <button class="btn btn-ghost2" id="pcCopyBtn" style="background:#e8ecf3;color:var(--navy);display:none">Quote from existing product…</button>
+    <button class="btn btn-ghost2" id="pcPublishBtn" style="background:#d1fae5;color:#065f46;display:none">Publish for teams…</button>
     <button class="btn btn-ghost2" id="pcBackupBtn" style="background:#e8ecf3;color:var(--navy)">Backup</button>
     <button class="btn btn-ghost2" id="pcRestoreBtn" style="background:#e8ecf3;color:var(--navy);display:none">Restore</button>
     <button class="btn btn-ghost2" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none">Reset all</button>
@@ -777,15 +778,18 @@ function pcApplyMode(){
 var PC_STATUS={quote:'Quote — awaiting approval',sampling:'In sampling',feedback:'Awaiting customer feedback',hold:'On hold',approved:'Approved',production:'In production',rejected:'Rejected'};
 var PC_TILE=null;
 function pcIsOpenQuote(s){ return !s.ref && !s.quotePrinted && s.status!=='rejected'; }
+function pcIsLiveQuote(s){ return !s.ref && !s.draft && s.status!=='rejected'; }
 function pcIsLiveSR(s){ return !!s.ref && !s.productCode && s.status!=='rejected'; }
 function pcIsLateSR(s){ return pcIsLiveSR(s) && s.due && s.due<pcToday(); }
 function pcTileToggle(which){ PC_TILE=(PC_TILE===which)?null:which; pcRender(); }
 function pcRenderStats(){
   var q=PC.srs.filter(pcIsOpenQuote).length,
+      qlive=PC.srs.filter(pcIsLiveQuote).length,
       live=PC.srs.filter(pcIsLiveSR).length,
       late=PC.srs.filter(pcIsLateSR).length;
   document.getElementById('pcStats').innerHTML=
-    '<div class="pcstat'+(PC_TILE==='quotes'?' on':'')+'" onclick="pcTileToggle(\'quotes\')"><div class="n">'+q+'</div><div class="l">Quotes not printed</div></div>'
+    '<div class="pcstat'+(PC_TILE==='qlive'?' on':'')+'" onclick="pcTileToggle(\'qlive\')"><div class="n">'+qlive+'</div><div class="l">Live quotes</div></div>'
+    +'<div class="pcstat'+(PC_TILE==='quotes'?' on':'')+'" onclick="pcTileToggle(\'quotes\')"><div class="n">'+q+'</div><div class="l">Quotes not printed</div></div>'
     +'<div class="pcstat'+(PC_TILE==='live'?' on':'')+'" onclick="pcTileToggle(\'live\')"><div class="n">'+live+'</div><div class="l">Live SR works orders</div></div>'
     +'<div class="pcstat late'+(PC_TILE==='late'?' on':'')+'" onclick="pcTileToggle(\'late\')"><div class="n">'+late+'</div><div class="l">Late SR works orders</div></div>';
 }
@@ -798,8 +802,9 @@ function pcRender(){
   var dflt=(!srch && !filt && !PC_TILE);
   document.getElementById('pcShowing').textContent = (window.PC_PUB_AT?'Team view last published '+pcFmtD(window.PC_PUB_AT)+' \u00b7 ':'') + (dflt
     ? 'Showing unprinted quotes and sample works orders \u2014 use search, the status filter or the tiles above to find everything else.'
-    : (PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':''));
+    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':''));
   PC.srs.forEach(function(s,i){
+    if(PC_TILE==='qlive' && !pcIsLiveQuote(s)) return;
     if(PC_TILE==='quotes' && !pcIsOpenQuote(s)) return;
     if(PC_TILE==='live' && !pcIsLiveSR(s)) return;
     if(PC_TILE==='late' && !pcIsLateSR(s)) return;
@@ -1542,7 +1547,7 @@ function pcCopySources(){
 }
 function pcCopyOpen(){
   if(!PC_IS_EDITOR) return;
-  document.getElementById('pcMTitle').textContent='Copy from existing product';
+  document.getElementById('pcMTitle').textContent='Quote from existing product';
   var b=document.getElementById('pcMBody');
   b.innerHTML='<div class="pcsec"><h4>Copy the works-order details of an existing product into a new quote</h4><div class="in">'
     +'<p class="pcnote" id="pcCopyStatus">Loading the product list from the Production plan app\u2026</p>'
@@ -1715,6 +1720,7 @@ function pcRestoreFile(ev){
   document.getElementById('pcListsBtn').addEventListener('click',pcLists);
   document.getElementById('pcFileIn').addEventListener('change',pcRestoreFile);
   pcApplyMode();
+  try{ var hl=document.getElementById('hdrLogo'); if(hl&&typeof TIBARD_LOGO!=='undefined'){ hl.src=TIBARD_LOGO; hl.style.display='block'; } }catch(e){}
 })();
 
 </script>
