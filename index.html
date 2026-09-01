@@ -782,7 +782,22 @@ function pcIsLiveQuote(s){ return !s.ref && !s.draft && s.status!=='rejected'; }
 function pcIsLiveSR(s){ return !!s.ref && !s.productCode && s.status!=='rejected'; }
 function pcIsLateSR(s){ return pcIsLiveSR(s) && s.due && s.due<pcToday(); }
 function pcTileToggle(which){ PC_TILE=(PC_TILE===which)?null:which; pcRender(); }
+function pcPublishWarn(){
+  var b=document.getElementById('pcPublishBtn');
+  if(!b || !PC_IS_EDITOR) return;
+  if(pcHasUnpublished()){
+    b.style.background='#fee2e2'; b.style.color='#991b1b';
+    b.innerHTML='&#9888; Publish for teams\u2026 \u2014 changes NOT saved to the repo';
+  } else {
+    b.style.background='#d1fae5'; b.style.color='#065f46';
+    b.textContent='Publish for teams\u2026';
+  }
+}
+window.addEventListener('beforeunload',function(e){
+  if(PC_IS_EDITOR && pcHasUnpublished()){ e.preventDefault(); e.returnValue=''; }
+});
 function pcRenderStats(){
+  pcPublishWarn();
   var q=PC.srs.filter(pcIsOpenQuote).length,
       qlive=PC.srs.filter(pcIsLiveQuote).length,
       live=PC.srs.filter(pcIsLiveSR).length,
@@ -1639,6 +1654,16 @@ function pcLoadList(){
 }
 
 /* ── publish for teams: snapshot downloaded, then uploaded to the repo ── */
+function pcDataHash(){
+  var txt=JSON.stringify(PC.srs.filter(function(s){ return !s.draft; }));
+  var h=5381;
+  for(var i=0;i<txt.length;i++){ h=((h<<5)+h+txt.charCodeAt(i))|0; }
+  return String(h);
+}
+function pcHasUnpublished(){
+  if(!PC.srs.filter(function(s){ return !s.draft; }).length) return false;
+  return PC.pubHash!==pcDataHash();
+}
 function pcPublish(){
   if(!PC_IS_EDITOR) return;
   var out={publishedAt:pcToday(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq,
@@ -1647,6 +1672,7 @@ function pcPublish(){
   var a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
   a.download='published-data.json'; a.click();
+  PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender();
   alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
 }
 /* on every load, pull the published snapshot in (viewers take it as truth; editors only gain records they do not have) */
