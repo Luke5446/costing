@@ -861,7 +861,7 @@ function pcRowsHTML(id, cols, rows, addLabel, cls){
 }
 function pcRowHTML(cols,r){
   return '<tr>'+cols.map(function(c,ix){
-    return '<td><input data-k="'+c.k+'" value="'+pcE(r?r[c.k]:'')+'" placeholder="'+(c.p||'')+'"'+(c.on?' oninput="'+c.on+'(this)"':'')+(c.list?' list="'+c.list+'"':'')+'></td>';
+    return '<td><input data-k="'+c.k+'" value="'+pcE(r?r[c.k]:'')+'" placeholder="'+(c.p||'')+'"'+(c.on?' oninput="'+c.on+'(this,true)"':'')+(c.list?' list="'+c.list+'"':'')+'></td>';
   }).join('')+'<td style="text-align:center"><button type="button" class="btn pcmini" style="background:#fee2e2;color:#991b1b" onclick="this.closest(\'tr\').remove()">\u00d7</button></td></tr>';
 }
 var PC_COLDEFS={};
@@ -880,21 +880,25 @@ function pcReadRows(id){
   }
   return out;
 }
-function pcFabFill(inp){
+/* user=true when the code was typed/picked in the form: the row's details refresh to match
+   the new code. Without it (open-time backfill of saved rows) only blanks are filled, so
+   edits made to saved quotes survive reopening. */
+function pcFabFill(inp,user){
   var f=pcFabricLookup(inp.value); if(!f) return;
   var tr=inp.closest('tr');
   var nameIn=tr.querySelector('input[data-k=name]');
-  if(nameIn && !nameIn.value) nameIn.value=f.name||'';
+  if(nameIn && (user||!nameIn.value)) nameIn.value=f.name||'';
   var costIn=tr.querySelector('input[data-k=cost]');
-  if(costIn && !costIn.value && f.cost!=null) costIn.value=f.cost;
+  if(costIn){ if(user) costIn.value=(f.cost!=null?f.cost:''); else if(!costIn.value && f.cost!=null) costIn.value=f.cost; }
   var locIn=tr.querySelector('input[data-k=loc]');
-  if(locIn && !locIn.value && f.loc) locIn.value=f.loc;
+  if(locIn){ if(user) locIn.value=f.loc||''; else if(!locIn.value && f.loc) locIn.value=f.loc; }
 }
-function pcTrimFill(inp){
+function pcTrimFill(inp,user){
   var t=pcTrimLookup(inp.value); if(!t) return;
   var tr=inp.closest('tr');
-  var dIn=tr.querySelector('input[data-k=desc]'); if(dIn && !dIn.value) dIn.value=t.name||'';
-  var cIn=tr.querySelector('input[data-k=cost]'); if(cIn && !cIn.value && t.cost!=null) cIn.value=t.cost;
+  var dIn=tr.querySelector('input[data-k=desc]'); if(dIn && (user||!dIn.value)) dIn.value=t.name||'';
+  var cIn=tr.querySelector('input[data-k=cost]');
+  if(cIn){ if(user) cIn.value=(t.cost!=null?t.cost:''); else if(!cIn.value && t.cost!=null) cIn.value=t.cost; }
 }
 
 /* ── open / edit ── */
