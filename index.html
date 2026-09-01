@@ -1264,7 +1264,13 @@ function pcExport(){
     chart:s.meas.length?(s.productCode+'-MEAS'):'',
     chartCols:s.meas.length?["Measurement","Value"]:null,
     chartRows:s.meas.map(function(m){ return [m.label,m.value+(m.value2?' \u00d7 '+m.value2:'')]; }),
-    fabrics:s.fabrics.map(function(f){ return [f.name||f.code, f.code||'', f.loc||'']; }),
+    /* [description, code, location, rating (m per unit), cost per m]
+       The buffer app prints the description, code, location and rating on the
+       works order; the cost travels so costing figures stay in one place, and
+       is deliberately not printed on a shop-floor document. */
+    fabrics:s.fabrics.map(function(f){
+      return [f.name||f.code, f.code||'', f.loc||'', pcPos(f.rating)||null, pcNum(f.cost)||null];
+    }),
     trims:s.trims.map(function(t){ return [t.code||'', t.desc||'', t.qty||'']; }),
     mfg:s.mfg.split('\n').map(function(x){return x.trim();}).filter(Boolean),
     fin:s.fin.split('\n').map(function(x){return x.trim();}).filter(Boolean),
