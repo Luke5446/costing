@@ -679,6 +679,7 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.logoImg===undefined) s.logoImg='';
     if(s.srRaisedAt===undefined) s.srRaisedAt='';
     if(s.sampleApprovedAt===undefined) s.sampleApprovedAt='';
+    if(s.weightG===undefined) s.weightG='';
     if(s.isOH===undefined) s.isOH=false;
     if(s.version===undefined) s.version=1;
     if(!Array.isArray(s.history)) s.history=[];
@@ -1075,6 +1076,7 @@ function pcOpen(i){
     +'<div class="pcrow" style="grid-template-columns:repeat(4,1fr)">'
     +'<div><div class="pclab">Lectra pattern (optional)</div><input id="pcF_lectra" value="'+pcE(s.lectra)+'"></div>'
     +'<div><div class="pclab">Variant (optional)</div><input id="pcF_variant" value="'+pcE(s.variant)+'"></div>'
+    +'<div><div class="pclab">Garment weight in grams \u2014 after sample</div><input id="pcF_weightG" type="number" step="any" min="0" value="'+pcE(s.weightG)+'" placeholder="weigh the made sample" onchange="pcWeightSave(this)"></div>'
     +'</div>'+(layNote?'<p class="pcnote">'+layNote+'</p>':'')+'</div></div>';
 
   h+='<div class="pcsec"><h4>Measurements</h4><div class="in">'+pcRowsHTML('pcMeasT',PC_COLDEFS.pcMeasT,s.meas,'Add measurement')+'</div></div>';
@@ -1105,7 +1107,7 @@ function pcOpen(i){
   if(s.productCode) h+='<button class="btn" style="background:#1F3864;color:#fff" onclick="pcPrintProduct()">&#128424; Print product WO\u2026</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
-  if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Export for buffer app</button>';
+  if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Download for buffer app</button>';
   if(PC_IS_EDITOR) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
   h+='</div><div id="pcExportBox"></div>';
   b.innerHTML=h;
@@ -1115,7 +1117,10 @@ function pcOpen(i){
     b.querySelectorAll('#pcFabT input[data-k=code]').forEach(function(inp){ if(inp.value.trim()) pcFabFill(inp); });
   }
   document.getElementById('pcOv').classList.add('on');
-  if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); el.style.visibility='hidden'; }); }
+  if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); el.style.visibility='hidden'; });
+    /* the weight arrives after the first production run, when the record is already locked - editors can still set it */
+    if(PC_IS_EDITOR && locked){ var wIn=document.getElementById('pcF_weightG'); if(wIn) wIn.disabled=false; }
+  }
 }
 
 function pcCollect(s){
@@ -1147,6 +1152,7 @@ function pcCollect(s){
   s.meshLay=document.getElementById('pcF_meshLay').value.trim();
   s.lectra=document.getElementById('pcF_lectra').value.trim();
   s.variant=document.getElementById('pcF_variant').value.trim();
+  s.weightG=document.getElementById('pcF_weightG').value.trim();
   s.mfg=pcReadRows('pcMfgT').map(function(r){return (r.step||'').trim();}).filter(Boolean).join('\n');
   s.fin=pcReadRows('pcFinT').map(function(r){return (r.step||'').trim();}).filter(Boolean).join('\n');
   var qmk=document.getElementById('pcF_qmk').value;
@@ -1331,25 +1337,25 @@ function pcExport(){
     oneSize:true, sr:s.ref, srVersion:s.version||1, customer:s.customer||''
   };
   var txt=JSON.stringify(entry,null,1);
-  var box=document.getElementById('pcExportBox');
-  box.innerHTML='<div class="pcsec" style="margin-top:12px"><h4>Export \u2014 paste or import into the buffer app</h4><div class="in">'
-    +'<textarea style="width:100%;min-height:130px;font-family:monospace;font-size:11px">'+pcE(txt)+'</textarea>'
-    +'<button class="btn pcmini btn-gold" style="margin-top:6px" onclick="pcDownload(\''+pcE(s.productCode)+'\')">Download .json</button>'
-    +'<span class="pcnote"> &nbsp;The buffer app\u2019s \u201cImport product\u201d button takes this file and the WOP becomes printable there.</span></div></div>';
-  box.dataset.txt=txt;
-}
-function pcDownload(code){
-  var txt=document.getElementById('pcExportBox').dataset.txt;
   var a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
-  a.download=code+'_product.json'; a.click();
+  a.download=s.productCode+'_product.json'; a.click();
+  document.getElementById('pcExportBox').innerHTML=
+    '<div class="pcok" style="margin-top:12px">&#10003; <strong>'+pcE(s.productCode)+'_product.json</strong> downloaded.'
+    +' In the buffer app: Special Makes \u2192 <strong>&#128229; Import from costing</strong> \u2192 choose this file.</div>';
 }
 
+function pcWeightSave(inp){
+  if(!PC_IS_EDITOR||PC_CUR<0) return;
+  PC.srs[PC_CUR].weightG=inp.value.trim();
+  pcSaveData();
+}
 /* ── sample / product WO print ── */
 function pcPrintProduct(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(!s.productCode){ alert('Convert to a product first.'); return; }
+  if(!(pcPos(s.weightG)>0) && !confirm('\u26a0 No garment weight has been entered for '+s.productCode+'.\n\nIT can set the product up in Sage without it, but the weight will be needed \u2014 weigh one after the first production run and add it here.\n\nPrint the works order without a weight?')) return;
   var q=prompt('Print product works order for '+s.productCode+' \u2014 for IT to set the product up in Sage.\n\nQuantity to make:','');
   if(q===null) return;
   q=pcNum(q);
@@ -1396,6 +1402,8 @@ function pcPrint(prodQty){
     +(s.productCode?'<tr><th>Product code</th><td colspan="3">'+e(s.productCode)+'</td></tr>':'')
     +(s.quoteRef?'<tr><th>Quote ref</th><td colspan="3">'+e(s.quoteRef)+'</td></tr>':'')
     +(pm&&s.ref?'<tr><th>From sample</th><td colspan="3">'+e(s.ref)+((s.version||1)>1?' V'+s.version:'')+'</td></tr>':'')
+    +(pm?'<tr><th>Garment weight</th><td colspan="3">'+(pcPos(s.weightG)?'<strong>'+pcPos(s.weightG)+' g</strong>':'<em style="color:#C00000">to be confirmed \u2014 weigh after the first production run</em>')+'</td></tr>'
+        :(pcPos(s.weightG)?'<tr><th>Garment weight</th><td colspan="3">'+pcPos(s.weightG)+' g</td></tr>':''))
     +'</table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'\u2014')+'</td></tr></table>'
     +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType)+'</td></tr>'
@@ -1560,7 +1568,7 @@ function pcRevise(){
   if(note===null) return;
   var KEYS=['customer','garment','desc','brandType','brandPlace','due','fabrics','trims','meas','mfg','fin',
             'machMins','finMins','cutBatch','cutMins','sampleQty','markerMain','markerMesh','markerLen','layQty',
-            'hasMesh','meshLen','meshLay','lectra','variant','status','logoImg','isOH'];
+            'hasMesh','meshLen','meshLay','lectra','variant','status','logoImg','isOH','weightG'];
   var snap={};                       // snapshot the record AS LAST SAVED — before pulling in the form edits,
   KEYS.forEach(function(k){ snap[k]=JSON.parse(JSON.stringify(s[k]===undefined?null:s[k])); });
   pcCollect(s);                      // so anything already typed becomes part of the new version
