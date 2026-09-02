@@ -884,7 +884,7 @@ document.addEventListener('dragstart',function(ev){
 document.addEventListener('dragover',function(ev){
   if(!PC_DRAG_TR) return;
   var tr=ev.target&&ev.target.closest?ev.target.closest('tr'):null;
-  if(!tr||tr===PC_DRAG_TR||tr.parentNode!==PC_DRAG_TR.parentNode||!tr.querySelector('td.pcdrag')) return;
+  if(!tr||tr===PC_DRAG_TR||tr.closest('table')!==PC_DRAG_TR.closest('table')||!tr.querySelector('td.pcdrag')) return;
   ev.preventDefault(); ev.dataTransfer.dropEffect='move';
   var r=tr.getBoundingClientRect();
   if(ev.clientY<r.top+r.height/2) tr.parentNode.insertBefore(PC_DRAG_TR,tr);
@@ -899,7 +899,7 @@ var PC_COLDEFS={};
 function pcAddRow(id){
   var t=document.getElementById(id);
   var tr=document.createElement('tr'); tr.innerHTML=pcRowHTML(PC_COLDEFS[id],null).replace(/^<tr>|<\/tr>$/g,'');
-  t.appendChild(tr);
+  (t.tBodies[0]||t).appendChild(tr);
 }
 function pcReadRows(id){
   var out=[]; var t=document.getElementById(id); if(!t) return out;
