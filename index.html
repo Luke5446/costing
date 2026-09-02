@@ -584,6 +584,10 @@ initSettings(); render();
 .pctbl.pcsteps{counter-reset:pcstep}
 .pctbl.pcsteps tr:not(:first-child){counter-increment:pcstep}
 .pctbl.pcsteps tr:not(:first-child) td:first-child::before{content:"Step " counter(pcstep);display:block;font-size:10px;font-weight:800;color:var(--steel);margin-bottom:2px}
+.pctbl td.pcdrag{cursor:grab;text-align:center;color:var(--steel);font-size:15px;user-select:none;-webkit-user-select:none}
+.pctbl td.pcdrag:active{cursor:grabbing}
+.pctbl tr.pcdragging{opacity:.45}
+.pctbl tr.pcdragging td{background:#eef3fb}
 .pcs-sampling{background:#dbeafe;color:#1e40af}.pcs-feedback{background:#fef3c7;color:#92400e}
 .pcs-hold{background:#e5e7eb;color:#374151}.pcs-approved{background:#d1fae5;color:#065f46}
 .pcs-production{background:#1F3864;color:#fff}.pcs-rejected{background:#fee2e2;color:#991b1b}
@@ -854,16 +858,43 @@ function pcRender(){
 
 /* ── form helpers ── */
 function pcRowsHTML(id, cols, rows, addLabel, cls){
-  var h='<table class="pctbl'+(cls?' '+cls:'')+'" id="'+id+'"><tr>'+cols.map(function(c){return '<th'+(c.w?' style="width:'+c.w+'"':'')+'>'+c.h+'</th>';}).join('')+'<th style="width:34px"></th></tr>';
+  var h='<table class="pctbl'+(cls?' '+cls:'')+'" id="'+id+'"><tr>'+cols.map(function(c){return '<th'+(c.w?' style="width:'+c.w+'"':'')+'>'+c.h+'</th>';}).join('')+(cls==='pcsteps'?'<th style="width:30px"></th>':'')+'<th style="width:34px"></th></tr>';
   rows.forEach(function(r){ h+=pcRowHTML(cols,r); });
   h+='</table><button type="button" class="btn pcmini" style="margin-top:6px;background:#e8ecf3;color:var(--navy)" onclick="pcAddRow(\''+id+'\')">+ '+addLabel+'</button>';
   return h;
 }
 function pcRowHTML(cols,r){
+  var isStep=cols.length===1&&cols[0].k==='step';
   return '<tr>'+cols.map(function(c,ix){
     return '<td><input data-k="'+c.k+'" value="'+pcE(r?r[c.k]:'')+'" placeholder="'+(c.p||'')+'"'+(c.on?' oninput="'+c.on+'(this,true)"':'')+(c.list?' list="'+c.list+'"':'')+'></td>';
-  }).join('')+'<td style="text-align:center"><button type="button" class="btn pcmini" style="background:#fee2e2;color:#991b1b" onclick="this.closest(\'tr\').remove()">\u00d7</button></td></tr>';
+  }).join('')
+  +(isStep?'<td class="pcdrag" draggable="true" title="Drag to re-order">&#9776;</td>':'')
+  +'<td style="text-align:center"><button type="button" class="btn pcmini" style="background:#fee2e2;color:#991b1b" onclick="this.closest(\'tr\').remove()">\u00d7</button></td></tr>';
 }
+/* drag a step row by its handle to re-order production steps; the Step numbers
+   follow from the CSS counter and pcReadRows saves rows in DOM order */
+var PC_DRAG_TR=null;
+document.addEventListener('dragstart',function(ev){
+  var td=ev.target&&ev.target.closest?ev.target.closest('td.pcdrag'):null;
+  if(!td) return;
+  PC_DRAG_TR=td.closest('tr'); PC_DRAG_TR.classList.add('pcdragging');
+  ev.dataTransfer.effectAllowed='move';
+  try{ ev.dataTransfer.setData('text/plain','step'); }catch(e){}
+});
+document.addEventListener('dragover',function(ev){
+  if(!PC_DRAG_TR) return;
+  var tr=ev.target&&ev.target.closest?ev.target.closest('tr'):null;
+  if(!tr||tr===PC_DRAG_TR||tr.parentNode!==PC_DRAG_TR.parentNode||!tr.querySelector('td.pcdrag')) return;
+  ev.preventDefault(); ev.dataTransfer.dropEffect='move';
+  var r=tr.getBoundingClientRect();
+  if(ev.clientY<r.top+r.height/2) tr.parentNode.insertBefore(PC_DRAG_TR,tr);
+  else tr.parentNode.insertBefore(PC_DRAG_TR,tr.nextSibling);
+});
+document.addEventListener('drop',function(ev){ if(PC_DRAG_TR) ev.preventDefault(); });
+document.addEventListener('dragend',function(){
+  if(PC_DRAG_TR){ PC_DRAG_TR.classList.remove('pcdragging'); PC_DRAG_TR=null; }
+});
+
 var PC_COLDEFS={};
 function pcAddRow(id){
   var t=document.getElementById(id);
@@ -1065,7 +1096,7 @@ function pcOpen(i){
     b.querySelectorAll('#pcFabT input[data-k=code]').forEach(function(inp){ if(inp.value.trim()) pcFabFill(inp); });
   }
   document.getElementById('pcOv').classList.add('on');
-  if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); }
+  if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); el.style.visibility='hidden'; }); }
 }
 
 function pcCollect(s){
