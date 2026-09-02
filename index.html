@@ -677,6 +677,8 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.meshLen===undefined) s.meshLen='';
     if(s.meshLay===undefined) s.meshLay='';
     if(s.logoImg===undefined) s.logoImg='';
+    if(s.srRaisedAt===undefined) s.srRaisedAt='';
+    if(s.sampleApprovedAt===undefined) s.sampleApprovedAt='';
     if(s.isOH===undefined) s.isOH=false;
     if(s.version===undefined) s.version=1;
     if(!Array.isArray(s.history)) s.history=[];
@@ -785,6 +787,8 @@ function pcIsOpenQuote(s){ return !s.ref && !s.quotePrinted && s.status!=='rejec
 function pcIsLiveQuote(s){ return !s.ref && !s.draft && s.status!=='rejected'; }
 function pcIsLiveSR(s){ return !!s.ref && !s.productCode && s.status!=='rejected'; }
 function pcIsLateSR(s){ return pcIsLiveSR(s) && s.due && s.due<pcToday(); }
+function pcIsApprovedQuote(s){ return !!s.ref; }
+function pcIsApprovedSample(s){ return s.status==='approved' || !!s.productCode; }
 function pcTileToggle(which){ PC_TILE=(PC_TILE===which)?null:which; pcRender(); }
 function pcPublishWarn(){
   var b=document.getElementById('pcPublishBtn');
@@ -805,12 +809,16 @@ function pcRenderStats(){
   var q=PC.srs.filter(pcIsOpenQuote).length,
       qlive=PC.srs.filter(pcIsLiveQuote).length,
       live=PC.srs.filter(pcIsLiveSR).length,
-      late=PC.srs.filter(pcIsLateSR).length;
+      late=PC.srs.filter(pcIsLateSR).length,
+      qappr=PC.srs.filter(pcIsApprovedQuote).length,
+      sappr=PC.srs.filter(pcIsApprovedSample).length;
   document.getElementById('pcStats').innerHTML=
     '<div class="pcstat'+(PC_TILE==='qlive'?' on':'')+'" onclick="pcTileToggle(\'qlive\')"><div class="n">'+qlive+'</div><div class="l">Live quotes</div></div>'
     +'<div class="pcstat'+(PC_TILE==='quotes'?' on':'')+'" onclick="pcTileToggle(\'quotes\')"><div class="n">'+q+'</div><div class="l">Quotes not printed</div></div>'
     +'<div class="pcstat'+(PC_TILE==='live'?' on':'')+'" onclick="pcTileToggle(\'live\')"><div class="n">'+live+'</div><div class="l">Live SR works orders</div></div>'
-    +'<div class="pcstat late'+(PC_TILE==='late'?' on':'')+'" onclick="pcTileToggle(\'late\')"><div class="n">'+late+'</div><div class="l">Late SR works orders</div></div>';
+    +'<div class="pcstat late'+(PC_TILE==='late'?' on':'')+'" onclick="pcTileToggle(\'late\')"><div class="n">'+late+'</div><div class="l">Late SR works orders</div></div>'
+    +'<div class="pcstat'+(PC_TILE==='qappr'?' on':'')+'" onclick="pcTileToggle(\'qappr\')"><div class="n">'+qappr+'</div><div class="l">Approved quotes</div></div>'
+    +'<div class="pcstat'+(PC_TILE==='sappr'?' on':'')+'" onclick="pcTileToggle(\'sappr\')"><div class="n">'+sappr+'</div><div class="l">Approved samples</div></div>';
 }
 function pcRender(){
   var srch=(document.getElementById('pcSearch').value||'').trim().toUpperCase();
@@ -821,19 +829,24 @@ function pcRender(){
   var dflt=(!srch && !filt && !PC_TILE);
   document.getElementById('pcShowing').textContent = (window.PC_PUB_AT?'Team view last published '+pcFmtD(window.PC_PUB_AT)+' \u00b7 ':'') + (dflt
     ? 'Showing unprinted quotes and sample works orders \u2014 use search, the status filter or the tiles above to find everything else.'
-    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':''));
+    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':PC_TILE==='qappr'?'Showing approved quotes \u2014 the customer approved and an SR was raised.':PC_TILE==='sappr'?'Showing approved samples \u2014 customer-approved, including those now converted to products.':''));
   PC.srs.forEach(function(s,i){
     if(PC_TILE==='qlive' && !pcIsLiveQuote(s)) return;
     if(PC_TILE==='quotes' && !pcIsOpenQuote(s)) return;
     if(PC_TILE==='live' && !pcIsLiveSR(s)) return;
     if(PC_TILE==='late' && !pcIsLateSR(s)) return;
+    if(PC_TILE==='qappr' && !pcIsApprovedQuote(s)) return;
+    if(PC_TILE==='sappr' && !pcIsApprovedSample(s)) return;
     if(dflt){
       var unprinted = s.ref ? !s.printed : !s.quotePrinted;
       if(!unprinted) return;
     }
     if(filt && s.status!==filt) return;
     if(srch){
-      var hay=((s.quoteRef||'')+' '+(s.ref||'')+' '+(s.customer||'')+' '+(s.garment||'')+' '+(s.productCode||'')+' '+(s.desc||'')).toUpperCase();
+      var hay=[s.quoteRef,s.ref,s.customer,s.garment,s.productCode,s.desc,s.lectra,s.variant,s.markerMain,PC_STATUS[s.status]]
+        .concat((s.fabrics||[]).map(function(f){ return (f.code||'')+' '+(f.name||''); }))
+        .concat((s.trims||[]).map(function(tr){ return (tr.code||'')+' '+(tr.desc||''); }))
+        .join(' ').toUpperCase();
       if(hay.indexOf(srch)<0) return;
     }
     shown++;
@@ -1006,7 +1019,12 @@ function pcOpen(i){
     +'<div><div class="pclab">Customer</div><input id="pcF_customer" value="'+pcE(s.customer)+'"></div>'
     +'<div><div class="pclab">Garment name</div><select id="pcF_garment">'+gOpts+'</select></div>'
     +'<div><div class="pclab">Due date</div><input id="pcF_due" type="date" value="'+pcE(s.due)+'"></div>'
-    +'<div><div class="pclab">Status</div><select id="pcF_status">'+stOpts+'</select></div>'
+    +'<div><div class="pclab">Status</div><select id="pcF_status">'+stOpts+'</select>'
+    +((s.srRaisedAt||s.sampleApprovedAt)?'<div class="pcnote" style="margin-top:3px">'
+      +(s.srRaisedAt?'Quote approved '+pcFmtD(s.srRaisedAt):'')
+      +(s.srRaisedAt&&s.sampleApprovedAt?' \u00b7 ':'')
+      +(s.sampleApprovedAt?'Sample approved '+pcFmtD(s.sampleApprovedAt):'')+'</div>':'')
+    +'</div>'
     +'</div>'
     +'<div class="pcrow" style="grid-template-columns:1fr"><div style="padding:2px 0"><label style="font-size:12px;font-weight:700;color:var(--mut)"><input type="checkbox" id="pcF_isOH"'+(s.isOH?' checked':'')+'> Oliver Harvey product (OH trims \u2014 generated code starts OH\u2026, e.g. OHAPB0001)</label></div></div>'
     +'<div class="pcrow"><div><div class="pclab">Garment description</div><textarea id="pcF_desc" style="min-height:52px">'+pcE(s.desc)+'</textarea></div></div>'
@@ -1083,7 +1101,8 @@ function pcOpen(i){
   h+='<button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCost()">Costing</button>';
   h+='<button class="btn" style="background:#C9A24B;color:#22262e" onclick="pcQuotePrint()">&#128424; Print quote</button>';
   if(PC_IS_EDITOR && !s.ref) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcToSR()">Customer approved \u2192 raise SR</button>';
-  if(PC_IS_EDITOR && s.ref) h+='<button class="btn" style="background:var(--navy);color:#fff" onclick="pcPrint()">&#128424; Print sample WO</button>';
+  if(s.ref) h+='<button class="btn" style="background:var(--navy);color:#fff" onclick="pcPrint()">&#128424; Print sample WO</button>';
+  if(s.productCode) h+='<button class="btn" style="background:#1F3864;color:#fff" onclick="pcPrintProduct()">&#128424; Print product WO\u2026</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
   if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Export for buffer app</button>';
@@ -1103,7 +1122,9 @@ function pcCollect(s){
   s.customer=document.getElementById('pcF_customer').value.trim();
   s.garment=document.getElementById('pcF_garment').value.trim();
   s.due=document.getElementById('pcF_due').value;
-  s.status=document.getElementById('pcF_status').value;
+  var newStatus=document.getElementById('pcF_status').value;
+  if(newStatus==='approved' && s.status!=='approved' && !s.sampleApprovedAt) s.sampleApprovedAt=pcToday();
+  s.status=newStatus;
   s.desc=document.getElementById('pcF_desc').value.trim();
   s.brandType=document.getElementById('pcF_brandType').value;
   s.isOH=!!(document.getElementById('pcF_isOH')&&document.getElementById('pcF_isOH').checked);
@@ -1324,12 +1345,23 @@ function pcDownload(code){
   a.download=code+'_product.json'; a.click();
 }
 
-/* ── sample WO print ── */
-function pcPrint(){
+/* ── sample / product WO print ── */
+function pcPrintProduct(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
+  if(!s.productCode){ alert('Convert to a product first.'); return; }
+  var q=prompt('Print product works order for '+s.productCode+' \u2014 for IT to set the product up in Sage.\n\nQuantity to make:','');
+  if(q===null) return;
+  q=pcNum(q);
+  if(!(q>0)){ alert('Enter a quantity greater than 0.'); return; }
+  pcPrint(q);
+}
+function pcPrint(prodQty){
+  if(PC_CUR<0) return;
+  var pm=prodQty>0;   // product mode: qty supplied, headed by the product code
+  var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
-  var qty=Math.max(1, pcNum(s.sampleQty)||1);
+  var qty=pm?prodQty:Math.max(1, pcNum(s.sampleQty)||1);
   var today=new Date().toLocaleDateString('en-GB');
   var cutTot=Math.ceil(qty/(pcNum(s.cutBatch)||35))*(pcNum(s.cutMins)||15);
   var mkLen=pcPos(s.markerLen), layQ=pcPos(s.layQty);
@@ -1338,7 +1370,7 @@ function pcPrint(){
   var machTot=mach?mach*qty:null, finTot=fin?fin*qty:null;
   var grand=(machTot!=null&&finTot!=null)?cutTot+machTot+finTot:null;
   function e(x){ return pcE(x); }
-  var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sample WO '+e(s.ref)+'</title><style>'
+  var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+(pm?'Product WO '+e(s.productCode):'Sample WO '+e(s.ref))+'</title><style>'
     +'@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     +'body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0;font-size:13px}'
     +'.page{page-break-after:always}.page:last-child{page-break-after:auto}'
@@ -1353,15 +1385,17 @@ function pcPrint(){
     +'.smp{background:#C9A24B;color:#22262e;font-weight:800;padding:2px 10px;border-radius:8px;font-size:13px}'
     +'</style></head><body>';
   var lastRev=(s.history&&s.history.length)?s.history[s.history.length-1]:null;
-  h+='<div class="page"><div class="hdr"><h1>SAMPLE WORKS ORDER &nbsp;&middot;&nbsp; '+e(s.ref)+((s.version||1)>1?' &nbsp;&middot;&nbsp; V'+s.version:'')+'</h1>'
+  h+='<div class="page"><div class="hdr"><h1>'+(pm?'PRODUCT WORKS ORDER &nbsp;&middot;&nbsp; '+e(s.productCode):'SAMPLE WORKS ORDER &nbsp;&middot;&nbsp; '+e(s.ref)+((s.version||1)>1?' &nbsp;&middot;&nbsp; V'+s.version:''))+'</h1>'
     +'<img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px"></div>'
-    +'<p style="margin:10px 0 0"><span class="smp">SAMPLE \u2014 not for stock production</span></p>'
+    +(pm?'<p style="margin:10px 0 0"><span class="smp" style="background:#1F3864;color:#fff">NEW PRODUCT \u2014 send to IT to set up in Sage</span></p>'
+        :'<p style="margin:10px 0 0"><span class="smp">SAMPLE \u2014 not for stock production</span></p>')
     +'<table class="kv" style="margin-top:12px">'
     +'<tr><th>Date raised</th><td>'+e(pcFmtD(s.created))+'</td><th style="width:26%">Date required</th><td>'+e(pcFmtD(s.due)||'\u2014')+'</td></tr>'
-    +'<tr><th>Customer</th><td>'+e(s.customer||'\u2014')+'</td><th>Sample qty</th><td>'+qty+'</td></tr>'
+    +'<tr><th>Customer</th><td>'+e(s.customer||'\u2014')+'</td><th>'+(pm?'Order qty':'Sample qty')+'</th><td>'+qty+'</td></tr>'
     +'<tr><th>Garment</th><td colspan="3">'+e(s.garment||'\u2014')+'</td></tr>'
     +(s.productCode?'<tr><th>Product code</th><td colspan="3">'+e(s.productCode)+'</td></tr>':'')
     +(s.quoteRef?'<tr><th>Quote ref</th><td colspan="3">'+e(s.quoteRef)+'</td></tr>':'')
+    +(pm&&s.ref?'<tr><th>From sample</th><td colspan="3">'+e(s.ref)+((s.version||1)>1?' V'+s.version:'')+'</td></tr>':'')
     +'</table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'\u2014')+'</td></tr></table>'
     +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType)+'</td></tr>'
@@ -1384,7 +1418,7 @@ function pcPrint(){
   s.trims.forEach(function(t){ h+='<tr><td><strong>'+e(t.code||'\u2014')+'</strong></td><td>'+e(t.desc||'')+'</td><td>'+e(t.qty||'')+'</td></tr>'; });
   h+='</table></div>';
 
-  h+='<div class="page"><div class="hdr"><h1 style="font-size:20px">MANUFACTURING &amp; TIMES</h1><div style="text-align:right;font-weight:700">'+e(s.ref)+'<br><span style="font-weight:400;font-size:11px">Qty '+qty+'</span></div></div>'
+  h+='<div class="page"><div class="hdr"><h1 style="font-size:20px">MANUFACTURING &amp; TIMES</h1><div style="text-align:right;font-weight:700">'+e(pm?s.productCode:s.ref)+'<br><span style="font-weight:400;font-size:11px">Qty '+qty+'</span></div></div>'
     +'<div class="band">MANUFACTURING DETAILS</div><table>';
   var mfgL=s.mfg.split('\n').map(function(x){return x.trim();}).filter(Boolean);
   if(!mfgL.length) mfgL=['\u2014'];
@@ -1401,7 +1435,9 @@ function pcPrint(){
     +'<tr class="tot"><td>TOTAL</td><td>'+(grand!=null?(grand/60).toFixed(1)+' hours':'\u2014')+'</td><td>'+(grand!=null?grand.toFixed(1).replace(/\.0$/,''):'\u2014')+'</td></tr></table>'
     +'<div class="band">SIGN-OFF</div><table class="sign">'
     +'<tr><th style="width:40%">Stage</th><th style="width:30%;background:#EEF1F5;color:#44546A">Name</th><th style="width:30%;background:#EEF1F5;color:#44546A">Date</th></tr>';
-  ['Raised by (Garment Technologist)','Cutting complete','Machining complete','Finishing complete','Sample approved by customer'].forEach(function(x){ h+='<tr><td>'+x+'</td><td></td><td></td></tr>'; });
+  (pm?['Raised by (Garment Technologist)','Added to Sage (IT)','Cutting complete','Machining complete','Finishing complete']
+     :['Raised by (Garment Technologist)','Cutting complete','Machining complete','Finishing complete','Sample approved by customer'])
+    .forEach(function(x){ h+='<tr><td>'+x+'</td><td></td><td></td></tr>'; });
   h+='</table>';
   if(s.meas.length){
     h+='<div class="band">MEASUREMENTS</div><table><tr><th>Measurement</th><th>Value</th></tr>';
@@ -1413,7 +1449,7 @@ function pcPrint(){
   var w=window.open('','_blank');
   if(!w){ alert('Pop-up blocked \u2014 allow pop-ups for this site and try again.'); return false; }
   w.document.open(); w.document.write(h); w.document.close();
-  if(PC_IS_EDITOR){ s.printed=true; s.printedAt=pcToday(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
+  if(!pm && PC_IS_EDITOR){ s.printed=true; s.printedAt=pcToday(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
   return true;
 }
 
@@ -1776,7 +1812,7 @@ function pcRestoreFile(ev){
 
 /* ── wire up ── */
 (function(){
-  document.getElementById('pcSearch').addEventListener('input',pcRender);
+  document.getElementById('pcSearch').addEventListener('input',function(){ if(this.value.trim()) PC_TILE=null; pcRender(); });
   document.getElementById('pcFilter').addEventListener('change',pcRender);
   document.getElementById('pcNewBtn').addEventListener('click',pcNew);
   document.getElementById('pcCopyBtn').addEventListener('click',pcCopyOpen);
