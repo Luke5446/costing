@@ -1105,7 +1105,7 @@ function pcOpen(i){
   if(s.productCode) h+='<button class="btn" style="background:#1F3864;color:#fff" onclick="pcPrintProduct()">&#128424; Print product WO\u2026</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
-  if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Export for buffer app</button>';
+  if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Download for buffer app</button>';
   if(PC_IS_EDITOR) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
   h+='</div><div id="pcExportBox"></div>';
   b.innerHTML=h;
@@ -1331,18 +1331,12 @@ function pcExport(){
     oneSize:true, sr:s.ref, srVersion:s.version||1, customer:s.customer||''
   };
   var txt=JSON.stringify(entry,null,1);
-  var box=document.getElementById('pcExportBox');
-  box.innerHTML='<div class="pcsec" style="margin-top:12px"><h4>Export \u2014 paste or import into the buffer app</h4><div class="in">'
-    +'<textarea style="width:100%;min-height:130px;font-family:monospace;font-size:11px">'+pcE(txt)+'</textarea>'
-    +'<button class="btn pcmini btn-gold" style="margin-top:6px" onclick="pcDownload(\''+pcE(s.productCode)+'\')">Download .json</button>'
-    +'<span class="pcnote"> &nbsp;The buffer app\u2019s \u201cImport product\u201d button takes this file and the WOP becomes printable there.</span></div></div>';
-  box.dataset.txt=txt;
-}
-function pcDownload(code){
-  var txt=document.getElementById('pcExportBox').dataset.txt;
   var a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
-  a.download=code+'_product.json'; a.click();
+  a.download=s.productCode+'_product.json'; a.click();
+  document.getElementById('pcExportBox').innerHTML=
+    '<div class="pcok" style="margin-top:12px">&#10003; <strong>'+pcE(s.productCode)+'_product.json</strong> downloaded.'
+    +' In the buffer app: Special Makes \u2192 <strong>&#128229; Import from costing</strong> \u2192 choose this file.</div>';
 }
 
 /* ── sample / product WO print ── */
