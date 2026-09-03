@@ -1334,7 +1334,10 @@ function pcExport(){
     fin:s.fin.split('\n').map(function(x){return x.trim();}).filter(Boolean),
     machMins:pcNum(s.machMins)||null, finMins:pcNum(s.finMins)||null,
     cutBatch:pcNum(s.cutBatch)||35, cutMins:pcNum(s.cutMins)||15,
-    oneSize:true, sr:s.ref, srVersion:s.version||1, customer:s.customer||''
+    oneSize:true, sr:s.ref, srVersion:s.version||1, customer:s.customer||'',
+    /* the branding spec and artwork must reach the buffer works order */
+    brandType:s.brandType||'None', brandPlace:s.brandPlace||'',
+    logoImg:(s.brandType&&s.brandType!=='None'&&s.logoImg)?s.logoImg:''
   };
   var txt=JSON.stringify(entry,null,1);
   var a=document.createElement('a');
