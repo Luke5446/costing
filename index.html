@@ -1783,6 +1783,13 @@ function pcPublish(){
         for(var i=0;i<PC.srs.length;i++){ var l=PC.srs[i]; if((l.quoteRef||l.ref)===key){ ix=i; break; } }
         if(ix<0){ PC.srs.push(p); changed=true; }
         else if(!PC_IS_EDITOR){ PC.srs[ix]=p; changed=true; }
+        else {
+          /* editor keeps its own record, but a branding placement published for a
+             product it holds blank is adopted - that is how a spec set by the
+             office reaches everyone without retyping */
+          var l=PC.srs[ix];
+          if(p.brandPlace && !l.brandPlace){ l.brandPlace=p.brandPlace; if(p.brandType&&(!l.brandType||l.brandType==='None')) l.brandType=p.brandType; changed=true; }
+        }
       });
       if(changed){ pcNormalize(PC); pcSaveData(); }
       var pm=document.getElementById('pcMain');
