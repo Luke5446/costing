@@ -146,10 +146,10 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
 <header>
   <img id="hdrLogo" alt="Tibard" style="height:38px;background:#fff;border-radius:6px;padding:3px 9px;display:none">
   <h1>Costing Calculator</h1>
-  <div class="sub" id="srcNote"></div>
   <div class="spacer"></div>
   <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
-  <button class="btn btn-ghost" id="clearBtn">Clear all</button>
+  <button class="btn btn-ghost" id="pcRestoreBtn" style="display:none">Restore</button>
+  <button class="btn" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none">Reset all</button>
 </header>
 <main id="costMain">
   <div class="set" id="setPanel">
@@ -271,7 +271,6 @@ const ohF=()=>OH?1+(S.ohPct||0)/100:1;
 window.costSetOH=function(on){ OH=!!on; render(); };
 document.getElementById('labExp').textContent =
  'Default £18.00/hr — the production labour rate used for costing lines, specials and quotes.';
-document.getElementById('srcNote').textContent = 'Source: ' + COSTDATA.updated;
 
 function initSettings(){
   const std=['12.71','12.21','11.44'];
@@ -400,7 +399,6 @@ function addLine(){
   codeIn.value=''; qtyIn.value=1; codeIn.focus(); saveL(); render();
 }
 document.getElementById('addBtn').onclick=addLine;
-document.getElementById('clearBtn').onclick=()=>{ if(lines.length&&confirm('Clear all lines?')){ lines=[]; saveL(); render(); } };
 
 function render(){
   const F=ohF();
@@ -632,9 +630,6 @@ initSettings(); render();
     <button class="btn btn-gold" id="pcNewBtn" style="display:none">+ New quote</button>
     <button class="btn btn-ghost2" id="pcCopyBtn" style="background:#e8ecf3;color:var(--navy);display:none">Quote from existing product…</button>
     <button class="btn btn-ghost2" id="pcPublishBtn" style="background:#d1fae5;color:#065f46;display:none">Publish for teams…</button>
-    <button class="btn btn-ghost2" id="pcBackupBtn" style="background:#e8ecf3;color:var(--navy)">Backup</button>
-    <button class="btn btn-ghost2" id="pcRestoreBtn" style="background:#e8ecf3;color:var(--navy);display:none">Restore</button>
-    <button class="btn btn-ghost2" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none">Reset all</button>
     <button class="btn btn-ghost2" id="pcListsBtn" style="background:#e8ecf3;color:var(--navy);display:none">Trim &amp; fabric lists</button>
   </div>
   <div id="pcStats" class="pcstats"></div>
@@ -645,7 +640,7 @@ initSettings(); render();
 </main>
 
 <div class="pcov" id="pcOv"><div class="pcmodal">
-  <div class="pcmh"><h3 id="pcMTitle">Sample</h3><button class="mx" onclick="pcCloseX()">&times;</button></div>
+  <div class="pcmh"><h3 id="pcMTitle">Sample</h3><button type="button" class="btn pcmini" id="pcMDel" style="display:none;background:#fee2e2;color:#991b1b" onclick="pcDelete()" title="Delete this saved record">Delete</button><button class="mx" onclick="pcCloseX()">&times;</button></div>
   <div class="pcmb" id="pcMBody"></div>
 </div></div>
 
@@ -986,6 +981,7 @@ function pcOpen(i){
   var locked=!!s.productCode;
   var ro=(!PC_IS_EDITOR)||locked;
   document.getElementById('pcMTitle').innerHTML=pcE(pcRefLabel(s))+(s.productCode?' &nbsp;→&nbsp; '+pcE(s.productCode):'')+' <span style="font-weight:400;font-size:12px;opacity:.8">'+PC_STATUS[s.status]+'</span>';
+  pcMDelShow(PC_IS_EDITOR && !s.draft);
   var b=document.getElementById('pcMBody');
 
   PC_COLDEFS.pcFabT=[{h:'Fabric code (Sage)',k:'code',w:'16%',on:'pcFabFill',list:'pcFabDL'},{h:'Description',k:'name'},{h:'Rating (m per unit)',k:'rating',w:'12%',on:'pcNumOnly'},{h:'Cost £/m',k:'cost',w:'10%',on:'pcNumOnly'},{h:'Location',k:'loc',w:'9%'}];
@@ -1115,7 +1111,8 @@ function pcOpen(i){
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
   if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Download for buffer app</button>';
-  if(PC_IS_EDITOR) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
+  if(PC_IS_EDITOR && s.draft) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
+  h+='<button class="btn" style="background:#e8ecf3;color:var(--navy);'+(PC_IS_EDITOR&&s.draft?'':'margin-left:auto')+'" onclick="pcCloseX()">Close</button>';
   h+='</div><div id="pcExportBox"></div>';
   b.innerHTML=h;
   /* backfill rows saved with a code but a blank description/cost (fill functions only touch blank fields) */
@@ -1207,14 +1204,23 @@ function pcSave(){
   delete s.draft;
   pcCollect(s); pcSaveData(); pcClose(); pcRender();
 }
+function pcMDelShow(on){ var b=document.getElementById('pcMDel'); if(b) b.style.display=on?'':'none'; }
+/* Deleting a saved record is deliberately hard: it is only offered from the
+   small button in the record's banner, and needs the reference typed back.
+   A published record also comes back on the next reload until a fresh
+   publish without it is uploaded, so that is spelled out. */
 function pcDelete(){
-  if(PC_CUR<0) return;
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
   var s=PC.srs[PC_CUR];
   if(s.draft){ pcDiscardDraft(); return; }
-  var msg='Delete '+pcRefLabel(s)+' completely?';
-  if(s.productCode) msg+='\n\nThis record was converted to '+s.productCode+' \u2014 deleting it also removes that product from the costing search.';
-  msg+='\n\nThis cannot be undone.';
+  var ref=pcRefLabel(s), key=s.quoteRef||s.ref||'';
+  var msg='\u26a0 Delete '+ref+' completely?\n\nThis removes the quote'+(s.ref?', its sample works order '+s.ref:'')+(s.history&&s.history.length?' and '+s.history.length+' earlier version'+(s.history.length===1?'':'s'):'')+' from this PC.';
+  if(s.productCode) msg+='\n\nIt was converted to product '+s.productCode+' \u2014 that product disappears from the costing search too.';
+  msg+='\n\nIf it has been published, publish again afterwards, otherwise the published copy returns on the next reload.\n\nThis cannot be undone.';
   if(!confirm(msg)) return;
+  var typed=prompt('Last check \u2014 to delete, type the reference exactly:\n\n'+key);
+  if(typed===null) return;
+  if(typed.trim().toUpperCase()!==key.toUpperCase()){ alert('Not deleted \u2014 the reference did not match.'); return; }
   PC.srs.splice(PC_CUR,1); pcSaveData(); pcClose(); pcRender();
 }
 /* \u2500\u2500 quote approved \u2192 raise the SR sample works order \u2500\u2500 */
@@ -1619,6 +1625,7 @@ function pcViewRevision(ix){
   var d=hv.data||{};
   function e(x){ return pcE(x==null?'':x); }
   document.getElementById('pcMTitle').innerHTML=pcE(s.ref)+' V'+hv.version+' <span style="font-weight:400;font-size:12px;opacity:.8">read-only snapshot</span>';
+  pcMDelShow(false);
   var h='<div class="pcok" style="background:#e8ecf3;color:var(--navy)">Snapshot of <strong>'+pcE(s.ref)+' V'+hv.version+'</strong>, revised '+pcFmtD(hv.revisedAt)+'.'
     +(hv.note?'<br>Amendments the customer asked for after this version: <strong>'+pcE(hv.note)+'</strong>':'')+'</div>';
   h+='<div class="pcsec"><h4>Details</h4><div class="in"><table class="pctbl">';
@@ -1680,7 +1687,7 @@ function pcCopySources(){
 }
 function pcCopyOpen(){
   if(!PC_IS_EDITOR) return;
-  document.getElementById('pcMTitle').textContent='Quote from existing product';
+  document.getElementById('pcMTitle').textContent='Quote from existing product'; pcMDelShow(false);
   var b=document.getElementById('pcMBody');
   b.innerHTML='<div class="pcsec"><h4>Copy the works-order details of an existing product into a new quote</h4><div class="in">'
     +'<p class="pcnote" id="pcCopyStatus">Loading the product list from the Production plan app\u2026</p>'
@@ -1744,7 +1751,7 @@ function pcCopyDo(){
 function pcLists(){
   if(!PC_IS_EDITOR) return;
   var b=document.getElementById('pcMBody');
-  document.getElementById('pcMTitle').textContent='Trim & fabric price lists';
+  document.getElementById('pcMTitle').textContent='Trim & fabric price lists'; pcMDelShow(false);
   function tbl(list){
     if(!list.length) return '<p class="pcnote">Nothing loaded yet.</p>';
     return '<p class="pcnote">'+list.length+' lines loaded.</p>';
@@ -1839,7 +1846,7 @@ function pcBackup(){
 function pcRestore(){ document.getElementById('pcFileIn').click(); }
 function pcResetAll(){
   if(!PC_IS_EDITOR) return;
-  if(!confirm('Delete ALL quotes, samples and generated product codes stored on this device? Fabric and trim price lists are kept.\n\nTake a Backup first if unsure. This cannot be undone.')) return;
+  if(!confirm('Delete ALL quotes, samples and generated product codes stored on this device? Fabric and trim price lists are kept.\n\nPublish first if unsure \u2014 the published file is the copy you can get back. This cannot be undone.')) return;
   PC.srs=[]; PC.srSeq=0; PC.qSeq=0; PC.prodSeq={};
   pcSaveData(); pcRender();
   alert('All quote and sample data cleared on this device. Product codes will start again from 0001.');
@@ -1866,7 +1873,6 @@ function pcRestoreFile(ev){
   document.getElementById('pcNewBtn').addEventListener('click',pcNew);
   document.getElementById('pcCopyBtn').addEventListener('click',pcCopyOpen);
   document.getElementById('pcPublishBtn').addEventListener('click',pcPublish);
-  document.getElementById('pcBackupBtn').addEventListener('click',pcBackup);
   document.getElementById('pcRestoreBtn').addEventListener('click',pcRestore);
   document.getElementById('pcResetBtn').addEventListener('click',pcResetAll);
   document.getElementById('pcListsBtn').addEventListener('click',pcLists);
