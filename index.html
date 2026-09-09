@@ -148,8 +148,10 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
   <h1>Costing Calculator</h1>
   <div class="spacer"></div>
   <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
-  <button class="btn btn-ghost" id="pcRestoreBtn" style="display:none">Restore</button>
-  <button class="btn" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none">Reset all</button>
+  <div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">
+    <button class="btn btn-ghost" id="pcRestoreBtn" style="display:none;font-size:11px;padding:4px 12px">Restore</button>
+    <button class="btn" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none;font-size:11px;padding:4px 12px">Reset all</button>
+  </div>
 </header>
 <main id="costMain">
   <div class="set" id="setPanel">
