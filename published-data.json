@@ -3,13 +3,13 @@
  "qSeq": 3,
  "srSeq": 2,
  "prodSeq": {
-  "OHAPB": 1
+  "OHAPB": 2
  },
  "srs": [
   {
    "quoteRef": "Q0003",
    "ref": "SR0002",
-   "status": "approved",
+   "status": "production",
    "created": "2026-09-09",
    "due": "2026-09-10",
    "customer": "Chatsworth Farm Shop",
@@ -127,12 +127,12 @@
    "variant": "05342PKT",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
-   "printed": false,
-   "printedAt": "",
-   "productCode": null,
-   "convertedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-09-09",
+   "printed": true,
+   "printedAt": "2026-09-09",
+   "productCode": "OHAPB0002",
+   "convertedAt": "2026-09-09",
    "copiedFrom": "OHAPP053583",
    "version": 1,
    "history": [],
