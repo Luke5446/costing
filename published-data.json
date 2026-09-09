@@ -28,22 +28,22 @@
    ],
    "trims": [
     {
-     "code": "",
-     "desc": "THREAD: Coats epic 80's — Olive 05742",
+     "code": "CMP-THR-EP80-05742-83",
+     "desc": "OLIVE ECOVERDE EPIC 80T40 05742 THREAD",
      "qty": "20",
-     "cost": ""
+     "cost": "0.00071"
     },
     {
-     "code": "",
-     "desc": "OH LABEL: Oliver Harvey woven label set 4cm down from top of right hand finished side seam as worn.",
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
      "qty": "1",
-     "cost": ""
+     "cost": "0.04335"
     },
     {
-     "code": "",
-     "desc": "OH non tangle tape cut at 100cm: Black oliver harvey non tangle tape for waist ties. ensure woridng correct way up.",
+     "code": "CMP-OH-NTT-25-03",
+     "desc": "BLACK OLIVER HARVEY 1 METRE LENGTH 25MM APRON TIES",
      "qty": "2",
-     "cost": ""
+     "cost": "0.25171"
     },
     {
      "code": "TAXTABOH07/01",
@@ -151,40 +151,22 @@
    "due": "2026-09-09",
    "customer": "Clean Linen",
    "garment": "Chef trousers",
-   "desc": "To cut down standard length CT3082 by 3\" to finish 29\" leg length. Note CT3082 standard leg length measures 32\".",
+   "desc": "To cut down standard length CT3082 by 3\" (7.5cm) Trouser to then finish 29\" leg length. Note CT3082 standard leg length measures 32\". Set additional leg length label. SHORT LEG 29\"",
    "brandType": "None",
    "brandPlace": "",
    "fabrics": [],
    "trims": [
     {
-     "code": "CT3082",
-     "desc": "BLACK CHEFS ELASTICATED DRWASTRING TRS",
+     "code": "BULKCT3082SS03",
+     "desc": "BLACK ELASTICATED/DRAWSTRING CHEFS TROUSERS SZ SML (26-28)",
      "qty": "1",
-     "cost": "3.52"
+     "cost": "3.45048"
     },
     {
-     "code": "",
-     "desc": "THREAD — COATS EPIC 80'S BLACK",
+     "code": "CMP-THR-EP80-09700-03",
+     "desc": "BLACK ECOVERDE EPIC 80T40 09700 THREAD",
      "qty": "4",
-     "cost": "0.000714"
-    },
-    {
-     "code": "",
-     "desc": "PRINTED CARE/SIZE LABEL",
-     "qty": "1",
-     "cost": ""
-    },
-    {
-     "code": "",
-     "desc": "BAG STICKER",
-     "qty": "1",
-     "cost": ""
-    },
-    {
-     "code": "",
-     "desc": "BAG",
-     "qty": "1",
-     "cost": ""
+     "cost": "0.00071"
     }
    ],
    "meas": [
@@ -194,8 +176,8 @@
      "value2": ""
     }
    ],
-   "mfg": "Stitch each side of leg to straighten width at hem.\nDouble turn hem and topstitch 1.5cm\nCut out care/size label and set new label with size information. New label to state Leg length SHORT 29\"",
-   "fin": "Check, trim hem and fold.\nSet into bag and set bag sticker",
+   "mfg": "Must have additional printed label that states SHORT LEG 29\"\nStitch each side of leg to straighten width at hem\nDouble turn hem and topstitch 1.5cm\nAdd additional label with leg length detail and set on top of care label. New label to state  SHORT LEG 29\"",
+   "fin": "Check, trim hem stitching and fold.",
    "machMins": "5",
    "finMins": "2",
    "cutBatch": "1",
