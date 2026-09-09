@@ -1800,7 +1800,7 @@ function pcPublish(){
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
   a.download='published-data.json'; a.click();
   PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender();
-  alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
+  alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\n\u26a0 The file must be called exactly published-data.json. If your browser saved it as \u201cpublished-data (2).json\u201d, rename it before uploading \u2014 the app only reads published-data.json, and GitHub replaces the old file when the name matches.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
 }
 /* on every load, pull the published snapshot in (viewers take it as truth; editors only gain records they do not have) */
 (function(){
