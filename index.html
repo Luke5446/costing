@@ -1891,7 +1891,7 @@ function pcLists(){
     return '<p class="pcnote">'+list.length+' lines loaded.</p>';
   }
   b.innerHTML='<div class="pcsec"><h4>Paste a price list</h4><div class="in">'
-    +'<p class="pcnote">Paste rows copied from Excel \u2014 columns: <strong>code, description, cost, unit (optional), supplier (optional)</strong>. Pick which list it is, then Load. Re-pasting replaces the whole list.</p>'
+    +'<p class="pcnote">Paste rows copied from Excel \u2014 columns: <strong>code, description, cost, unit (optional), supplier (optional)</strong>. Pick which list it is, then Load. Re-pasting replaces the whole list. The lists go out with <strong>Publish for team</strong>, so other PCs and the Works Order Editor can pick from them too.</p>'
     +'<div class="pcrow" style="grid-template-columns:180px 1fr;margin-top:8px"><select id="pcLType"><option value="trims">Trims list</option><option value="fabrics">Fabrics list</option></select><span class="pcnote" style="align-self:center">Trims: '+PC.trimsList.length+' loaded \u00b7 Fabrics: '+PC.fabricsList.length+' loaded (fabric codes from the costing data are always searchable too)</span></div>'
     +'<textarea id="pcLPaste" style="width:100%;min-height:150px;font-family:monospace;font-size:12px;margin-top:8px" placeholder="VELCRO16BLK\tVelcro black 16mm hook and loop\t0.12\tm\tNew Lace"></textarea>'
     +'<button class="btn btn-gold pcmini" style="margin-top:8px" onclick="pcLoadList()">Load list</button>'
@@ -1914,7 +1914,7 @@ function pcLoadList(){
 
 /* ── publish for teams: snapshot downloaded, then uploaded to the repo ── */
 function pcDataHash(){
-  var txt=JSON.stringify(PC.srs.filter(function(s){ return !s.draft; }));
+  var txt=JSON.stringify([PC.srs.filter(function(s){ return !s.draft; }), PC.trimsList||[], PC.fabricsList||[]]);
   var h=5381;
   for(var i=0;i<txt.length;i++){ h=((h<<5)+h+txt.charCodeAt(i))|0; }
   return String(h);
@@ -1926,7 +1926,9 @@ function pcHasUnpublished(){
 function pcPublish(){
   if(!PC_IS_EDITOR) return;
   var out={publishedAt:pcToday(), publishedTS:pcNow(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq,
-           srs:PC.srs.filter(function(s){ return !s.draft; })};
+           srs:PC.srs.filter(function(s){ return !s.draft; }),
+           /* the pasted trim & fabric price lists travel too, so every PC and the Works Order Editor can pick from them */
+           trimsList:PC.trimsList||[], fabricsList:PC.fabricsList||[]};
   var txt=JSON.stringify(out,null,1);
   var a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
@@ -1972,6 +1974,15 @@ function pcPublish(){
       if((pub.srSeq||0)>(PC.srSeq||0)){ PC.srSeq=pub.srSeq; changed=true; }
       if(pub.prodSeq) Object.keys(pub.prodSeq).forEach(function(k){
         if((pub.prodSeq[k]||0)>(PC.prodSeq[k]||0)){ PC.prodSeq[k]=pub.prodSeq[k]; changed=true; }
+      });
+      /* pasted price lists: a follower (or a PC with none) takes the published list; a PC with its own
+         list keeps it and only gains codes it does not have */
+      ['trimsList','fabricsList'].forEach(function(k){
+        var pl=Array.isArray(pub[k])?pub[k]:[]; if(!pl.length) return;
+        var loc=Array.isArray(PC[k])?PC[k]:[];
+        if(follows || !loc.length){ if(JSON.stringify(loc)!==JSON.stringify(pl)){ PC[k]=pl; changed=true; } return; }
+        var have={}; loc.forEach(function(x){ have[String(x.code||'').toUpperCase()]=1; });
+        pl.forEach(function(x){ var c=String(x.code||'').toUpperCase(); if(c && !have[c]){ loc.push(x); have[c]=1; changed=true; } });
       });
       pub.srs.forEach(function(p){
         var key=pcKey(p); if(!key) return;
