@@ -679,6 +679,7 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.srRaisedAt===undefined) s.srRaisedAt='';
     if(s.sampleApprovedAt===undefined) s.sampleApprovedAt='';
     if(s.weightG===undefined) s.weightG='';
+    if(s.savedAt===undefined) s.savedAt='';
     if(s.isOH===undefined) s.isOH=false;
     if(s.version===undefined) s.version=1;
     if(!Array.isArray(s.history)) s.history=[];
@@ -689,7 +690,29 @@ function pcLoad(){
   var d=null;
   try{ d=JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){}
   if(!d) d={srSeq:0, qSeq:0, prodSeq:{}, srs:[], trimsList:[], fabricsList:[]};
-  return pcNormalize(d);
+  var hadUnpublished=false;
+  if(!d.stampInit && Array.isArray(d.srs) && d.srs.length){
+    /* measured before save stamps exist, so it is comparable with the stored hash */
+    var live=d.srs.filter(function(s){ return !s.draft; });
+    var txt=JSON.stringify(live), h=5381;
+    for(var i=0;i<txt.length;i++){ h=((h<<5)+h+txt.charCodeAt(i))|0; }
+    hadUnpublished=live.length>0 && d.pubHash!==String(h);
+  }
+  d=pcNormalize(d);
+  if(!d.stampInit){
+    d.stampInit=1;
+    if(hadUnpublished) d.srs.forEach(function(s){ if(!s.savedAt && !s.draft) s.savedAt=pcNow(); });
+    try{
+      localStorage.setItem('pcData',JSON.stringify(d));
+      if(!hadUnpublished){
+        var t2=JSON.stringify(d.srs.filter(function(s){ return !s.draft; })), h2=5381;
+        for(var j=0;j<t2.length;j++){ h2=((h2<<5)+h2+t2.charCodeAt(j))|0; }
+        d.pubHash=String(h2);   /* shape changed, not the content - no false warning */
+        localStorage.setItem('pcData',JSON.stringify(d));
+      }
+    }catch(e){}
+  }
+  return d;
 }
 function pcRate(){                       // current PW rate from the costing calculator's saved settings
   try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}'); if(pcNum(s.rate)>0) return pcNum(s.rate); }catch(e){}
@@ -715,10 +738,23 @@ var PC=pcLoad();
 function pcSaveData(){ try{ localStorage.setItem('pcData',JSON.stringify(PC)); }catch(e){ alert('Could not save — browser storage full or blocked.'); } }
 function pcE(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function pcToday(){ return new Date().toISOString().slice(0,10); }
+function pcNow(){ return new Date().toISOString(); }
+function pcFmtTS(s){
+  if(!s) return '';
+  if(s.length<=10) return pcFmtD(s);
+  var d=new Date(s); if(isNaN(d)) return pcFmtD(s.slice(0,10));
+  var p=function(n){ return (n<10?'0':'')+n; };
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' at '+p(d.getHours())+':'+p(d.getMinutes());
+}
 function pcFmtD(s){ if(!s) return ''; var p=s.split('-'); return p.length===3? p[2]+'/'+p[1]+'/'+p[0] : s; }
 function pcPubBanner(){
   var el=document.getElementById('pubBanner'); if(!el) return;
-  if(window.PC_PUB_AT){ el.textContent='Team data published '+pcFmtD(window.PC_PUB_AT); el.style.display=''; }
+  if(window.PC_PUB_AT){
+    var n=window.PC_PUB_KEPT||0;
+    el.textContent='Team data published '+pcFmtTS(window.PC_PUB_AT)
+      +(n?'  \u00b7  \u26a0 '+n+' record'+(n===1?'':'s')+' newer on this PC \u2014 publish to share':'');
+    el.style.display='';
+  }
   else el.style.display='none';
 }
 function pcNum(v){ var f=parseFloat(v); return isNaN(f)?0:f; }
@@ -979,7 +1015,7 @@ function pcNew(){
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[], draft:true, isOH:false};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[], draft:true, isOH:false, savedAt:pcNow()};
   PC.srs.unshift(s); PC.qSeq++; pcSaveData();
   pcOpen(0);
 }
@@ -1136,6 +1172,7 @@ function pcOpen(i){
 }
 
 function pcCollect(s){
+  s.savedAt=pcNow();
   s.customer=document.getElementById('pcF_customer').value.trim();
   s.garment=document.getElementById('pcF_garment').value.trim();
   s.due=document.getElementById('pcF_due').value;
@@ -1324,7 +1361,7 @@ function pcConvert(){
     do{ PC.prodSeq[key]=(PC.prodSeq[key]||0)+1; code=key+String(PC.prodSeq[key]).padStart(PC_NUMW,'0'); }
     while(pcSheetHas(code)||PC.srs.some(function(x){ return x.productCode===code; }));
   }
-  s.productCode=code; s.status='production'; s.convertedAt=pcToday();
+  s.productCode=code; s.status='production'; s.convertedAt=pcToday(); s.savedAt=pcNow();
   pcSaveData(); pcOpen(PC_CUR); pcRender();
 }
 
@@ -1374,6 +1411,7 @@ function pcExport(){
 function pcWeightSave(inp){
   if(!PC_IS_EDITOR||PC_CUR<0) return;
   PC.srs[PC_CUR].weightG=inp.value.trim();
+  PC.srs[PC_CUR].savedAt=pcNow();
   pcSaveData();
 }
 /* ── sample / product WO print ── */
@@ -1484,7 +1522,7 @@ function pcPrint(prodQty){
   var w=window.open('','_blank');
   if(!w){ alert('Pop-up blocked \u2014 allow pop-ups for this site and try again.'); return false; }
   w.document.open(); w.document.write(h); w.document.close();
-  if(!pm && PC_IS_EDITOR){ s.printed=true; s.printedAt=pcToday(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
+  if(!pm && PC_IS_EDITOR){ s.printed=true; s.printedAt=pcToday(); s.savedAt=pcNow(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
   return true;
 }
 
@@ -1548,7 +1586,7 @@ function pcQuotePrint(){
   var w=window.open('','_blank');
   if(!w){ alert('Pop-up blocked — allow pop-ups for this site and try again.'); return false; }
   w.document.open(); w.document.write(h); w.document.close();
-  if(PC_IS_EDITOR){ delete s.draft; s.quotePrinted=true; s.quotePrintedAt=pcToday(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
+  if(PC_IS_EDITOR){ delete s.draft; s.quotePrinted=true; s.quotePrintedAt=pcToday(); s.savedAt=pcNow(); pcSaveData(); pcRender(); pcOpen(PC_CUR); }
   return true;
 }
 
@@ -1730,7 +1768,7 @@ function pcCopyDo(){
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[], draft:true, isOH:false};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[], draft:true, isOH:false, savedAt:pcNow()};
   if(src.src==='wo'){
     var st=src.st;
     s.desc=((st.name?st.name+' \u2014 ':'')+(st.desc||'')).trim();
@@ -1799,7 +1837,7 @@ function pcHasUnpublished(){
 }
 function pcPublish(){
   if(!PC_IS_EDITOR) return;
-  var out={publishedAt:pcToday(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq,
+  var out={publishedAt:pcToday(), publishedTS:pcNow(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq,
            srs:PC.srs.filter(function(s){ return !s.draft; })};
   var txt=JSON.stringify(out,null,1);
   var a=document.createElement('a');
@@ -1829,7 +1867,7 @@ function pcPublish(){
       list.forEach(function(c){
         if(!c || !c.pub || !Array.isArray(c.pub.srs)) return;
         if(!best){ best=c; return; }
-        var a=c.pub.publishedAt||'', b=best.pub.publishedAt||'';
+        var a=c.pub.publishedTS||c.pub.publishedAt||'', b=best.pub.publishedTS||best.pub.publishedAt||'';
         if(a>b || (a===b && c.lm>best.lm)) best=c;
       });
       if(!best) throw 0;
@@ -1838,9 +1876,9 @@ function pcPublish(){
     })
     .then(function(pub){
       if(!pub || !Array.isArray(pub.srs)) return;
-      window.PC_PUB_AT=pub.publishedAt||'';
+      window.PC_PUB_AT=pub.publishedTS||pub.publishedAt||'';
       pcPubBanner();
-      var changed=false;
+      var changed=false, kept=0;
       if((pub.qSeq||0)>(PC.qSeq||0)){ PC.qSeq=pub.qSeq; changed=true; }
       if((pub.srSeq||0)>(PC.srSeq||0)){ PC.srSeq=pub.srSeq; changed=true; }
       if(pub.prodSeq) Object.keys(pub.prodSeq).forEach(function(k){
@@ -1850,18 +1888,31 @@ function pcPublish(){
         var key=p.quoteRef||p.ref; if(!key) return;
         var ix=-1;
         for(var i=0;i<PC.srs.length;i++){ var l=PC.srs[i]; if((l.quoteRef||l.ref)===key){ ix=i; break; } }
-        if(ix<0){ PC.srs.push(p); changed=true; }
-        else if(!PC_IS_EDITOR){ PC.srs[ix]=p; changed=true; }
-        else {
-          /* editor keeps its own record, but a branding placement published for a
-             product it holds blank is adopted - that is how a spec set by the
-             office reaches everyone without retyping */
-          var l=PC.srs[ix];
-          if(p.brandPlace && !l.brandPlace){ l.brandPlace=p.brandPlace; if(p.brandType&&(!l.brandType||l.brandType==='None')) l.brandType=p.brandType; changed=true; }
-          if(p.placeImg && !l.placeImg){ l.placeImg=p.placeImg; changed=true; }
-        }
+        if(ix<0){ PC.srs.push(p); changed=true; return; }
+        /* The published file is the one version of a record. It is only kept out
+           of the way when THIS PC holds a newer save of it - whoever is covering
+           edits, publishes, and their copy becomes the published one in turn. */
+        var l=PC.srs[ix];
+        var lt=(PC_IS_EDITOR && l.savedAt) || '', pt=p.savedAt||'';
+        if(!lt || (pt && pt>lt)){ PC.srs[ix]=p; changed=true; return; }
+        kept++;
+        if(p.brandPlace && !l.brandPlace){ l.brandPlace=p.brandPlace; if(p.brandType&&(!l.brandType||l.brandType==='None')) l.brandType=p.brandType; changed=true; }
+        if(p.placeImg && !l.placeImg){ l.placeImg=p.placeImg; changed=true; }
       });
-      if(changed){ pcNormalize(PC); pcSaveData(); }
+      window.PC_PUB_KEPT=kept; pcPubBanner();
+      /* Records taken FROM the published file are not unpublished changes, so the
+         warning is cleared unless this PC holds something the file does not. */
+      if(changed){
+        pcNormalize(PC);                      /* settle the shape before hashing */
+        if(!kept){
+          var pubKeys={};
+          pub.srs.forEach(function(x){ var k=x.quoteRef||x.ref; if(k) pubKeys[k]=1; });
+          var extra=PC.srs.filter(function(s){ return !s.draft && !pubKeys[s.quoteRef||s.ref]; }).length;
+          if(!extra){ PC.pubHash=pcDataHash(); PC.pubAt=pub.publishedAt||PC.pubAt; }
+        }
+        pcSaveData();
+        if(typeof pcPublishWarn==='function') pcPublishWarn();
+      }
       var pm=document.getElementById('pcMain');
       if(pm && pm.style.display!=='none') pcRender();
     })
