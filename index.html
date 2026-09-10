@@ -148,7 +148,7 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
   <h1>Costing Calculator</h1>
   <div id="pubBanner" style="display:none;font-size:12px;opacity:.85;padding-left:4px"></div>
   <div class="spacer"></div>
-  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
+  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="navNewProdBtn" onclick="pcNewProductOpen()" style="display:none">New product from existing product</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
   <div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">
     <button class="btn btn-ghost" id="pcRestoreBtn" style="display:none;font-size:11px;padding:4px 12px">Restore</button>
     <button class="btn" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none;font-size:11px;padding:4px 12px">Reset all</button>
@@ -598,7 +598,7 @@ initSettings(); render();
 .pcov.on{display:block}
 .pcmodal{background:#fff;border-radius:12px;max-width:980px;margin:0 auto;padding:0 0 18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
 .pcmh{background:var(--navy);color:#fff;border-radius:12px 12px 0 0;padding:13px 18px;display:flex;align-items:center;gap:12px}
-.pcmh h3{font-size:16px;flex:1}
+.pcmh h3{font-size:16px;flex:0 1 auto}
 .pcmh .mx{background:none;border:none;color:#fff;font-size:22px;cursor:pointer}
 .pcmb{padding:16px 18px}
 .pcsec{margin:0 0 14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -648,7 +648,7 @@ initSettings(); render();
 </main>
 
 <div class="pcov" id="pcOv"><div class="pcmodal">
-  <div class="pcmh"><h3 id="pcMTitle">Sample</h3><button type="button" class="btn pcmini" id="pcMDel" style="display:none;background:#fee2e2;color:#991b1b" onclick="pcDelete()" title="Delete this saved record">Delete</button><button class="mx" onclick="pcCloseX()">&times;</button></div>
+  <div class="pcmh"><h3 id="pcMTitle">Sample</h3><button type="button" class="btn pcmini" id="pcMDel" style="display:none;background:#fee2e2;color:#991b1b" onclick="pcDelete()" title="Delete this saved record">Delete</button><span style="flex:1"></span><button class="mx" onclick="pcCloseX()" title="Close">&times;</button></div>
   <div class="pcmb" id="pcMBody"></div>
 </div></div>
 
@@ -719,10 +719,18 @@ function pcSetRole(v){
    wrong call is always recoverable from a Backup */
 function pcKeepReplaced(s){
   try{
+    var copy=JSON.parse(JSON.stringify(s));
+    delete copy.logoImg; delete copy.placeImg;      /* images can be hundreds of KB - not worth the storage */
     PC.replaced=PC.replaced||[];
-    PC.replaced.unshift({at:pcNow(), rec:JSON.parse(JSON.stringify(s))});
-    if(PC.replaced.length>30) PC.replaced.length=30;
+    PC.replaced.unshift({at:pcNow(), rec:copy});
+    if(PC.replaced.length>10) PC.replaced.length=10;
   }catch(e){}
+}
+/* key-order-independent serialisation, so two copies of the same record compare equal */
+function pcCanon(o){
+  if(o===null||typeof o!=='object') return JSON.stringify(o);
+  if(Array.isArray(o)) return '['+o.map(pcCanon).join(',')+']';
+  return '{'+Object.keys(o).sort().map(function(k){ return JSON.stringify(k)+':'+pcCanon(o[k]); }).join(',')+'}';
 }
 function pcRate(){                       // current PW rate from the costing calculator's saved settings
   try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}'); if(pcNum(s.rate)>0) return pcNum(s.rate); }catch(e){}
@@ -739,7 +747,9 @@ function pcSheetHas(code){
   if(!PC_SHEET){ PC_SHEET={}; COSTDATA.rows.forEach(function(r){ PC_SHEET[String(r[0]).toUpperCase()]=1; }); }
   return !!PC_SHEET[String(code||'').toUpperCase()];
 }
+function pcKey(s){ return s.quoteRef||s.ref||s.productCode||''; }
 function pcRefLabel(s){
+  if(s.isProduct && !s.quoteRef) return s.productCode || ('New product from '+(s.copiedFrom||'\u2026'));
   var base = s.ref ? (s.quoteRef? s.quoteRef+' → '+s.ref : s.ref) : (s.quoteRef||'');
   if(s.ref && (s.version||1)>1) base+=' V'+s.version;
   return base;
@@ -827,7 +837,7 @@ function pcToggleEditor(){
 function pcApplyMode(){
   var eb=document.getElementById('pcEditorBtn');
   if(eb) eb.textContent=PC_IS_EDITOR?'Editor \u2713 (log out)':'View only \u2014 log in';
-  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap'].forEach(function(id){
+  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap','navNewProdBtn'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=PC_IS_EDITOR?'':'none';
   });
   var rs=document.getElementById('pcRoleSel'); if(rs) rs.value=PC.role||'author';
@@ -836,8 +846,9 @@ function pcApplyMode(){
 /* ── board ── */
 var PC_STATUS={quote:'Quote — awaiting approval',sampling:'In sampling',feedback:'Awaiting customer feedback',hold:'On hold',approved:'Approved',production:'In production',rejected:'Rejected'};
 var PC_TILE=null;
-function pcIsOpenQuote(s){ return !s.ref && !s.quotePrinted && s.status!=='rejected'; }
-function pcIsLiveQuote(s){ return !s.ref && !s.draft && s.status!=='rejected'; }
+function pcIsOpenQuote(s){ return !s.isProduct && !s.ref && !s.quotePrinted && s.status!=='rejected'; }
+function pcIsLiveQuote(s){ return !s.isProduct && !s.ref && !s.draft && s.status!=='rejected'; }
+function pcIsProductRec(s){ return !!s.productCode; }
 function pcIsLiveSR(s){ return !!s.ref && !s.productCode && s.status!=='rejected'; }
 function pcIsLateSR(s){ return pcIsLiveSR(s) && s.due && s.due<pcToday(); }
 function pcIsApprovedQuote(s){ return !!s.ref; }
@@ -864,14 +875,16 @@ function pcRenderStats(){
       live=PC.srs.filter(pcIsLiveSR).length,
       late=PC.srs.filter(pcIsLateSR).length,
       qappr=PC.srs.filter(pcIsApprovedQuote).length,
-      sappr=PC.srs.filter(pcIsApprovedSample).length;
+      sappr=PC.srs.filter(pcIsApprovedSample).length,
+      prods=PC.srs.filter(pcIsProductRec).length;
   document.getElementById('pcStats').innerHTML=
     '<div class="pcstat'+(PC_TILE==='qlive'?' on':'')+'" onclick="pcTileToggle(\'qlive\')"><div class="n">'+qlive+'</div><div class="l">Live quotes</div></div>'
     +'<div class="pcstat'+(PC_TILE==='quotes'?' on':'')+'" onclick="pcTileToggle(\'quotes\')"><div class="n">'+q+'</div><div class="l">Quotes not printed</div></div>'
     +'<div class="pcstat'+(PC_TILE==='live'?' on':'')+'" onclick="pcTileToggle(\'live\')"><div class="n">'+live+'</div><div class="l">Live SR works orders</div></div>'
     +'<div class="pcstat late'+(PC_TILE==='late'?' on':'')+'" onclick="pcTileToggle(\'late\')"><div class="n">'+late+'</div><div class="l">Late SR works orders</div></div>'
     +'<div class="pcstat'+(PC_TILE==='qappr'?' on':'')+'" onclick="pcTileToggle(\'qappr\')"><div class="n">'+qappr+'</div><div class="l">Approved quotes</div></div>'
-    +'<div class="pcstat'+(PC_TILE==='sappr'?' on':'')+'" onclick="pcTileToggle(\'sappr\')"><div class="n">'+sappr+'</div><div class="l">Approved samples</div></div>';
+    +'<div class="pcstat'+(PC_TILE==='sappr'?' on':'')+'" onclick="pcTileToggle(\'sappr\')"><div class="n">'+sappr+'</div><div class="l">Approved samples</div></div>'
+    +'<div class="pcstat'+(PC_TILE==='prods'?' on':'')+'" onclick="pcTileToggle(\'prods\')"><div class="n">'+prods+'</div><div class="l">Products</div></div>';
 }
 function pcRender(){
   var srch=(document.getElementById('pcSearch').value||'').trim().toUpperCase();
@@ -882,7 +895,7 @@ function pcRender(){
   var dflt=(!srch && !filt && !PC_TILE);
   document.getElementById('pcShowing').textContent = (window.PC_PUB_AT?'Team view last published '+pcFmtD(window.PC_PUB_AT)+' \u00b7 ':'') + (dflt
     ? 'Showing unprinted quotes and sample works orders \u2014 use search, the status filter or the tiles above to find everything else.'
-    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':PC_TILE==='qappr'?'Showing approved quotes \u2014 the customer approved and an SR was raised.':PC_TILE==='sappr'?'Showing approved samples \u2014 customer-approved, including those now converted to products.':''));
+    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':PC_TILE==='qappr'?'Showing approved quotes \u2014 the customer approved and an SR was raised.':PC_TILE==='sappr'?'Showing approved samples \u2014 customer-approved, including those now converted to products.':PC_TILE==='prods'?'Showing every product \u2014 converted samples and new products from existing stock lines.':''));
   PC.srs.forEach(function(s,i){
     if(PC_TILE==='qlive' && !pcIsLiveQuote(s)) return;
     if(PC_TILE==='quotes' && !pcIsOpenQuote(s)) return;
@@ -890,8 +903,9 @@ function pcRender(){
     if(PC_TILE==='late' && !pcIsLateSR(s)) return;
     if(PC_TILE==='qappr' && !pcIsApprovedQuote(s)) return;
     if(PC_TILE==='sappr' && !pcIsApprovedSample(s)) return;
+    if(PC_TILE==='prods' && !pcIsProductRec(s)) return;
     if(dflt){
-      var unprinted = s.ref ? !s.printed : !s.quotePrinted;
+      var unprinted = s.isProduct ? !s.productCode : (s.ref ? !s.printed : !s.quotePrinted);
       if(!unprinted) return;
     }
     if(filt && s.status!==filt) return;
@@ -905,6 +919,7 @@ function pcRender(){
     shown++;
     var badge;
     if(s.draft) badge='<span class="pcbadge" style="background:#e5e7eb;color:#374151">DRAFT \u2014 never saved</span>';
+    else if(s.isProduct) badge=s.productCode?'<span class="pcbadge pcb-green">PRODUCT</span>':'<span class="pcbadge pcb-red">NOT YET CREATED</span>';
     else if(!s.ref) badge=s.quotePrinted?'<span class="pcbadge pcb-green">&#128424; Quote printed</span>':'<span class="pcbadge pcb-red">QUOTE NOT PRINTED</span>';
     else badge=s.printed?'<span class="pcbadge pcb-green">&#128424; Printed</span>':'<span class="pcbadge pcb-red">NOT PRINTED</span>';
     var t=document.createElement('div'); t.className='pctile';
@@ -1004,7 +1019,9 @@ function pcClose(){ document.getElementById('pcOv').classList.remove('on'); PC_C
 function pcCloseX(){
   var s=(PC_CUR>=0)?PC.srs[PC_CUR]:null;
   if(PC_IS_EDITOR && s && s.draft){
-    if(!confirm('Discard this new quote?\n\n'+(s.quoteRef||'It')+' has never been saved \u2014 it will be removed and the number reused for the next quote.\n\n(Use Save & close to keep it instead.)')) return;
+    if(!confirm(s.isProduct
+        ? 'Discard this new product?\n\nIt has never been saved \u2014 it will be removed.\n\n(Use Save & close to keep it instead.)'
+        : 'Discard this new quote?\n\n'+(s.quoteRef||'It')+' has never been saved \u2014 it will be removed and the number reused for the next quote.\n\n(Use Save & close to keep it instead.)')) return;
     pcDiscardDraft(); return;
   }
   if(PC_IS_EDITOR && s && !s.productCode){
@@ -1062,17 +1079,24 @@ function pcOpen(i){
   PC_CATS.forEach(function(c){ var seld=(s.garment===c[1]); if(seld) gFound=true; gOpts+='<option value="'+pcE(c[1])+'"'+(seld?' selected':'')+'>'+pcE(c[1])+' ('+c[0]+')</option>'; });
   if(s.garment && !gFound) gOpts+='<option value="'+pcE(s.garment)+'" selected>'+pcE(s.garment)+' (legacy)</option>';
 
-  var stKeys = s.ref? ['sampling','feedback','hold','approved','production','rejected'] : ['quote','hold','rejected'];
+  var stKeys = s.isProduct? ['production','hold','rejected'] : s.ref? ['sampling','feedback','hold','approved','production','rejected'] : ['quote','hold','rejected'];
   if(stKeys.indexOf(s.status)<0) stKeys.unshift(s.status);
-  var stOpts=stKeys.map(function(k){return '<option value="'+k+'"'+(s.status===k?' selected':'')+(k==='production'&&!s.productCode?' disabled':'')+'>'+PC_STATUS[k]+'</option>';}).join('');
+  var stOpts=stKeys.map(function(k){return '<option value="'+k+'"'+(s.status===k?' selected':'')+(k==='production'&&!s.productCode&&!s.isProduct?' disabled':'')+'>'+PC_STATUS[k]+'</option>';}).join('');
 
   var h=dl;
   if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> — it is searchable and printable but no longer editable.</div>';
-  h+='<div class="pcsec"><h4>Quote / sample details</h4><div class="in">'
+  if(s.isProduct && !s.productCode){
+    h+='<div class="pcsec"><h4>New product</h4><div class="in">'
+      +'<div class="pcrow" style="grid-template-columns:260px 1fr">'
+      +'<div><div class="pclab">Product code</div><input id="pcF_prodCode" value="'+pcE(s.prodCodeDraft||'')+'" style="font-weight:700;text-transform:uppercase" autocomplete="off"></div>'
+      +'<div class="pcnote" style="align-self:end;padding-bottom:6px">Based on <strong>'+pcE(s.sourceCode||'')+'</strong>. The code must start with <strong>'+pcE(s.baseCode||'')+'</strong> \u2014 change only the size / colour part after it.</div>'
+      +'</div></div></div>';
+  }
+  h+='<div class="pcsec"><h4>'+(s.isProduct?'Product details':'Quote / sample details')+'</h4><div class="in">'
     +'<div class="pcrow" style="grid-template-columns:1fr 1fr 1fr 1fr">'
     +'<div><div class="pclab">Customer</div><input id="pcF_customer" value="'+pcE(s.customer)+'"></div>'
     +'<div><div class="pclab">Garment name</div><select id="pcF_garment">'+gOpts+'</select></div>'
-    +'<div><div class="pclab">Due date</div><input id="pcF_due" type="date" value="'+pcE(s.due)+'"></div>'
+    +'<div><div class="pclab">'+(s.ref?'Sample due date':'Due date (set 10 days out when approved)')+'</div><input id="pcF_due" type="date" value="'+pcE(s.due)+'"></div>'
     +'<div><div class="pclab">Status</div><select id="pcF_status">'+stOpts+'</select>'
     +((s.srRaisedAt||s.sampleApprovedAt)?'<div class="pcnote" style="margin-top:3px">'
       +(s.srRaisedAt?'Quote approved '+pcFmtD(s.srRaisedAt):'')
@@ -1160,8 +1184,9 @@ function pcOpen(i){
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
   if(PC_IS_EDITOR && !locked) h+='<button class="btn btn-gold" onclick="pcSave()">Save &amp; close</button>';
   h+='<button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCost()">Costing</button>';
-  h+='<button class="btn" style="background:#C9A24B;color:#22262e" onclick="pcQuotePrint()">&#128424; Print quote</button>';
-  if(PC_IS_EDITOR && !s.ref) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcToSR()">Customer approved \u2192 raise SR</button>';
+  if(!s.isProduct) h+='<button class="btn" style="background:#C9A24B;color:#22262e" onclick="pcQuotePrint()">&#128424; Print quote</button>';
+  if(PC_IS_EDITOR && s.isProduct && !s.productCode) h+='<button class="btn" style="background:#d1fae5;color:#065f46;font-weight:700" onclick="pcCreateProduct()">Create new product</button>';
+  if(PC_IS_EDITOR && !s.ref && !s.isProduct) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcToSR()">Customer approved \u2192 raise SR</button>';
   if(s.ref) h+='<button class="btn" style="background:var(--navy);color:#fff" onclick="pcPrint()">&#128424; Print sample WO</button>';
   if(s.productCode) h+='<button class="btn" style="background:#1F3864;color:#fff" onclick="pcPrintProduct()">&#128424; Print product WO\u2026</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
@@ -1235,8 +1260,8 @@ function pcValidate(){
   var missing=[];
   function flag(el,bad){ if(!el) return; el.style.borderColor=bad?'#c0392b':''; if(el.tagName!=='SELECT') el.style.background=bad?'#fdecea':''; }
   function req(id,label){ var el=document.getElementById(id); if(!el) return; var v=String(el.value||'').trim(); flag(el,!v); if(!v && missing.indexOf(label)<0) missing.push(label); }
-  req('pcF_customer','Customer'); req('pcF_garment','Garment name'); req('pcF_desc','Garment description'); req('pcF_due','Due date');
-  req('pcF_mach','Machining mins'); req('pcF_fin','Finishing mins'); req('pcF_batch','Cutting batch size'); req('pcF_cutmins','Cutting mins/batch'); req('pcF_sqty','Sample qty');
+  req('pcF_customer','Customer'); req('pcF_garment','Garment name'); req('pcF_desc','Garment description');
+  req('pcF_mach','Machining mins'); req('pcF_fin','Finishing mins'); req('pcF_batch','Cutting batch size'); req('pcF_cutmins','Cutting mins/batch'); if(!(PC_CUR>=0&&PC.srs[PC_CUR]&&PC.srs[PC_CUR].isProduct)) req('pcF_sqty','Sample qty');
   req('pcF_mkMain','Marker number (main)'); req('pcF_mkLen','Marker length'); req('pcF_layQty','Lay qty');
   var bt=document.getElementById('pcF_brandType'); if(bt&&bt.value!=='None') req('pcF_brandPlace','Branding placement');
   var hm=document.getElementById('pcF_hasMesh');
@@ -1270,7 +1295,7 @@ function pcDelete(){
   if(PC_CUR<0||!PC_IS_EDITOR) return;
   var s=PC.srs[PC_CUR];
   if(s.draft){ pcDiscardDraft(); return; }
-  var ref=pcRefLabel(s), key=s.quoteRef||s.ref||'';
+  var ref=pcRefLabel(s), key=pcKey(s);
   var msg='\u26a0 Delete '+ref+' completely?\n\nThis removes the quote'+(s.ref?', its sample works order '+s.ref:'')+(s.history&&s.history.length?' and '+s.history.length+' earlier version'+(s.history.length===1?'':'s'):'')+' from this PC.';
   if(s.productCode) msg+='\n\nIt was converted to product '+s.productCode+' \u2014 that product disappears from the costing search too.';
   msg+='\n\nIf it has been published, publish again afterwards, otherwise the published copy returns on the next reload.\n\nThis cannot be undone.';
@@ -1291,6 +1316,8 @@ function pcToSR(){
   delete s.draft;
   s.ref=next; PC.srSeq++;
   s.status='sampling'; s.srRaisedAt=pcToday();
+  /* sample due 10 days from approval unless a date was already chosen - still editable */
+  if(!s.due){ var dd=new Date(); dd.setDate(dd.getDate()+10); s.due=dd.toISOString().slice(0,10); }
   pcSaveData(); pcOpen(PC_CUR); pcRender();
 }
 
@@ -1743,23 +1770,30 @@ function pcCopySources(){
   });
   return out;
 }
-function pcCopyOpen(){
+var PC_COPY_MODE='quote';
+function pcNewProductOpen(){ if(!PC_IS_EDITOR) return; pcShow('pc'); pcCopyOpen('product'); }
+function pcCopyOpen(mode){
   if(!PC_IS_EDITOR) return;
-  document.getElementById('pcMTitle').textContent='Quote from existing product'; pcMDelShow(false);
+  PC_COPY_MODE=(mode==='product')?'product':'quote';
+  var prod=PC_COPY_MODE==='product';
+  document.getElementById('pcMTitle').textContent=prod?'New product from existing product':'Quote from existing product'; pcMDelShow(false);
   var b=document.getElementById('pcMBody');
-  b.innerHTML='<div class="pcsec"><h4>Copy the works-order details of an existing product into a new quote</h4><div class="in">'
+  b.innerHTML='<div class="pcsec"><h4>'+(prod?'Start a new product from an existing stock line':'Copy the works-order details of an existing product into a new quote')+'</h4><div class="in">'
     +'<p class="pcnote" id="pcCopyStatus">Loading the product list from the Production plan app\u2026</p>'
     +'<div class="pcrow" style="grid-template-columns:1fr 130px;margin-top:8px">'
     +'<input id="pcCopyCode" list="pcCopyDL" placeholder="Type a product code or style name\u2026" autocomplete="off">'
-    +'<button class="btn btn-gold" onclick="pcCopyDo()">Copy</button></div>'
+    +'<button class="btn btn-gold" onclick="pcCopyDo()">'+(prod?'Start':'Copy')+'</button></div>'
     +'<datalist id="pcCopyDL"></datalist>'
-    +'<p class="pcnote">Fabrics, trims, manufacturing &amp; finishing steps, times and cutting details are copied into a fresh quote \u2014 then adjust whatever the customer wants changed. Customer, due date and prices start blank.</p>'
+    +(prod
+      ? '<p class="pcnote">For a stock line where only the size / colour changes \u2014 e.g. a new fabric colour of an Oxford jacket. Everything is copied from the product you pick; the new code keeps that product\u2019s base and only the size / colour part is edited. No quote or sample: fill it in, then press <strong>Create new product</strong>.</p>'
+      : '<p class="pcnote">Fabrics, trims, manufacturing &amp; finishing steps, times and cutting details are copied into a fresh quote \u2014 then adjust whatever the customer wants changed. Customer, due date and prices start blank.</p>')
     +'</div></div>';
   document.getElementById('pcOv').classList.add('on'); PC_CUR=-1;
   function fill(){
     var dl=document.getElementById('pcCopyDL'), stat=document.getElementById('pcCopyStatus');
     if(!dl) return;
     var srcs=pcCopySources(), h='';
+    if(prod) srcs=srcs.filter(function(x){ return x.src==='wo' || (x.st&&x.st.productCode); });   /* products only */
     srcs.forEach(function(x){ h+='<option value="'+pcE(x.key)+'">'+pcE(x.label)+'</option>'; });
     dl.innerHTML=h;
     if(stat) stat.textContent=(PC_SM?PC_SM.length+' works-order styles from the Production plan app':'Production plan list unavailable (offline?)')+' \u00b7 '+PC.srs.length+' local quotes/SRs \u2014 all searchable below.';
@@ -1768,12 +1802,22 @@ function pcCopyOpen(){
   fill();
   pcStyleMasterLoad(fill);
 }
+function pcProductBase(code){
+  var c=String(code||'').toUpperCase();
+  if(c.indexOf('/')>0) return c.slice(0,c.indexOf('/'));
+  var m=/^(.+?)((--|\d\d)(--|\d\d)[A-Z]?)$/.exec(c);          /* size + colour (+ length letter) */
+  if(m && m[1].length>=5 && /-/.test(m[2])) return m[1];
+  if(c.length>=12) return c.slice(0,-4);
+  return c;
+}
 function pcCopyDo(){
   if(!PC_IS_EDITOR) return;
   var code=(document.getElementById('pcCopyCode').value||'').trim().toUpperCase();
   if(!code){ alert('Type or pick a product code first.'); return; }
+  var prod=PC_COPY_MODE==='product';
   var src=pcCopySources().find(function(x){ return x.key===code; });
   if(!src){ alert('Code '+code+' not found in the Production plan styles or your local quotes/SRs.'); return; }
+  if(prod && !(src.src==='wo' || (src.st&&src.st.productCode))){ alert(code+' is a quote or sample, not a product. A new product must start from an existing product.'); return; }
   var s={quoteRef:'Q'+String(PC.qSeq+1).padStart(4,'0'), ref:'', status:'quote', created:pcToday(), due:'',
     customer:'', garment:'', desc:'', brandType:'None', brandPlace:'',
     fabrics:[], trims:[], meas:[], mfg:'', fin:'',
@@ -1801,8 +1845,40 @@ function pcCopyDo(){
     s.trims=JSON.parse(JSON.stringify(o.trims||[]));
     s.meas=JSON.parse(JSON.stringify(o.meas||[]));
   }
-  PC.srs.unshift(s); PC.qSeq++; pcSaveData();
+  if(prod){
+    /* product-only record: no quote number, no sample - it becomes a product when created */
+    s.quoteRef=''; s.isProduct=true; s.status='production'; s.sampleQty='';
+    s.baseCode=pcProductBase(code); s.sourceCode=code;
+    s.prodCodeDraft=(s.baseCode===code)?code:s.baseCode+'----';
+    if(src.src==='pc'){ s.customer=src.st.customer||''; }
+    PC.srs.unshift(s); pcSaveData();          /* no quote number is taken */
+  } else {
+    PC.srs.unshift(s); PC.qSeq++; pcSaveData();
+  }
   pcOpen(0);
+}
+function pcCreateProduct(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s=PC.srs[PC_CUR];
+  if(!s.isProduct||s.productCode) return;
+  pcCollect(s);
+  var inp=document.getElementById('pcF_prodCode');
+  var code=((inp&&inp.value)||'').trim().toUpperCase();
+  s.prodCodeDraft=code;
+  var base=String(s.baseCode||'').toUpperCase();
+  if(!code){ alert('Enter the product code first.'); return; }
+  if(base && code.indexOf(base)!==0){ alert('The code must start with '+base+' \u2014 that is the stock line it comes from. Only the size / colour part after it can change.'); return; }
+  if(code===String(s.sourceCode||'').toUpperCase()){ alert(code+' is the existing product\u2019s own code. Change the size / colour part to make the new one.'); return; }
+  if(pcSheetHas(code)){ alert('Code '+code+' already exists in the All Costings sheet \u2014 it is not a new product.'); return; }
+  if(PC.srs.some(function(x,i){ return i!==PC_CUR && x.productCode===code; })){ alert('Code '+code+' is already used by another record here.'); return; }
+  var missing=pcValidate();
+  if(missing.length){ alert('Cannot create the product yet \u2014 these fields are blank (highlighted in red):\n\n\u2022 '+missing.join('\n\u2022 ')); return; }
+  var noCode=s.trims.filter(function(tr){ return !tr.code; });
+  if(noCode.length){ alert('Cannot create yet \u2014 '+noCode.length+' trim line(s) have no Sage code:\n\n'+noCode.map(function(tr){return '\u2022 '+(tr.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
+  if(!confirm('Create product '+code+'?\n\nIt is then locked like a converted sample: printable for IT and downloadable for the buffer app. Only the garment weight stays editable.')) return;
+  delete s.draft;
+  s.productCode=code; s.status='production'; s.convertedAt=pcToday(); s.savedAt=pcNow();
+  pcSaveData(); pcOpen(PC_CUR); pcRender();
 }
 
 /* ── trim & fabric price lists ── */
@@ -1898,14 +1974,14 @@ function pcPublish(){
         if((pub.prodSeq[k]||0)>(PC.prodSeq[k]||0)){ PC.prodSeq[k]=pub.prodSeq[k]; changed=true; }
       });
       pub.srs.forEach(function(p){
-        var key=p.quoteRef||p.ref; if(!key) return;
+        var key=pcKey(p); if(!key) return;
         var ix=-1;
-        for(var i=0;i<PC.srs.length;i++){ var l=PC.srs[i]; if((l.quoteRef||l.ref)===key){ ix=i; break; } }
+        for(var i=0;i<PC.srs.length;i++){ var l=PC.srs[i]; if(pcKey(l)===key){ ix=i; break; } }
         if(ix<0){ PC.srs.push(p); changed=true; return; }
         var l=PC.srs[ix];
         /* never disturb an unsaved draft, or the record open in the form */
         if(l.draft || ix===PC_CUR){ kept++; return; }
-        if(JSON.stringify(l)===JSON.stringify(p)) return;      /* already identical */
+        if(pcCanon(l)===pcCanon(p)) return;                     /* already identical */
         /* A follower takes the published copy. A PC that creates records yields
            only on hard evidence: both copies stamped and the published one later.
            An unstamped record predates the stamps, so its age is unknown and the
@@ -1925,8 +2001,8 @@ function pcPublish(){
         pcNormalize(PC);                      /* settle the shape before hashing */
         if(!kept){
           var pubKeys={};
-          pub.srs.forEach(function(x){ var k=x.quoteRef||x.ref; if(k) pubKeys[k]=1; });
-          var extra=PC.srs.filter(function(s){ return !s.draft && !pubKeys[s.quoteRef||s.ref]; }).length;
+          pub.srs.forEach(function(x){ var k=pcKey(x); if(k) pubKeys[k]=1; });
+          var extra=PC.srs.filter(function(s){ return !s.draft && !pubKeys[pcKey(s)]; }).length;
           if(!extra){ PC.pubHash=pcDataHash(); PC.pubAt=pub.publishedAt||PC.pubAt; }
         }
         pcSaveData();
