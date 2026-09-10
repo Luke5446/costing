@@ -146,6 +146,7 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
 <header>
   <img id="hdrLogo" alt="Tibard" style="height:38px;background:#fff;border-radius:6px;padding:3px 9px;display:none">
   <h1>Costing Calculator</h1>
+  <div id="pubBanner" style="display:none;font-size:12px;opacity:.85;padding-left:4px"></div>
   <div class="spacer"></div>
   <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
   <div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">
@@ -715,6 +716,11 @@ function pcSaveData(){ try{ localStorage.setItem('pcData',JSON.stringify(PC)); }
 function pcE(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function pcToday(){ return new Date().toISOString().slice(0,10); }
 function pcFmtD(s){ if(!s) return ''; var p=s.split('-'); return p.length===3? p[2]+'/'+p[1]+'/'+p[0] : s; }
+function pcPubBanner(){
+  var el=document.getElementById('pubBanner'); if(!el) return;
+  if(window.PC_PUB_AT){ el.textContent='Team data published '+pcFmtD(window.PC_PUB_AT); el.style.display=''; }
+  else el.style.display='none';
+}
 function pcNum(v){ var f=parseFloat(v); return isNaN(f)?0:f; }
 
 /* fabric master = COSTDATA.fabrics (code,name) + user list (code,name,unit,cost) */
@@ -1800,16 +1806,40 @@ function pcPublish(){
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
   a.download='published-data.json'; a.click();
   PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender();
-  alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\n\u26a0 The file must be called exactly published-data.json. If your browser saved it as \u201cpublished-data (2).json\u201d, rename it before uploading \u2014 the app only reads published-data.json, and GitHub replaces the old file when the name matches.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
+  alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\nThe name does not matter \u2014 if your browser saved it as \u201cpublished-data (2).json\u201d, upload it as it is. The app always reads the newest one.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
 }
 /* on every load, pull the published snapshot in (viewers take it as truth; editors only gain records they do not have) */
 (function(){
   if(typeof fetch!=='function') return;
-  fetch('published-data.json?v='+Date.now())
-    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+  /* A browser saves a repeat download as "published-data (2).json" and GitHub
+     keeps that name, so every numbered variant is looked for and the newest
+     wins - by publish date first, then by when the file itself was uploaded. */
+  var names=['published-data.json'];
+  for(var n=1;n<=9;n++) names.push('published-data ('+n+').json');
+  var v='?v='+Date.now();
+  Promise.all(names.map(function(nm){
+    return fetch(encodeURI(nm)+v).then(function(r){
+      if(!r.ok) throw 0;
+      var lm=Date.parse(r.headers.get('last-modified')||'')||0;
+      return r.json().then(function(j){ return {name:nm, lm:lm, pub:j}; });
+    }).catch(function(){ return null; });
+  }))
+    .then(function(list){
+      var best=null;
+      list.forEach(function(c){
+        if(!c || !c.pub || !Array.isArray(c.pub.srs)) return;
+        if(!best){ best=c; return; }
+        var a=c.pub.publishedAt||'', b=best.pub.publishedAt||'';
+        if(a>b || (a===b && c.lm>best.lm)) best=c;
+      });
+      if(!best) throw 0;
+      window.PC_PUB_FILE=best.name;
+      return best.pub;
+    })
     .then(function(pub){
       if(!pub || !Array.isArray(pub.srs)) return;
       window.PC_PUB_AT=pub.publishedAt||'';
+      pcPubBanner();
       var changed=false;
       if((pub.qSeq||0)>(PC.qSeq||0)){ PC.qSeq=pub.qSeq; changed=true; }
       if((pub.srSeq||0)>(PC.srSeq||0)){ PC.srSeq=pub.srSeq; changed=true; }
