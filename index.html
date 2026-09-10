@@ -630,6 +630,11 @@ initSettings(); render();
     <div class="field"><label>Search</label><input id="pcSearch" placeholder="Q / SR number, customer, garment, product code…" style="min-width:250px"></div>
     <div class="field"><label>Status</label><select id="pcFilter"><option value="">All statuses</option><option value="quote">Quote — awaiting approval</option><option value="sampling">In sampling</option><option value="feedback">Awaiting customer feedback</option><option value="hold">On hold</option><option value="approved">Approved</option><option value="production">In production</option><option value="rejected">Rejected</option></select></div>
     <div style="flex:1"></div>
+    <div class="field" id="pcRoleWrap" style="display:none"><label>This PC</label>
+      <select id="pcRoleSel" onchange="pcSetRole(this.value)">
+        <option value="author">Creates records here</option>
+        <option value="follow">Follows the published file</option>
+      </select></div>
     <button class="btn btn-gold" id="pcNewBtn" style="display:none">+ New quote</button>
     <button class="btn btn-ghost2" id="pcCopyBtn" style="background:#e8ecf3;color:var(--navy);display:none">Quote from existing product…</button>
     <button class="btn btn-ghost2" id="pcPublishBtn" style="background:#d1fae5;color:#065f46;display:none">Publish for teams…</button>
@@ -690,29 +695,34 @@ function pcLoad(){
   var d=null;
   try{ d=JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){}
   if(!d) d={srSeq:0, qSeq:0, prodSeq:{}, srs:[], trimsList:[], fabricsList:[]};
-  var hadUnpublished=false;
-  if(!d.stampInit && Array.isArray(d.srs) && d.srs.length){
-    /* measured before save stamps exist, so it is comparable with the stored hash */
-    var live=d.srs.filter(function(s){ return !s.draft; });
-    var txt=JSON.stringify(live), h=5381;
-    for(var i=0;i<txt.length;i++){ h=((h<<5)+h+txt.charCodeAt(i))|0; }
-    hadUnpublished=live.length>0 && d.pubHash!==String(h);
+  return pcNormalize(d);
+}
+/* Which PC is in charge is stated, not guessed. One person creates records at a
+   time (the Garment Technologist); every other PC follows the published file.
+   On holiday whoever covers sets their PC to create, and publishes as usual. */
+function pcIsFollower(){ return !PC_IS_EDITOR || PC.role==='follow'; }
+function pcSetRole(v){
+  if(!PC_IS_EDITOR) return;
+  var sel=document.getElementById('pcRoleSel');
+  if(v==='follow' && pcHasUnpublished()){
+    if(!confirm('Set this PC to follow the published file?\n\nThis PC has changes that have not been published yet. Once it follows, the published copy of a record replaces the copy here.\n\nPublish first if this PC\u2019s work should be kept.')){
+      if(sel) sel.value=PC.role||'author';
+      return;
+    }
   }
-  d=pcNormalize(d);
-  if(!d.stampInit){
-    d.stampInit=1;
-    if(hadUnpublished) d.srs.forEach(function(s){ if(!s.savedAt && !s.draft) s.savedAt=pcNow(); });
-    try{
-      localStorage.setItem('pcData',JSON.stringify(d));
-      if(!hadUnpublished){
-        var t2=JSON.stringify(d.srs.filter(function(s){ return !s.draft; })), h2=5381;
-        for(var j=0;j<t2.length;j++){ h2=((h2<<5)+h2+t2.charCodeAt(j))|0; }
-        d.pubHash=String(h2);   /* shape changed, not the content - no false warning */
-        localStorage.setItem('pcData',JSON.stringify(d));
-      }
-    }catch(e){}
-  }
-  return d;
+  PC.role=v; pcSaveData(); pcRender();
+  alert(v==='follow'
+    ? 'This PC now follows the published file.\n\nReload the page to pull in the latest published records.'
+    : 'This PC now creates records.\n\nIts own saves are kept, and reach everyone else when you publish.');
+}
+/* nothing a merge overwrites is thrown away - the local copy is kept here so a
+   wrong call is always recoverable from a Backup */
+function pcKeepReplaced(s){
+  try{
+    PC.replaced=PC.replaced||[];
+    PC.replaced.unshift({at:pcNow(), rec:JSON.parse(JSON.stringify(s))});
+    if(PC.replaced.length>30) PC.replaced.length=30;
+  }catch(e){}
 }
 function pcRate(){                       // current PW rate from the costing calculator's saved settings
   try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}'); if(pcNum(s.rate)>0) return pcNum(s.rate); }catch(e){}
@@ -750,8 +760,9 @@ function pcFmtD(s){ if(!s) return ''; var p=s.split('-'); return p.length===3? p
 function pcPubBanner(){
   var el=document.getElementById('pubBanner'); if(!el) return;
   if(window.PC_PUB_AT){
-    var n=window.PC_PUB_KEPT||0;
+    var n=window.PC_PUB_KEPT||0, r=window.PC_PUB_REPLACED||0;
     el.textContent='Team data published '+pcFmtTS(window.PC_PUB_AT)
+      +(r?'  \u00b7  '+r+' record'+(r===1?'':'s')+' updated from it':'')
       +(n?'  \u00b7  \u26a0 '+n+' record'+(n===1?'':'s')+' newer on this PC \u2014 publish to share':'');
     el.style.display='';
   }
@@ -816,9 +827,10 @@ function pcToggleEditor(){
 function pcApplyMode(){
   var eb=document.getElementById('pcEditorBtn');
   if(eb) eb.textContent=PC_IS_EDITOR?'Editor \u2713 (log out)':'View only \u2014 log in';
-  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn'].forEach(function(id){
+  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=PC_IS_EDITOR?'':'none';
   });
+  var rs=document.getElementById('pcRoleSel'); if(rs) rs.value=PC.role||'author';
 }
 
 /* ── board ── */
@@ -1867,8 +1879,9 @@ function pcPublish(){
       list.forEach(function(c){
         if(!c || !c.pub || !Array.isArray(c.pub.srs)) return;
         if(!best){ best=c; return; }
-        var a=c.pub.publishedTS||c.pub.publishedAt||'', b=best.pub.publishedTS||best.pub.publishedAt||'';
-        if(a>b || (a===b && c.lm>best.lm)) best=c;
+        var ka=[(c.pub.publishedTS||c.pub.publishedAt||'').slice(0,10), c.pub.publishedTS||'', c.lm];
+        var kb=[(best.pub.publishedTS||best.pub.publishedAt||'').slice(0,10), best.pub.publishedTS||'', best.lm];
+        for(var q=0;q<3;q++){ if(ka[q]!==kb[q]){ if(ka[q]>kb[q]) best=c; break; } }
       });
       if(!best) throw 0;
       window.PC_PUB_FILE=best.name;
@@ -1878,7 +1891,7 @@ function pcPublish(){
       if(!pub || !Array.isArray(pub.srs)) return;
       window.PC_PUB_AT=pub.publishedTS||pub.publishedAt||'';
       pcPubBanner();
-      var changed=false, kept=0;
+      var changed=false, kept=0, replaced=0, follows=pcIsFollower();
       if((pub.qSeq||0)>(PC.qSeq||0)){ PC.qSeq=pub.qSeq; changed=true; }
       if((pub.srSeq||0)>(PC.srSeq||0)){ PC.srSeq=pub.srSeq; changed=true; }
       if(pub.prodSeq) Object.keys(pub.prodSeq).forEach(function(k){
@@ -1889,17 +1902,23 @@ function pcPublish(){
         var ix=-1;
         for(var i=0;i<PC.srs.length;i++){ var l=PC.srs[i]; if((l.quoteRef||l.ref)===key){ ix=i; break; } }
         if(ix<0){ PC.srs.push(p); changed=true; return; }
-        /* The published file is the one version of a record. It is only kept out
-           of the way when THIS PC holds a newer save of it - whoever is covering
-           edits, publishes, and their copy becomes the published one in turn. */
         var l=PC.srs[ix];
-        var lt=(PC_IS_EDITOR && l.savedAt) || '', pt=p.savedAt||'';
-        if(!lt || (pt && pt>lt)){ PC.srs[ix]=p; changed=true; return; }
+        /* never disturb an unsaved draft, or the record open in the form */
+        if(l.draft || ix===PC_CUR){ kept++; return; }
+        if(JSON.stringify(l)===JSON.stringify(p)) return;      /* already identical */
+        /* A follower takes the published copy. A PC that creates records yields
+           only on hard evidence: both copies stamped and the published one later.
+           An unstamped record predates the stamps, so its age is unknown and the
+           PC that created it keeps it - the banner says so. */
+        var lt=l.savedAt||'', pt=p.savedAt||'';
+        if(follows || (pt && lt && pt>lt)){
+          pcKeepReplaced(l); PC.srs[ix]=p; changed=true; replaced++; return;
+        }
         kept++;
         if(p.brandPlace && !l.brandPlace){ l.brandPlace=p.brandPlace; if(p.brandType&&(!l.brandType||l.brandType==='None')) l.brandType=p.brandType; changed=true; }
         if(p.placeImg && !l.placeImg){ l.placeImg=p.placeImg; changed=true; }
       });
-      window.PC_PUB_KEPT=kept; pcPubBanner();
+      window.PC_PUB_KEPT=kept; window.PC_PUB_REPLACED=replaced; pcPubBanner();
       /* Records taken FROM the published file are not unpublished changes, so the
          warning is cleared unless this PC holds something the file does not. */
       if(changed){
