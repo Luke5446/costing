@@ -1865,14 +1865,25 @@ function pcCopyDo(){
   if(src.src==='wo'){
     var st=src.st;
     s.desc=((st.name?st.name+' \u2014 ':'')+(st.desc||'')).trim();
-    s.fabrics=(st.fabrics||[]).map(function(f){ var lk=pcFabricLookup(f[1]); return {name:f[0]||'', code:f[1]||'', loc:f[2]||(lk&&lk.loc)||'', rating:'', cost:(lk&&lk.cost!=null)?String(lk.cost):''}; });
-    s.trims=(st.trims||[]).map(function(tr){ return {code:'', desc:(tr[0]?tr[0]+': ':'')+(tr[1]||''), qty:'', cost:''}; });
+    /* buffer-app fabrics are [name, code, location] or, on the newer entries, [name, code, location, rating m/unit, cost/m];
+       trims [label, detail] or [label, detail, qty, sageCode, cost]. Carry the rating, Sage code, qty and price across so a
+       stock template needs no re-typing - the Sage price list here still wins where it knows the code. */
+    s.fabrics=(st.fabrics||[]).map(function(f){ var lk=pcFabricLookup(f[1]);
+      var rt=(f.length>3&&f[3]!=null&&f[3]!=='')?String(f[3]):'';
+      var fc=(lk&&lk.cost!=null)?String(lk.cost):((f.length>4&&f[4]!=null&&f[4]!=='')?String(f[4]):'');
+      return {name:f[0]||'', code:f[1]||'', loc:f[2]||(lk&&lk.loc)||'', rating:rt, cost:fc}; });
+    s.trims=(st.trims||[]).map(function(tr){ var tc=(tr.length>3&&tr[3])?String(tr[3]).toUpperCase():'', lk=tc?pcTrimLookup(tc):null;
+      var d=(tr[0]?tr[0]+': ':'')+(tr[1]||'');
+      return {code:tc, desc:d||(lk&&lk.name)||'', qty:(tr.length>3&&tr[2]!=null&&tr[2]!=='')?String(tr[2]):'',
+              cost:(lk&&lk.cost!=null)?String(lk.cost):((tr.length>4&&tr[4]!=null&&tr[4]!=='')?String(tr[4]):'')}; });
     s.mfg=(st.mfg||[]).join('\n'); s.fin=(st.fin||[]).join('\n');
     s.machMins=st.machMins!=null?String(st.machMins):''; s.finMins=st.finMins!=null?String(st.finMins):'';
     s.cutBatch=st.cutBatch!=null?String(st.cutBatch):''; s.cutMins=st.cutMins!=null?st.cutMins:15;
     s.lectra=st.lectra||''; s.variant=st.variant||'';
     s.isOH=code.indexOf('OH')===0;
-    PC_CATS.forEach(function(c){ if(code.indexOf(c[0])===2) s.garment=c[1]; });
+    /* garment type from the code stem: OHCJ…, OHLCJ… (ladies), CICJ… (short sleeve) and plain CJ… are all chef jackets */
+    var gm=/^(?:OH)?L?(?:CI)?([A-Z]{2})/.exec(code);
+    PC_CATS.forEach(function(c){ if(gm&&gm[1]===c[0]) s.garment=c[1]; });
   } else {
     var o=src.st;
     ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
