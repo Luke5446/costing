@@ -685,6 +685,7 @@ function pcNormalize(d){                 // shared by initial load and Restore â
     if(s.sampleApprovedAt===undefined) s.sampleApprovedAt='';
     if(s.weightG===undefined) s.weightG='';
     if(s.savedAt===undefined) s.savedAt='';
+    ['due','created','srRaisedAt','convertedAt','sampleApprovedAt'].forEach(function(k){ if(s[k]) s[k]=pcFixYear(s[k]); });
     if(s.isOH===undefined) s.isOH=false;
     if(s.version===undefined) s.version=1;
     if(!Array.isArray(s.history)) s.history=[];
@@ -714,6 +715,31 @@ function pcSetRole(v){
   alert(v==='follow'
     ? 'This PC now follows the published file.\n\nReload the page to pull in the latest published records.'
     : 'This PC now creates records.\n\nIts own saves are kept, and reach everyone else when you publish.');
+}
+/* the PC that creates records keeps what it typed; the milestone the published
+   copy reached (SR raised, product code, printed) is added to it */
+function pcMergeMilestones(l,p){
+  if(p.ref && !l.ref){ l.ref=p.ref; l.srRaisedAt=p.srRaisedAt||l.srRaisedAt||pcToday(); if(!l.status||l.status==='quote') l.status=p.status||'sampling'; if(!l.due&&p.due) l.due=p.due; }
+  if(p.productCode && !l.productCode){ l.productCode=p.productCode; l.convertedAt=p.convertedAt||pcToday(); l.status='production'; }
+  if(p.printed && !l.printed){ l.printed=true; l.printedAt=p.printedAt||''; }
+  if(p.quotePrinted && !l.quotePrinted){ l.quotePrinted=true; l.quotePrintedAt=p.quotePrintedAt||''; }
+  if(p.weightG && !l.weightG) l.weightG=p.weightG;
+  /* carry the published stamp, never a fresh one - a fresh stamp would let this
+     PC's older text outrank everyone else's the moment it published */
+  if(p.savedAt && (!l.savedAt || p.savedAt>l.savedAt)) l.savedAt=p.savedAt;
+}
+function pcPublishedCopy(s){
+  var pub=window.PC_PUB_LAST; if(!pub||!Array.isArray(pub.srs)) return null;
+  var k=pcKey(s); if(!k) return null;
+  for(var i=0;i<pub.srs.length;i++){ if(pcKey(pub.srs[i])===k) return pub.srs[i]; }
+  return null;
+}
+function pcAdoptPublished(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s=PC.srs[PC_CUR], p=pcPublishedCopy(s); if(!p) return;
+  if(!confirm('Replace this PC\u2019s copy of '+pcRefLabel(s)+' with the published copy?\n\nAnything typed here since is lost (a copy is kept for Backup).')) return;
+  pcKeepReplaced(s); PC.srs[PC_CUR]=JSON.parse(JSON.stringify(p));
+  pcSaveData(); pcOpen(PC_CUR); pcRender();
 }
 /* nothing a merge overwrites is thrown away - the local copy is kept here so a
    wrong call is always recoverable from a Backup */
@@ -759,6 +785,7 @@ function pcSaveData(){ try{ localStorage.setItem('pcData',JSON.stringify(PC)); }
 function pcE(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function pcToday(){ return new Date().toISOString().slice(0,10); }
 function pcNow(){ return new Date().toISOString(); }
+function pcFixYear(v){ v=String(v||''); return (/^0\d\d\d-\d\d-\d\d$/.test(v))?'20'+v.slice(2):v; }
 function pcFmtTS(s){
   if(!s) return '';
   if(s.length<=10) return pcFmtD(s);
@@ -773,7 +800,8 @@ function pcPubBanner(){
     var n=window.PC_PUB_KEPT||0, r=window.PC_PUB_REPLACED||0;
     el.textContent='Team data published '+pcFmtTS(window.PC_PUB_AT)
       +(r?'  \u00b7  '+r+' record'+(r===1?'':'s')+' updated from it':'')
-      +(n?'  \u00b7  \u26a0 '+n+' record'+(n===1?'':'s')+' newer on this PC \u2014 publish to share':'');
+      +(n?'  \u00b7  \u26a0 '+n+' record'+(n===1?'':'s')+' newer on this PC \u2014 publish to share':'')
+      +((window.PC_PUB_BEHIND||0)?'  \u00b7  \u26a0 the published file is behind this PC on '+window.PC_PUB_BEHIND+' record'+(window.PC_PUB_BEHIND===1?'':'s')+' (product code or SR missing there) \u2014 publish to restore':'');
     el.style.display='';
   }
   else el.style.display='none';
@@ -1085,6 +1113,15 @@ function pcOpen(i){
 
   var h=dl;
   if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> â€” it is searchable and printable but no longer editable.</div>';
+  var pubCopy=pcPublishedCopy(s);
+  if(PC_IS_EDITOR && pubCopy && pcCanon(pubCopy)!==pcCanon(s) && !s.draft){
+    var pm=(pubCopy.productCode?2:0)+(pubCopy.ref?1:0), lm=(s.productCode?2:0)+(s.ref?1:0);
+    h+='<div class="pcok" style="background:#fef3c7;color:#92400e;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+      +'<span style="flex:1">\u26a0 The published copy of this record differs from the copy on this PC'
+      +(pm>lm?' \u2014 it is further on ('+(pubCopy.productCode?'product '+pcE(pubCopy.productCode):'sample '+pcE(pubCopy.ref))+')':pm<lm?' \u2014 this PC is further on; publish to share it':'')
+      +'. Published '+pcE(pcFmtTS(window.PC_PUB_AT||''))+'.</span>'
+      +'<button type="button" class="btn pcmini" style="background:#fff;color:#92400e;border:1px solid #d97706" onclick="pcAdoptPublished()">Use the published copy</button></div>';
+  }
   if(s.isProduct && !s.productCode){
     h+='<div class="pcsec"><h4>New product</h4><div class="in">'
       +'<div class="pcrow" style="grid-template-columns:260px 1fr">'
@@ -1212,7 +1249,7 @@ function pcCollect(s){
   s.savedAt=pcNow();
   s.customer=document.getElementById('pcF_customer').value.trim();
   s.garment=document.getElementById('pcF_garment').value.trim();
-  s.due=document.getElementById('pcF_due').value;
+  s.due=pcFixYear(document.getElementById('pcF_due').value);
   var newStatus=document.getElementById('pcF_status').value;
   if(newStatus==='approved' && s.status!=='approved' && !s.sampleApprovedAt) s.sampleApprovedAt=pcToday();
   s.status=newStatus;
@@ -1923,8 +1960,30 @@ function pcHasUnpublished(){
   if(!PC.srs.filter(function(s){ return !s.draft; }).length) return false;
   return PC.pubHash!==pcDataHash();
 }
+function pcPublishRegressions(){
+  var pub=window.PC_PUB_LAST; if(!pub||!Array.isArray(pub.srs)) return [];
+  var out=[];
+  pub.srs.forEach(function(p){
+    var k=pcKey(p); if(!k) return;
+    var l=null; for(var i=0;i<PC.srs.length;i++){ if(pcKey(PC.srs[i])===k){ l=PC.srs[i]; break; } }
+    if(!l||l.draft) return;
+    if(p.productCode && !l.productCode) out.push({key:k, what:'product code '+p.productCode, pub:p});
+    else if(p.ref && !l.ref) out.push({key:k, what:'sample works order '+p.ref, pub:p});
+  });
+  return out;
+}
 function pcPublish(){
   if(!PC_IS_EDITOR) return;
+  var regress=pcPublishRegressions();
+  if(regress.length){
+    var lines=regress.map(function(r){ return '\u2022 '+r.key+' \u2014 the published file has '+r.what+', this PC\u2019s copy does not'; }).join('\n');
+    if(confirm('\u26a0 Publishing now would UNDO work that is already published:\n\n'+lines+'\n\nThis PC is behind on those records. Take the published copies first (recommended)?\n\nOK = take them and continue publishing.  Cancel = do not publish.')){
+      regress.forEach(function(r){
+        for(var i=0;i<PC.srs.length;i++){ if(pcKey(PC.srs[i])===r.key){ pcKeepReplaced(PC.srs[i]); PC.srs[i]=r.pub; break; } }
+      });
+      pcSaveData(); pcRender();
+    } else return;
+  }
   var out={publishedAt:pcToday(), publishedTS:pcNow(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq,
            srs:PC.srs.filter(function(s){ return !s.draft; }),
            /* the pasted trim & fabric price lists travel too, so every PC and the Works Order Editor can pick from them */
@@ -1969,7 +2028,8 @@ function pcPublish(){
       if(!pub || !Array.isArray(pub.srs)) return;
       window.PC_PUB_AT=pub.publishedTS||pub.publishedAt||'';
       pcPubBanner();
-      var changed=false, kept=0, replaced=0, follows=pcIsFollower();
+      var changed=false, kept=0, replaced=0, behind=0, follows=pcIsFollower();
+      window.PC_PUB_LAST=pub;
       if((pub.qSeq||0)>(PC.qSeq||0)){ PC.qSeq=pub.qSeq; changed=true; }
       if((pub.srSeq||0)>(PC.srSeq||0)){ PC.srSeq=pub.srSeq; changed=true; }
       if(pub.prodSeq) Object.keys(pub.prodSeq).forEach(function(k){
@@ -1997,15 +2057,22 @@ function pcPublish(){
            only on hard evidence: both copies stamped and the published one later.
            An unstamped record predates the stamps, so its age is unknown and the
            PC that created it keeps it - the banner says so. */
+        /* A product code or a raised SR is a milestone. A copy that has one never
+           yields to a copy without it, whatever the stamps say - that is how a
+           conversion got undone once. The other way round, a PC that is behind on
+           a milestone adopts the published copy even if its own is unstamped. */
+        var lMile=(l.productCode?2:0)+(l.ref?1:0), pMile=(p.productCode?2:0)+(p.ref?1:0);
+        if(lMile>pMile){ kept++; behind++; return; }
         var lt=l.savedAt||'', pt=p.savedAt||'';
         if(follows || (pt && lt && pt>lt)){
           pcKeepReplaced(l); PC.srs[ix]=p; changed=true; replaced++; return;
         }
+        if(pMile>lMile){ pcMergeMilestones(l,p); changed=true; replaced++; return; }
         kept++;
         if(p.brandPlace && !l.brandPlace){ l.brandPlace=p.brandPlace; if(p.brandType&&(!l.brandType||l.brandType==='None')) l.brandType=p.brandType; changed=true; }
         if(p.placeImg && !l.placeImg){ l.placeImg=p.placeImg; changed=true; }
       });
-      window.PC_PUB_KEPT=kept; window.PC_PUB_REPLACED=replaced; pcPubBanner();
+      window.PC_PUB_KEPT=kept; window.PC_PUB_REPLACED=replaced; window.PC_PUB_BEHIND=behind; pcPubBanner();
       /* Records taken FROM the published file are not unpublished changes, so the
          warning is cleared unless this PC holds something the file does not. */
       if(changed){
