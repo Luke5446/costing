@@ -1784,19 +1784,30 @@ function pcViewRevision(ix){
 
 /* ── copy a new quote from an existing product ── */
 var PC_SM=null;   // style master fetched from the Production plan app
+var PC_SM_LIVE=false, PC_SM_AT='', PC_SM_ERR=false;   // read from the live page this visit? / date of the saved copy / last read failed
 function pcStyleMasterLoad(cb){
-  if(PC_SM){ cb(); return; }
-  try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); if(c&&c.styles){ PC_SM=c.styles; } }catch(e){}
-  fetch('https://luke5446.github.io/Tibard-Productionplan/index.html')
-    .then(function(r){ return r.text(); })
+  /* The saved copy fills the list at once, but the live page is still read once per visit, so a
+     stock style added to the Production plan app shows up here without anything being cleared. */
+  if(!PC_SM){ try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); if(c&&c.styles){ PC_SM=c.styles; PC_SM_AT=c.savedAt||''; } }catch(e){} }
+  if(PC_SM_LIVE){ cb(); return; }
+  fetch('https://luke5446.github.io/Tibard-Productionplan/index.html?t='+Date.now(), {cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(function(txt){
       var m=txt.match(/var STYLE_MASTER=(\{[\s\S]*?\});?\n/);
-      if(m){ var d=JSON.parse(m[1]); PC_SM=d.styles||[];
+      if(m){ var d=JSON.parse(m[1]); PC_SM=d.styles||[]; PC_SM_LIVE=true; PC_SM_ERR=false; PC_SM_AT=pcToday();
         try{ localStorage.setItem('pcStyleMaster',JSON.stringify({savedAt:pcToday(),styles:PC_SM})); }catch(e){}
-      }
+      } else { PC_SM_ERR=true; }
       cb();
     })
-    .catch(function(){ cb(); });
+    .catch(function(){ PC_SM_ERR=true; cb(); });
+}
+function pcStyleMasterNote(){
+  if(!PC_SM) return 'Production plan list unavailable (offline?)';
+  var from=PC_SM_AT?' from '+PC_SM_AT.split('-').reverse().join('/'):'';
+  var how=PC_SM_LIVE?' (read from the Production plan app just now)'
+        :(PC_SM_ERR?' (saved copy'+from+' \u2014 the Production plan app could not be reached, so anything newer is missing)'
+                   :' (saved copy'+from+' \u2014 checking the Production plan app for newer\u2026)');
+  return PC_SM.length+' works-order styles'+how;
 }
 function pcCopySources(){
   var out=[];
@@ -1833,7 +1844,7 @@ function pcCopyOpen(mode){
     if(prod) srcs=srcs.filter(function(x){ return x.src==='wo' || (x.st&&x.st.productCode); });   /* products only */
     srcs.forEach(function(x){ h+='<option value="'+pcE(x.key)+'">'+pcE(x.label)+'</option>'; });
     dl.innerHTML=h;
-    if(stat) stat.textContent=(PC_SM?PC_SM.length+' works-order styles from the Production plan app':'Production plan list unavailable (offline?)')+' \u00b7 '+PC.srs.length+' local quotes/SRs \u2014 all searchable below.';
+    if(stat) stat.textContent=pcStyleMasterNote()+' \u00b7 '+PC.srs.length+' local quotes/SRs \u2014 all searchable below.';
   }
   if(!PC_SM){ try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); if(c&&c.styles) PC_SM=c.styles; }catch(e){} }
   fill();
