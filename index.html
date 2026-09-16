@@ -148,7 +148,7 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
   <h1>Costing Calculator</h1>
   <div id="pubBanner" style="display:none;font-size:12px;opacity:.85;padding-left:4px"></div>
   <div class="spacer"></div>
-  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="navNewProdBtn" onclick="pcNewProductOpen()" style="display:none">New product from existing product</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
+  <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
   <div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">
     <button class="btn btn-ghost" id="pcRestoreBtn" style="display:none;font-size:11px;padding:4px 12px">Restore</button>
     <button class="btn" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none;font-size:11px;padding:4px 12px">Reset all</button>
@@ -636,7 +636,10 @@ initSettings(); render();
         <option value="follow">Follows the published file</option>
       </select></div>
     <button class="btn btn-gold" id="pcNewBtn" style="display:none">+ New quote</button>
+    <div style="display:flex;flex-direction:column;gap:6px">
     <button class="btn btn-ghost2" id="pcCopyBtn" style="background:#e8ecf3;color:var(--navy);display:none">Quote from existing product…</button>
+    <button class="btn btn-ghost2" id="pcNewProdBtn" onclick="pcNewProductOpen()" style="background:#e8ecf3;color:var(--navy);display:none">Additional size or fabric change for existing product</button>
+    </div>
     <button class="btn btn-ghost2" id="pcPublishBtn" style="background:#d1fae5;color:#065f46;display:none">Publish for teams…</button>
     <button class="btn btn-ghost2" id="pcListsBtn" style="background:#e8ecf3;color:var(--navy);display:none">Trim &amp; fabric lists</button>
   </div>
@@ -663,6 +666,59 @@ var PC_CATS=[["CJ","Chef jacket"],["CT","Chef trousers"],["AP","Apron"],["AC","A
 var PC_BRAND_LETTER='B';                      // letter inserted for customer-branded codes, e.g. CJB0001
 var PC_EMB_CHARGE=4.50;                       // £ per unit added to quoted price when branding is EMB
 var PC_NUMW=4;                                // digits in generated product numbers
+/* ── sizes ──
+   A quote for anything but an apron carries a size, and the product code carries it too
+   (CJ0002M, OHCJ000252), so one special make code covers several sizes. The list depends on
+   the range: OH or Tibard, jacket or trousers, and for OH whether it is the ladies fit. */
+function pcRange(a,b){ var o=[]; for(var n=a;n<=b;n+=2) o.push(String(n).padStart(2,'0')); return o; }
+var PC_SIZES={
+  OH_JKT: pcRange(28,60),
+  OH_LJKT: pcRange(6,26),
+  OH_TR: ['XXS','XS','S','M','L','XL','XXL','3XL'].concat(pcRange(26,46)),
+  OH_LTR: pcRange(6,20),
+  TB_JKT: ['XXS','XS','S','M','L','XL'].concat(pcRange(52,66)),
+  TB_TR: ['XS','S','M','L','XL','XXL'].concat(pcRange(46,66))
+};
+function pcCatOf(garment){ var g=String(garment||'').trim().toUpperCase(), c=null; PC_CATS.forEach(function(x){ if(x[1].toUpperCase()===g) c=x[0]; }); return c; }
+/* the size list for a record, or null when the garment is not sized (aprons). Garments other than
+   trousers use the jacket range. */
+function pcSizeList(o){
+  var cat=pcCatOf(o.garment);
+  if(cat==='AP') return null;
+  var tr=(cat==='CT');
+  if(o.isOH) return o.ladies ? (tr?PC_SIZES.OH_LTR:PC_SIZES.OH_LJKT) : (tr?PC_SIZES.OH_TR:PC_SIZES.OH_JKT);
+  return tr?PC_SIZES.TB_TR:PC_SIZES.TB_JKT;
+}
+/* the part of the product code that carries the size: nothing for one size */
+function pcSizeTok(size){ var v=String(size||'').trim().toUpperCase().replace(/\s+/g,''); return (!v||v==='ONESIZE')?'':v; }
+function pcSizeOpts(o, cur){
+  var list=pcSizeList(o)||[], seen={'':1,'ONE SIZE':1};
+  var h='<option value="">\u2014 pick a size \u2014</option><option value="One size"'+(cur==='One size'?' selected':'')+'>One size</option>';
+  list.forEach(function(z){ seen[z.toUpperCase()]=1; h+='<option value="'+pcE(z)+'"'+(cur===z?' selected':'')+'>'+pcE(z)+'</option>'; });
+  if(cur && !seen[String(cur).toUpperCase()]) h+='<option value="'+pcE(cur)+'" selected>'+pcE(cur)+' (not in this range)</option>';
+  return h;
+}
+/* the range tick boxes and the garment drive the list: rebuild it when they change */
+function pcSizeRefresh(){
+  var sel=document.getElementById('pcF_size');
+  var o={garment:(document.getElementById('pcF_garment')||{}).value||'', isOH:!!((document.getElementById('pcF_isOH')||{}).checked), ladies:!!((document.getElementById('pcF_ladies')||{}).checked)};
+  var wrap=document.getElementById('pcSizeWrap'), lw=document.getElementById('pcLadiesWrap');
+  if(lw) lw.style.display=o.isOH?'':'none';
+  if(!sel) return;
+  if(!pcSizeList(o)){ if(wrap) wrap.style.display='none'; return; }
+  if(wrap) wrap.style.display='';
+  var cur=sel.value; sel.innerHTML=pcSizeOpts(o,cur);
+}
+/* a costing-app special make (CJ0002…) or a stock style / family from the Production plan app */
+function pcFamilyOf(s){ return s.family || (s.quoteRef?'special':(s.copiedFrom?'stock':'special')); }
+/* the special make code without its size: CJ0002M -> CJ0002 */
+function pcSpecialBase(s){
+  if(s.specialBase) return s.specialBase;
+  var code=String(s.productCode||''), tok=pcSizeTok(s.size);
+  return (tok && code.slice(-tok.length)===tok) ? code.slice(0,-tok.length) : code;
+}
+/* a stock template that covers every size (OHCJMOXFORD--07): no single size to pick */
+function pcIsFamilyRec(s){ return !!(s.isProduct && pcFamilyOf(s)==='stock' && /--/.test(String(s.productCode||s.prodCodeDraft||'')) && !(s.editScope==='size'||s.editScope==='both')); }
 
 function pcNormalize(d){                 // shared by initial load and Restore — older data pre-dates the quote stage
   d.srSeq=d.srSeq||0; d.qSeq=d.qSeq||0; d.prodSeq=d.prodSeq||{};
@@ -775,7 +831,7 @@ function pcSheetHas(code){
 }
 function pcKey(s){ return s.quoteRef||s.ref||s.productCode||''; }
 function pcRefLabel(s){
-  if(s.isProduct && !s.quoteRef) return s.productCode || ('New product from '+(s.copiedFrom||'\u2026'));
+  if(s.isProduct && !s.quoteRef) return s.productCode || ((s.editScope==='size'?'New size of ':s.editScope==='fabric'?'New fabric of ':s.editScope==='both'?'New size & fabric of ':'New product from ')+(s.copiedFrom||'\u2026'));
   var base = s.ref ? (s.quoteRef? s.quoteRef+' → '+s.ref : s.ref) : (s.quoteRef||'');
   if(s.ref && (s.version||1)>1) base+=' V'+s.version;
   return base;
@@ -865,7 +921,7 @@ function pcToggleEditor(){
 function pcApplyMode(){
   var eb=document.getElementById('pcEditorBtn');
   if(eb) eb.textContent=PC_IS_EDITOR?'Editor \u2713 (log out)':'View only \u2014 log in';
-  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap','navNewProdBtn'].forEach(function(id){
+  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap','pcNewProdBtn'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=PC_IS_EDITOR?'':'none';
   });
   var rs=document.getElementById('pcRoleSel'); if(rs) rs.value=PC.role||'author';
@@ -938,7 +994,7 @@ function pcRender(){
     }
     if(filt && s.status!==filt) return;
     if(srch){
-      var hay=[s.quoteRef,s.ref,s.customer,s.garment,s.productCode,s.desc,s.lectra,s.variant,s.markerMain,PC_STATUS[s.status]]
+      var hay=[s.quoteRef,s.ref,s.customer,s.garment,s.size,s.productCode,s.desc,s.lectra,s.variant,s.markerMain,PC_STATUS[s.status]]
         .concat((s.fabrics||[]).map(function(f){ return (f.code||'')+' '+(f.name||''); }))
         .concat((s.trims||[]).map(function(tr){ return (tr.code||'')+' '+(tr.desc||''); }))
         .join(' ').toUpperCase();
@@ -954,7 +1010,7 @@ function pcRender(){
     t.innerHTML='<div class="pcref">'+pcE(pcRefLabel(s))+badge+'</div>'
       +(s.productCode?'<div class="pccode">'+pcE(s.productCode)+'</div>':'')
       +'<span class="pcst pcs-'+s.status+'">'+PC_STATUS[s.status]+'</span>'
-      +'<div class="pcmeta">'+pcE(s.customer||'\u2014')+' \u00b7 '+pcE(s.garment||'no garment name')
+      +'<div class="pcmeta">'+pcE(s.customer||'\u2014')+' \u00b7 '+pcE(s.garment||'no garment name')+(s.size?' \u00b7 size '+pcE(s.size):'')
       +'<br>Raised '+pcFmtD(s.created)+(s.due?' \u00b7 Due '+pcFmtD(s.due):'')+'</div>';
     t.onclick=function(){ pcOpen(i); };
     board.appendChild(t);
@@ -1072,7 +1128,7 @@ function pcNew(){
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[], draft:true, isOH:false, savedAt:pcNow()};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[], draft:true, isOH:false, ladies:false, size:'', savedAt:pcNow()};
   PC.srs.unshift(s); PC.qSeq++; pcSaveData();
   pcOpen(0);
 }
@@ -1081,6 +1137,7 @@ function pcOpen(i){
   var s=PC.srs[i];
   var locked=!!s.productCode;
   var ro=(!PC_IS_EDITOR)||locked;
+  var sized=!!pcSizeList(s), famRec=pcIsFamilyRec(s), scope=(s.isProduct&&!s.productCode&&s.editScope)?s.editScope:'';
   document.getElementById('pcMTitle').innerHTML=pcE(pcRefLabel(s))+(s.productCode?' &nbsp;→&nbsp; '+pcE(s.productCode):'')+' <span style="font-weight:400;font-size:12px;opacity:.8">'+PC_STATUS[s.status]+'</span>';
   pcMDelShow(PC_IS_EDITOR && !s.draft);
   var b=document.getElementById('pcMBody');
@@ -1123,16 +1180,21 @@ function pcOpen(i){
       +'<button type="button" class="btn pcmini" style="background:#fff;color:#92400e;border:1px solid #d97706" onclick="pcAdoptPublished()">Use the published copy</button></div>';
   }
   if(s.isProduct && !s.productCode){
-    h+='<div class="pcsec"><h4>New product</h4><div class="in">'
+    h+='<div class="pcsec"><h4>'+(scope?'Additional size / fabric change':'New product')+'</h4><div class="in">'
       +'<div class="pcrow" style="grid-template-columns:260px 1fr">'
       +'<div><div class="pclab">Product code</div><input id="pcF_prodCode" value="'+pcE(s.prodCodeDraft||'')+'" style="font-weight:700;text-transform:uppercase" autocomplete="off"></div>'
-      +'<div class="pcnote" style="align-self:end;padding-bottom:6px">Based on <strong>'+pcE(s.sourceCode||'')+'</strong>. The code must start with <strong>'+pcE(s.baseCode||'')+'</strong> \u2014 change only the size / colour part after it.</div>'
+      +'<div class="pcnote" style="align-self:end;padding-bottom:6px">'
+        +(scope==='size'?'New size <strong>'+pcE(s.size)+'</strong> of ':scope==='fabric'?'New fabric / colour of ':scope==='both'?'New size <strong>'+pcE(s.size)+'</strong> in a new fabric, from ':'Based on ')
+        +'<strong>'+pcE(s.sourceCode||'')+'</strong>. '
+        +((scope==='size'&&pcFamilyOf(s)==='special')?'The code is fixed: the special make code plus the size.':'The code must start with <strong>'+pcE(s.baseCode||'')+'</strong> \u2014 change only the size / colour part after it.')
+        +(scope==='size'?' Only the marker, lay and measurements are open; everything else is copied as it is.':scope==='fabric'?' Only the fabric lines and the description are open; everything else is copied as it is.':scope==='both'?' Only the fabric lines, description, marker, lay and measurements are open.':'')
+      +'</div>'
       +'</div></div></div>';
   }
   h+='<div class="pcsec"><h4>'+(s.isProduct?'Product details':'Quote / sample details')+'</h4><div class="in">'
     +'<div class="pcrow" style="grid-template-columns:1fr 1fr 1fr 1fr">'
     +'<div><div class="pclab">Customer</div><input id="pcF_customer" value="'+pcE(s.customer)+'"></div>'
-    +'<div><div class="pclab">Garment name</div><select id="pcF_garment">'+gOpts+'</select></div>'
+    +'<div><div class="pclab">Garment name</div><select id="pcF_garment" onchange="pcSizeRefresh()">'+gOpts+'</select></div>'
     +'<div><div class="pclab">'+(s.ref?'Sample due date':'Due date (set 10 days out when approved)')+'</div><input id="pcF_due" type="date" value="'+pcE(s.due)+'"></div>'
     +'<div><div class="pclab">Status</div><select id="pcF_status">'+stOpts+'</select>'
     +((s.srRaisedAt||s.sampleApprovedAt)?'<div class="pcnote" style="margin-top:3px">'
@@ -1141,7 +1203,12 @@ function pcOpen(i){
       +(s.sampleApprovedAt?'Sample approved '+pcFmtD(s.sampleApprovedAt):'')+'</div>':'')
     +'</div>'
     +'</div>'
-    +'<div class="pcrow" style="grid-template-columns:1fr"><div style="padding:2px 0"><label style="font-size:12px;font-weight:700;color:var(--mut)"><input type="checkbox" id="pcF_isOH"'+(s.isOH?' checked':'')+'> Oliver Harvey product (OH trims \u2014 generated code starts OH\u2026, e.g. OHAPB0001)</label></div></div>'
+    +'<div class="pcrow" style="grid-template-columns:1fr 1fr 220px">'
+    +'<div style="padding:2px 0;align-self:end"><label style="font-size:12px;font-weight:700;color:var(--mut);display:flex;gap:6px;align-items:flex-start"><input type="checkbox" id="pcF_isOH"'+(s.isOH?' checked':'')+' onchange="pcSizeRefresh()"> Oliver Harvey product (OH trims \u2014 generated code starts OH\u2026, e.g. OHAPB0001)</label></div>'
+    +'<div id="pcLadiesWrap" style="padding:2px 0;align-self:end;display:'+(s.isOH?'':'none')+'"><label style="font-size:12px;font-weight:700;color:var(--mut);display:flex;gap:6px;align-items:flex-start"><input type="checkbox" id="pcF_ladies"'+(s.ladies?' checked':'')+' onchange="pcSizeRefresh()"> Ladies fit (OH ladies sizes \u2014 code starts OHL\u2026)</label></div>'
+    +'<div id="pcSizeWrap" style="display:'+(sized?'':'none')+'"><div class="pclab">Size'+(famRec?' (stock family \u2014 all sizes)':'')+'</div>'
+      +(famRec?'<input value="All sizes" disabled>':'<select id="pcF_size">'+pcSizeOpts(s,s.size||'')+'</select>')+'</div>'
+    +'</div>'
     +'<div class="pcrow"><div><div class="pclab">Garment description</div><textarea id="pcF_desc" style="min-height:52px">'+pcE(s.desc)+'</textarea></div></div>'
     +'<div class="pcrow" style="grid-template-columns:180px 1fr">'
     +'<div><div class="pclab">Customer branding</div><select id="pcF_brandType" onchange="pcBrandToggle()"><option'+(s.brandType==='None'?' selected':'')+'>None</option><option'+(s.brandType==='EMB'?' selected':'')+'>EMB</option><option'+(s.brandType==='DTF'?' selected':'')+'>DTF</option></select></div>'
@@ -1239,6 +1306,22 @@ function pcOpen(i){
     b.querySelectorAll('#pcFabT input[data-k=code]').forEach(function(inp){ if(inp.value.trim()) pcFabFill(inp); });
   }
   document.getElementById('pcOv').classList.add('on');
+  if(scope && !ro){
+    /* only what is changing is open: size change - marker, lay and measurements; fabric change - the fabric lines and the description */
+    b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; });
+    b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; });
+    b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); });
+    var open=['pcF_status'];
+    if(scope!=='fabric') open=open.concat(['pcF_mkMain','pcF_mkLen','pcF_layQty','pcF_hasMesh','pcF_mkMesh','pcF_meshLen','pcF_meshLay']);
+    if(scope!=='size') open=open.concat(['pcF_desc']);
+    open.forEach(function(id){ var el=document.getElementById(id); if(el) el.disabled=false; });
+    var tbls=[]; if(scope!=='fabric') tbls.push('pcMeasT'); if(scope!=='size') tbls.push('pcFabT');
+    tbls.forEach(function(id){ var tb=document.getElementById(id); if(!tb) return;
+      tb.querySelectorAll('input').forEach(function(el){ el.disabled=false; });
+      tb.querySelectorAll('button').forEach(function(el){ el.style.display=''; });
+      if(tb.nextElementSibling&&tb.nextElementSibling.tagName==='BUTTON') tb.nextElementSibling.style.display=''; });
+    var pcIn=document.getElementById('pcF_prodCode'); if(pcIn) pcIn.disabled=(scope==='size'&&pcFamilyOf(s)==='special');
+  }
   if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); el.style.visibility='hidden'; });
     /* the weight arrives after the first production run, when the record is already locked - editors can still set it */
     if(PC_IS_EDITOR && locked){ var wIn=document.getElementById('pcF_weightG'); if(wIn) wIn.disabled=false; }
@@ -1256,6 +1339,8 @@ function pcCollect(s){
   s.desc=document.getElementById('pcF_desc').value.trim();
   s.brandType=document.getElementById('pcF_brandType').value;
   s.isOH=!!(document.getElementById('pcF_isOH')&&document.getElementById('pcF_isOH').checked);
+  s.ladies=!!(document.getElementById('pcF_ladies')&&document.getElementById('pcF_ladies').checked);
+  var szEl=document.getElementById('pcF_size'); if(szEl) s.size=pcSizeList(s)?szEl.value:'';
   if(PC_LOGO_PENDING!==undefined) s.logoImg=PC_LOGO_PENDING;
   if(PC_PLACE_PENDING!==undefined) s.placeImg=PC_PLACE_PENDING;
   s.brandPlace=document.getElementById('pcF_brandPlace').value.trim();
@@ -1297,12 +1382,19 @@ function pcValidate(){
   var missing=[];
   function flag(el,bad){ if(!el) return; el.style.borderColor=bad?'#c0392b':''; if(el.tagName!=='SELECT') el.style.background=bad?'#fdecea':''; }
   function req(id,label){ var el=document.getElementById(id); if(!el) return; var v=String(el.value||'').trim(); flag(el,!v); if(!v && missing.indexOf(label)<0) missing.push(label); }
-  req('pcF_customer','Customer'); req('pcF_garment','Garment name'); req('pcF_desc','Garment description');
-  req('pcF_mach','Machining mins'); req('pcF_fin','Finishing mins'); req('pcF_batch','Cutting batch size'); req('pcF_cutmins','Cutting mins/batch'); if(!(PC_CUR>=0&&PC.srs[PC_CUR]&&PC.srs[PC_CUR].isProduct)) req('pcF_sqty','Sample qty');
-  req('pcF_mkMain','Marker number (main)'); req('pcF_mkLen','Marker length'); req('pcF_layQty','Lay qty');
+  /* a size / fabric change only has the changing fields open, so only those are checked;
+     the rest is copied from the product it came from */
+  var cur0=(PC_CUR>=0&&PC.srs[PC_CUR])||null, scope0=(cur0&&cur0.isProduct&&!cur0.productCode&&cur0.editScope)?cur0.editScope:'';
+  if(!scope0) req('pcF_customer','Customer');
+  req('pcF_garment','Garment name'); req('pcF_desc','Garment description');
+  if(!scope0){ req('pcF_mach','Machining mins'); req('pcF_fin','Finishing mins'); req('pcF_batch','Cutting batch size'); req('pcF_cutmins','Cutting mins/batch'); if(!(cur0&&cur0.isProduct)) req('pcF_sqty','Sample qty'); }
+  if(scope0!=='fabric'){ req('pcF_mkMain','Marker number (main)'); req('pcF_mkLen','Marker length'); req('pcF_layQty','Lay qty'); }
   var bt=document.getElementById('pcF_brandType'); if(bt&&bt.value!=='None') req('pcF_brandPlace','Branding placement');
+  /* a sized garment needs its size - the product code will carry it */
+  var szo={garment:(document.getElementById('pcF_garment')||{}).value||'', isOH:!!((document.getElementById('pcF_isOH')||{}).checked), ladies:!!((document.getElementById('pcF_ladies')||{}).checked)};
+  if(pcSizeList(szo) && document.getElementById('pcF_size')) req('pcF_size','Size');
   var hm=document.getElementById('pcF_hasMesh');
-  if(hm&&hm.checked){ req('pcF_mkMesh','Mesh marker number'); req('pcF_meshLen','Mesh marker length'); req('pcF_meshLay','Mesh lay qty'); }
+  if(hm&&hm.checked&&scope0!=='fabric'){ req('pcF_mkMesh','Mesh marker number'); req('pcF_meshLen','Mesh marker length'); req('pcF_meshLay','Mesh lay qty'); }
   function rowReq(tbl,keys,label){
     var tb=document.getElementById(tbl); if(!tb) return;
     var trs=tb.querySelectorAll('tr');
@@ -1315,8 +1407,8 @@ function pcValidate(){
   }
   /* a quote or sample only needs to say what the fabric is, how much and at what price; the Sage
      code is checked when the record becomes a product (pcFabricCodesOK) */
-  rowReq('pcFabT',['name','rating','cost'],'Fabric line (description / rating / cost)');
-  rowReq('pcTrimT',['desc','cost'],'Trim line (description / cost)');
+  if(scope0!=='size') rowReq('pcFabT',['name','rating','cost'],'Fabric line (description / rating / cost)');
+  if(!scope0) rowReq('pcTrimT',['desc','cost'],'Trim line (description / cost)');
   return missing;
 }
 function pcSave(){
@@ -1426,10 +1518,12 @@ function pcConvert(){
   var missing=s.trims.filter(function(t){ return !t.code; });
   if(missing.length){ alert('Cannot convert yet — '+missing.length+' trim line(s) have no Sage code:\n\n'+missing.map(function(t){return '• '+(t.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
   if(!pcFabricCodesOK(s,'convert')) return;
+  var tok=pcSizeTok(s.size);
+  if(pcSizeList(s) && !s.size){ alert('Pick the size first \u2014 the product code carries it (e.g. CJ0002M), so one special make code can cover several sizes.'); return; }
   if(s.status!=='approved'){ if(!confirm(s.ref+' is not marked Approved. Convert anyway?')) return; }
   var cat=null;
   PC_CATS.forEach(function(c){ if(c[1].toUpperCase()===String(s.garment||'').trim().toUpperCase()) cat=c[0]; });
-  var ohp=s.isOH?'OH':'';
+  var ohp=s.isOH?(s.ladies?'OHL':'OH'):'';
   var key=cat?ohp+cat+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:''):null;
   var choice=prompt('Product code:\n\n• Leave BLANK to auto-generate a specials code from the garment name and branding'+(key?' ('+key+'…)':'')+'\n• Or type a stock product code to use it exactly (e.g. OHCJSMNEWSTYLE--01)');
   if(choice===null) return;
@@ -1446,9 +1540,14 @@ function pcConvert(){
       if(!PC_CATS.some(function(c){return c[0]===cat2;})){ alert('Unknown category '+cat2); return; }
       key=ohp+cat2+(s.brandType&&s.brandType!=='None'?PC_BRAND_LETTER:'');
     }
-    do{ PC.prodSeq[key]=(PC.prodSeq[key]||0)+1; code=key+String(PC.prodSeq[key]).padStart(PC_NUMW,'0'); }
-    while(pcSheetHas(code)||PC.srs.some(function(x){ return x.productCode===code; }));
+    var base;
+    do{ PC.prodSeq[key]=(PC.prodSeq[key]||0)+1; base=key+String(PC.prodSeq[key]).padStart(PC_NUMW,'0'); code=base+tok; }
+    while(pcSheetHas(code)||pcSheetHas(base)||PC.srs.some(function(x){ return x.productCode===code||x.specialBase===base; }));
+    s.specialBase=base;
   }
+  /* a typed stock code (with -- for the size) is a stock family; anything else is a special make whose base is the code without its size */
+  if(choice.trim()){ if(/--/.test(code)) s.family='stock'; else { s.family='special'; s.specialBase=(tok&&code.slice(-tok.length)===tok)?code.slice(0,-tok.length):code; } }
+  else s.family='special';
   s.productCode=code; s.status='production'; s.convertedAt=pcToday(); s.savedAt=pcNow();
   pcSaveData(); pcOpen(PC_CUR); pcRender();
 }
@@ -1481,7 +1580,8 @@ function pcExport(){
     fin:s.fin.split('\n').map(function(x){return x.trim();}).filter(Boolean),
     machMins:pcNum(s.machMins)||null, finMins:pcNum(s.finMins)||null,
     cutBatch:pcNum(s.cutBatch)||35, cutMins:pcNum(s.cutMins)||15,
-    oneSize:true, sr:s.ref, srVersion:s.version||1, customer:s.customer||'',
+    oneSize:!(pcSizeTok(s.size)||/--/.test(String(s.productCode||''))), size:s.size||'',
+    sr:s.ref, srVersion:s.version||1, customer:s.customer||'',
     /* the branding spec and artwork must reach the buffer works order */
     brandType:s.brandType||'None', brandPlace:s.brandPlace||'',
     logoImg:(s.brandType&&s.brandType!=='None'&&s.logoImg)?s.logoImg:'',
@@ -1550,7 +1650,7 @@ function pcPrint(prodQty){
     +'<table class="kv" style="margin-top:12px">'
     +'<tr><th>Date raised</th><td>'+e(pcFmtD(s.created))+'</td><th style="width:26%">Date required</th><td>'+e(pcFmtD(s.due)||'\u2014')+'</td></tr>'
     +'<tr><th>Customer</th><td>'+e(s.customer||'\u2014')+'</td><th>'+(pm?'Order qty':'Sample qty')+'</th><td>'+qty+'</td></tr>'
-    +'<tr><th>Garment</th><td colspan="3">'+e(s.garment||'\u2014')+'</td></tr>'
+    +'<tr><th>Garment</th><td'+(s.size?'':' colspan="3"')+'>'+e(s.garment||'\u2014')+'</td>'+(s.size?'<th>Size</th><td>'+e(s.size)+'</td>':'')+'</tr>'
     +(s.productCode?'<tr><th>Product code</th><td colspan="3">'+e(s.productCode)+'</td></tr>':'')
     +(s.quoteRef?'<tr><th>Quote ref</th><td colspan="3">'+e(s.quoteRef)+'</td></tr>':'')
     +(pm&&s.ref?'<tr><th>From sample</th><td colspan="3">'+e(s.ref)+((s.version||1)>1?' V'+s.version:'')+'</td></tr>':'')
@@ -1652,7 +1752,7 @@ function pcQuotePrint(){
     +'<img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px"></div>'
     +'<table class="kv" style="margin-top:12px">'
     +'<tr><th>Date</th><td>'+e(pcFmtD(pcToday()))+'</td><th style="width:26%">Quote raised</th><td>'+e(pcFmtD(s.created))+'</td></tr>'
-    +'<tr><th>Customer</th><td>'+e(s.customer||'—')+'</td><th>Garment</th><td>'+e(s.garment||'—')+'</td></tr>'
+    +'<tr><th>Customer</th><td>'+e(s.customer||'—')+'</td><th>Garment</th><td>'+e(s.garment||'—')+(s.size?' — size '+e(s.size):'')+'</td></tr>'
     +(s.ref||s.productCode?'<tr><th>Sample ref</th><td>'+e(s.ref||'—')+'</td><th>Product code</th><td>'+e(s.productCode||'—')+'</td></tr>':'')
     +'</table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'—')+'</td></tr></table>'
@@ -1836,16 +1936,16 @@ function pcCopyOpen(mode){
   if(!PC_IS_EDITOR) return;
   PC_COPY_MODE=(mode==='product')?'product':'quote';
   var prod=PC_COPY_MODE==='product';
-  document.getElementById('pcMTitle').textContent=prod?'New product from existing product':'Quote from existing product'; pcMDelShow(false);
+  document.getElementById('pcMTitle').textContent=prod?'Additional size or fabric change for existing product':'Quote from existing product'; pcMDelShow(false);
   var b=document.getElementById('pcMBody');
-  b.innerHTML='<div class="pcsec"><h4>'+(prod?'Start a new product from an existing stock line':'Copy the works-order details of an existing product into a new quote')+'</h4><div class="in">'
+  b.innerHTML='<div class="pcsec"><h4>'+(prod?'Which product is changing?':'Copy the works-order details of an existing product into a new quote')+'</h4><div class="in">'
     +'<p class="pcnote" id="pcCopyStatus">Loading the product list from the Production plan app\u2026</p>'
     +'<div class="pcrow" style="grid-template-columns:1fr 130px;margin-top:8px">'
     +'<input id="pcCopyCode" list="pcCopyDL" placeholder="Type a product code or style name\u2026" autocomplete="off">'
-    +'<button class="btn btn-gold" onclick="pcCopyDo()">'+(prod?'Start':'Copy')+'</button></div>'
+    +'<button class="btn btn-gold" onclick="pcCopyDo()">'+(prod?'Next':'Copy')+'</button></div>'
     +'<datalist id="pcCopyDL"></datalist>'
     +(prod
-      ? '<p class="pcnote">For a stock line where only the size / colour changes \u2014 e.g. a new fabric colour of an Oxford jacket. Everything is copied from the product you pick; the new code keeps that product\u2019s base and only the size / colour part is edited. No quote or sample: fill it in, then press <strong>Create new product</strong>.</p>'
+      ? '<p class="pcnote">For an existing product wanted in another size, or a stock style in another fabric / colour. Everything is copied from the product you pick and only what is changing can be edited; the new code keeps the product\u2019s base. A special make (CJ0002\u2026) may only gain a size \u2014 a different fabric is a new special make, so quote it instead. No quote or sample: fill it in, then press <strong>Create new product</strong>.</p>'
       : '<p class="pcnote">Fabrics, trims, manufacturing &amp; finishing steps, times and cutting details are copied into a fresh quote \u2014 then adjust whatever the customer wants changed. Customer, due date and prices start blank.</p>')
     +'</div></div>';
   document.getElementById('pcOv').classList.add('on'); PC_CUR=-1;
@@ -1878,13 +1978,20 @@ function pcCopyDo(){
   var src=pcCopySources().find(function(x){ return x.key===code; });
   if(!src){ alert('Code '+code+' not found in the Production plan styles or your local quotes/SRs.'); return; }
   if(prod && !(src.src==='wo' || (src.st&&src.st.productCode))){ alert(code+' is a quote or sample, not a product. A new product must start from an existing product.'); return; }
+  if(prod){ pcChgStep(src, code); return; }
+  var s=pcCopyBuild(src, code);
+  PC.srs.unshift(s); PC.qSeq++; pcSaveData();
+  pcOpen(0);
+}
+/* the copy itself, shared by "Quote from existing product" and the size / fabric change */
+function pcCopyBuild(src, code){
   var s={quoteRef:'Q'+String(PC.qSeq+1).padStart(4,'0'), ref:'', status:'quote', created:pcToday(), due:'',
     customer:'', garment:'', desc:'', brandType:'None', brandPlace:'',
     fabrics:[], trims:[], meas:[], mfg:'', fin:'',
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
     markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
-    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[], draft:true, isOH:false, savedAt:pcNow()};
+    printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[], draft:true, isOH:false, ladies:false, size:'', savedAt:pcNow()};
   if(src.src==='wo'){
     var st=src.st;
     s.desc=((st.name?st.name+' \u2014 ':'')+(st.desc||'')).trim();
@@ -1903,29 +2010,81 @@ function pcCopyDo(){
     s.machMins=st.machMins!=null?String(st.machMins):''; s.finMins=st.finMins!=null?String(st.finMins):'';
     s.cutBatch=st.cutBatch!=null?String(st.cutBatch):''; s.cutMins=st.cutMins!=null?st.cutMins:15;
     s.lectra=st.lectra||''; s.variant=st.variant||'';
-    s.isOH=code.indexOf('OH')===0;
+    s.isOH=code.indexOf('OH')===0; s.ladies=/^OHL/.test(code);
     /* garment type from the code stem: OHCJ…, OHLCJ… (ladies), CICJ… (short sleeve) and plain CJ… are all chef jackets */
     var gm=/^(?:OH)?L?(?:CI)?([A-Z]{2})/.exec(code);
     PC_CATS.forEach(function(c){ if(gm&&gm[1]===c[0]) s.garment=c[1]; });
   } else {
     var o=src.st;
     ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
-     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','lectra','variant','quoteMarkup','quoteShowSell','isOH']
+     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','size']
       .forEach(function(k){ if(o[k]!==undefined) s[k]=o[k]; });
     s.fabrics=JSON.parse(JSON.stringify(o.fabrics||[]));
     s.trims=JSON.parse(JSON.stringify(o.trims||[]));
     s.meas=JSON.parse(JSON.stringify(o.meas||[]));
   }
-  if(prod){
-    /* product-only record: no quote number, no sample - it becomes a product when created */
-    s.quoteRef=''; s.isProduct=true; s.status='production'; s.sampleQty='';
-    s.baseCode=pcProductBase(code); s.sourceCode=code;
-    s.prodCodeDraft=(s.baseCode===code)?code:s.baseCode+'----';
-    if(src.src==='pc'){ s.customer=src.st.customer||''; }
-    PC.srs.unshift(s); pcSaveData();          /* no quote number is taken */
-  } else {
-    PC.srs.unshift(s); PC.qSeq++; pcSaveData();
+  return s;
+}
+/* ── additional size or fabric change ──
+   Step 2 of the picker: what is changing. A costing-app special make (CJ0002…) may only gain a
+   size - a different fabric is a new special make and is quoted instead. A stock style or family
+   from the Production plan app may change size, fabric or both. The new record is a product-only
+   copy with just the changing fields open. */
+var PC_CHG=null;
+function pcChgSrcInfo(src){
+  var code=src.key, st=src.st||{};
+  if(src.src==='wo'){
+    var gm=/^(?:OH)?L?(?:CI)?([A-Z]{2})/.exec(code), garment='';
+    PC_CATS.forEach(function(c){ if(gm&&gm[1]===c[0]) garment=c[1]; });
+    return {code:code, family:'stock', garment:garment, isOH:/^OH/.test(code), ladies:/^OHL/.test(code), size:'', special:null};
   }
+  var fam=pcFamilyOf(st);
+  return {code:code, family:fam, garment:st.garment||'', isOH:!!st.isOH, ladies:!!st.ladies, size:st.size||'', special:fam==='special'?pcSpecialBase(st):null};
+}
+function pcChgStep(src, code){
+  var info=pcChgSrcInfo(src); PC_CHG={src:src, code:code, info:info};
+  var special=info.family==='special', sized=!!pcSizeList(info);
+  var taken={}; if(special) PC.srs.forEach(function(x){ if(x.productCode && pcSpecialBase(x)===info.special) taken[String(x.productCode).toUpperCase()]=1; });
+  var opts=''; (pcSizeList(info)||[]).forEach(function(z){
+    var c=special?(info.special+pcSizeTok(z)).toUpperCase():'', ex=!!(c&&taken[c]);
+    opts+='<option value="'+pcE(z)+'"'+(ex?' disabled':'')+'>'+pcE(z)+(ex?' (already exists)':(z===info.size?' (current size)':''))+'</option>'; });
+  var b=document.getElementById('pcMBody');
+  b.innerHTML='<div class="pcsec"><h4>What is changing on '+pcE(code)+'?</h4><div class="in">'
+    +'<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
+    +'<label><input type="radio" name="pcChg" value="size" onchange="pcChgUI()"'+(sized?'':' disabled')+'> <strong>New size</strong> \u2014 pick the size; only the marker, lay and measurements can be edited'+(sized?'':' (this garment has no size)')+'</label>'
+    +'<label><input type="radio" name="pcChg" value="fabric" onchange="pcChgUI()"'+(special?' disabled':'')+'> <strong>New fabric / colour</strong> \u2014 only the fabric lines and the description can be edited</label>'
+    +'<label><input type="radio" name="pcChg" value="both" onchange="pcChgUI()"'+((special||!sized)?' disabled':'')+'> <strong>Both</strong> \u2014 a new size in a new fabric</label>'
+    +'</div>'
+    +(special
+      ? '<p class="pcnote" style="margin-top:8px">\u26a0 <strong>'+pcE(info.special)+'</strong> is a special make code. A different fabric would be a new special make \u2014 raise a quote for it instead. Only a size change is allowed here; the new code is '+pcE(info.special)+' plus the size.</p>'
+      : '<p class="pcnote" style="margin-top:8px">'+pcE(code)+' is a stock style, so its fabric may change. The new code keeps the base <strong>'+pcE(pcProductBase(code))+'</strong>.</p>')
+    +'<div id="pcChgSizeWrap" style="display:none;margin-top:8px;max-width:260px"><div class="pclab">New size</div><select id="pcChgSize"><option value="">\u2014 pick a size \u2014</option>'+opts+'</select></div>'
+    +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" onclick="pcChgStart()">Start</button><button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCopyOpen(\'product\')">Back</button></div>'
+    +'</div></div>';
+}
+function pcChgUI(){ var v=(document.querySelector('input[name=pcChg]:checked')||{}).value||''; var w=document.getElementById('pcChgSizeWrap'); if(w) w.style.display=(v==='size'||v==='both')?'':'none'; }
+function pcChgStart(){
+  if(!PC_CHG||!PC_IS_EDITOR) return;
+  var scope=(document.querySelector('input[name=pcChg]:checked')||{}).value||'';
+  if(!scope){ alert('Choose what is changing first.'); return; }
+  var info=PC_CHG.info, src=PC_CHG.src, code=PC_CHG.code, tok='', size='';
+  if(scope!=='fabric'){ size=(document.getElementById('pcChgSize')||{}).value||''; if(!size){ alert('Pick the new size.'); return; } tok=pcSizeTok(size); }
+  var s=pcCopyBuild(src, code);
+  /* product-only record: no quote number, no sample - it becomes a product when created */
+  s.quoteRef=''; s.isProduct=true; s.status='production'; s.sampleQty='';
+  s.family=info.family; s.editScope=scope; s.sourceCode=code; s.isOH=info.isOH; s.ladies=info.ladies;
+  s.size=(scope==='fabric')?info.size:size;
+  if(src.src==='pc') s.customer=src.st.customer||'';
+  else if(!s.customer) s.customer='Stock';          /* a stock style is nobody's special */
+  if(info.family==='special'){
+    s.specialBase=info.special; s.baseCode=info.special; s.prodCodeDraft=info.special+tok;
+  } else {
+    var base=pcProductBase(code), rem=code.slice(base.length), m=/^(--|\d\d)(--|\d\d)([A-Z]?)$/.exec(rem);
+    s.baseCode=base;
+    if(m) s.prodCodeDraft=base+((scope!=='fabric')?tok:m[1])+((scope!=='size')?'--':m[2])+m[3];
+    else s.prodCodeDraft=(scope==='size')?code+tok:((base===code)?code:base+'----');
+  }
+  PC.srs.unshift(s); pcSaveData();          /* no quote number is taken */
   pcOpen(0);
 }
 function pcCreateProduct(){
@@ -1944,9 +2103,11 @@ function pcCreateProduct(){
   if(PC.srs.some(function(x,i){ return i!==PC_CUR && x.productCode===code; })){ alert('Code '+code+' is already used by another record here.'); return; }
   var missing=pcValidate();
   if(missing.length){ alert('Cannot create the product yet \u2014 these fields are blank (highlighted in red):\n\n\u2022 '+missing.join('\n\u2022 ')); return; }
-  var noCode=s.trims.filter(function(tr){ return !tr.code; });
+  /* a size / fabric change copies the locked sections as they are, so only what is open is checked */
+  var scope1=s.editScope||'';
+  var noCode=scope1?[]:s.trims.filter(function(tr){ return !tr.code; });
   if(noCode.length){ alert('Cannot create yet \u2014 '+noCode.length+' trim line(s) have no Sage code:\n\n'+noCode.map(function(tr){return '\u2022 '+(tr.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
-  if(!pcFabricCodesOK(s,'create')) return;
+  if(scope1!=='size' && !pcFabricCodesOK(s,'create')) return;
   if(!confirm('Create product '+code+'?\n\nIt is then locked like a converted sample: printable for IT and downloadable for the buffer app. Only the garment weight stays editable.')) return;
   delete s.draft;
   s.productCode=code; s.status='production'; s.convertedAt=pcToday(); s.savedAt=pcNow();
