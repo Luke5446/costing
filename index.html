@@ -1191,7 +1191,7 @@ function pcOpen(i){
         +(scope==='size'?'New size <strong>'+pcE(s.size)+'</strong> of ':scope==='fabric'?'New fabric / colour of ':scope==='both'?'New size <strong>'+pcE(s.size)+'</strong> in a new fabric, from ':'Based on ')
         +'<strong>'+pcE(s.sourceCode||'')+'</strong>. '
         +((scope==='size'&&pcFamilyOf(s)==='special')?'The code is fixed: the special make code plus the size.':'The code must start with <strong>'+pcE(s.baseCode||'')+'</strong> \u2014 change only the size / colour part after it.')
-        +(scope==='size'?' Only the marker, lay and measurements are open; everything else is copied as it is.':scope==='fabric'?' Only the fabric lines and the description are open; everything else is copied as it is.':scope==='both'?' Only the fabric lines, description, marker, lay and measurements are open.':'')
+        +(scope==='size'?' The marker, lay, measurements and trims are open; everything else is copied as it is.':scope==='fabric'?' The fabric lines, trims and the description are open; everything else is copied as it is.':scope==='both'?' The fabric lines, trims, description, marker, lay and measurements are open.':'')
       +'</div>'
       +'</div></div></div>';
   }
@@ -1328,7 +1328,8 @@ function pcOpen(i){
     if(scope!=='fabric') open=open.concat(['pcF_mkMain','pcF_mkLen','pcF_layQty','pcF_hasMesh','pcF_mkMesh','pcF_meshLen','pcF_meshLay']);
     if(scope!=='size') open=open.concat(['pcF_desc']);
     open.forEach(function(id){ var el=document.getElementById(id); if(el) el.disabled=false; });
-    var tbls=[]; if(scope!=='fabric') tbls.push('pcMeasT'); if(scope!=='size') tbls.push('pcFabT');
+    /* trims are always open on a change: a navy fabric wants navy thread and black buttons, a bigger size more studs */
+    var tbls=['pcTrimT']; if(scope!=='fabric') tbls.push('pcMeasT'); if(scope!=='size') tbls.push('pcFabT');
     tbls.forEach(function(id){ var tb=document.getElementById(id); if(!tb) return;
       tb.querySelectorAll('input').forEach(function(el){ el.disabled=false; });
       tb.querySelectorAll('button').forEach(function(el){ el.style.display=''; });
@@ -1423,7 +1424,7 @@ function pcValidate(){
   /* a quote or sample only needs to say what the fabric is, how much and at what price; the Sage
      code is checked when the record becomes a product (pcFabricCodesOK) */
   if(scope0!=='size') rowReq('pcFabT',['name','rating','cost'],'Fabric line (description / rating / cost)');
-  if(!scope0) rowReq('pcTrimT',['desc','cost'],'Trim line (description / cost)');
+  rowReq('pcTrimT',['desc','cost'],'Trim line (description / cost)');
   return missing;
 }
 function pcSave(){
@@ -2083,8 +2084,8 @@ function pcChgStep(src, code){
   var b=document.getElementById('pcMBody');
   b.innerHTML='<div class="pcsec"><h4>What is changing on '+pcE(code)+'?</h4><div class="in">'
     +'<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
-    +'<label><input type="radio" name="pcChg" value="size" onchange="pcChgUI()"'+(sized?'':' disabled')+'> <strong>New size</strong> \u2014 pick the size; only the marker, lay and measurements can be edited'+(sized?'':' (this garment has no size)')+'</label>'
-    +'<label><input type="radio" name="pcChg" value="fabric" onchange="pcChgUI()"'+(special?' disabled':'')+'> <strong>New fabric / colour</strong> \u2014 only the fabric lines and the description can be edited</label>'
+    +'<label><input type="radio" name="pcChg" value="size" onchange="pcChgUI()"'+(sized?'':' disabled')+'> <strong>New size</strong> \u2014 pick the size; the marker, lay, measurements and trims can be edited'+(sized?'':' (this garment has no size)')+'</label>'
+    +'<label><input type="radio" name="pcChg" value="fabric" onchange="pcChgUI()"'+(special?' disabled':'')+'> <strong>New fabric / colour</strong> \u2014 the fabric lines, trims (thread, buttons\u2026) and the description can be edited</label>'
     +'<label><input type="radio" name="pcChg" value="both" onchange="pcChgUI()"'+((special||!sized)?' disabled':'')+'> <strong>Both</strong> \u2014 a new size in a new fabric</label>'
     +'</div>'
     +(special
@@ -2137,7 +2138,7 @@ function pcCreateProduct(){
   if(missing.length){ alert('Cannot create the product yet \u2014 these fields are blank (highlighted in red):\n\n\u2022 '+missing.join('\n\u2022 ')); return; }
   /* a size / fabric change copies the locked sections as they are, so only what is open is checked */
   var scope1=s.editScope||'';
-  var noCode=scope1?[]:s.trims.filter(function(tr){ return !tr.code; });
+  var noCode=(scope1&&pcFamilyOf(s)==='stock')?[]:s.trims.filter(function(tr){ return !tr.code; });
   if(noCode.length){ alert('Cannot create yet \u2014 '+noCode.length+' trim line(s) have no Sage code:\n\n'+noCode.map(function(tr){return '\u2022 '+(tr.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
   if(scope1!=='size' && !pcFabricCodesOK(s,'create')) return;
   if(!confirm('Create product '+code+'?\n\nIt is then locked like a converted sample: printable for IT and downloadable for the buffer app. Only the garment weight stays editable.')) return;
