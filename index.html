@@ -937,6 +937,8 @@ var PC_TILE=null;
 function pcIsOpenQuote(s){ return !s.isProduct && !s.ref && !s.quotePrinted && s.status!=='rejected'; }
 function pcIsLiveQuote(s){ return !s.isProduct && !s.ref && !s.draft && s.status!=='rejected'; }
 function pcIsProductRec(s){ return !!s.productCode; }
+/* a size / fabric change (or new product) saved part-done: not yet a product */
+function pcIsPendingProduct(s){ return !!s.isProduct && !s.productCode; }
 function pcIsLiveSR(s){ return !!s.ref && !s.productCode && s.status!=='rejected'; }
 function pcIsLateSR(s){ return pcIsLiveSR(s) && s.due && s.due<pcToday(); }
 function pcIsApprovedQuote(s){ return !!s.ref; }
@@ -964,7 +966,8 @@ function pcRenderStats(){
       late=PC.srs.filter(pcIsLateSR).length,
       qappr=PC.srs.filter(pcIsApprovedQuote).length,
       sappr=PC.srs.filter(pcIsApprovedSample).length,
-      prods=PC.srs.filter(pcIsProductRec).length;
+      prods=PC.srs.filter(pcIsProductRec).length,
+      pend=PC.srs.filter(pcIsPendingProduct).length;
   document.getElementById('pcStats').innerHTML=
     '<div class="pcstat'+(PC_TILE==='qlive'?' on':'')+'" onclick="pcTileToggle(\'qlive\')"><div class="n">'+qlive+'</div><div class="l">Live quotes</div></div>'
     +'<div class="pcstat'+(PC_TILE==='quotes'?' on':'')+'" onclick="pcTileToggle(\'quotes\')"><div class="n">'+q+'</div><div class="l">Quotes not printed</div></div>'
@@ -972,7 +975,8 @@ function pcRenderStats(){
     +'<div class="pcstat late'+(PC_TILE==='late'?' on':'')+'" onclick="pcTileToggle(\'late\')"><div class="n">'+late+'</div><div class="l">Late SR works orders</div></div>'
     +'<div class="pcstat'+(PC_TILE==='qappr'?' on':'')+'" onclick="pcTileToggle(\'qappr\')"><div class="n">'+qappr+'</div><div class="l">Approved quotes</div></div>'
     +'<div class="pcstat'+(PC_TILE==='sappr'?' on':'')+'" onclick="pcTileToggle(\'sappr\')"><div class="n">'+sappr+'</div><div class="l">Approved samples</div></div>'
-    +'<div class="pcstat'+(PC_TILE==='prods'?' on':'')+'" onclick="pcTileToggle(\'prods\')"><div class="n">'+prods+'</div><div class="l">Products</div></div>';
+    +'<div class="pcstat'+(PC_TILE==='prods'?' on':'')+'" onclick="pcTileToggle(\'prods\')"><div class="n">'+prods+'</div><div class="l">Products</div></div>'
+    +'<div class="pcstat'+(pend?' late':'')+(PC_TILE==='pend'?' on':'')+'" onclick="pcTileToggle(\'pend\')"><div class="n">'+pend+'</div><div class="l">Changes not yet created</div></div>';
 }
 function pcRender(){
   var srch=(document.getElementById('pcSearch').value||'').trim().toUpperCase();
@@ -983,7 +987,7 @@ function pcRender(){
   var dflt=(!srch && !filt && !PC_TILE);
   document.getElementById('pcShowing').textContent = (window.PC_PUB_AT?'Team view last published '+pcFmtD(window.PC_PUB_AT)+' \u00b7 ':'') + (dflt
     ? 'Showing unprinted quotes and sample works orders \u2014 use search, the status filter or the tiles above to find everything else.'
-    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':PC_TILE==='qappr'?'Showing approved quotes \u2014 the customer approved and an SR was raised.':PC_TILE==='sappr'?'Showing approved samples \u2014 customer-approved, including those now converted to products.':PC_TILE==='prods'?'Showing every product \u2014 converted samples and new products from existing stock lines.':''));
+    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':PC_TILE==='qappr'?'Showing approved quotes \u2014 the customer approved and an SR was raised.':PC_TILE==='sappr'?'Showing approved samples \u2014 customer-approved, including those now converted to products.':PC_TILE==='prods'?'Showing every product \u2014 converted samples and new products from existing stock lines.':PC_TILE==='pend'?'Showing size / fabric changes saved but not yet created as products \u2014 open one, finish the code, trims or fabric, then press Create new product.':''));
   PC.srs.forEach(function(s,i){
     if(PC_TILE==='qlive' && !pcIsLiveQuote(s)) return;
     if(PC_TILE==='quotes' && !pcIsOpenQuote(s)) return;
@@ -992,6 +996,7 @@ function pcRender(){
     if(PC_TILE==='qappr' && !pcIsApprovedQuote(s)) return;
     if(PC_TILE==='sappr' && !pcIsApprovedSample(s)) return;
     if(PC_TILE==='prods' && !pcIsProductRec(s)) return;
+    if(PC_TILE==='pend' && !pcIsPendingProduct(s)) return;
     if(dflt){
       var unprinted = s.isProduct ? !s.productCode : (s.ref ? !s.printed : !s.quotePrinted);
       if(!unprinted) return;
@@ -2064,6 +2069,12 @@ function pcCopyBuild(src, code){
    from the Production plan app may change size, fabric or both. The new record is a product-only
    copy with just the changing fields open. */
 var PC_CHG=null;
+/* Tibard / OH colour codes - the last digits of a stock code (CJ0193LL15 is navy). A helper list
+   for the fabric change; any code can still be typed. */
+var PC_COLOURS=[['01','White'],['03','Black'],['04','Pink'],['05','Maroon'],['06','Burgundy'],['07','Red'],['08','Purple'],['11','Yellow'],['14','Dark grey'],['15','Navy'],
+  ['24','Bottle green'],['45','Orange'],['55','Royal blue'],['56','Aqua'],['64','Storm grey'],['82','Brown'],['83','Olive'],['92','Eau de nil'],['93','Blade blue'],
+  ['115','Lilac'],['120','Nasturtium'],['121','Lavender'],['131','Sand'],['153','Khaki'],['200','Dove grey'],['213','Hospital grey'],['248','Storm grey (248)'],['253','Surf blue'],
+  ['267','Smoke grey'],['286','Silver grey'],['298','Orchid pink'],['315','Hot pink'],['362','Tibet yellow'],['384','Opal'],['397','Elephant grey'],['420','Zest green'],['682','Heather green'],['921','Rainbow']];
 function pcChgSrcInfo(src){
   var code=src.key, st=src.st||{};
   if(src.src==='wo'){
@@ -2092,16 +2103,35 @@ function pcChgStep(src, code){
       ? '<p class="pcnote" style="margin-top:8px">\u26a0 <strong>'+pcE(info.special)+'</strong> is a special make code. A different fabric would be a new special make \u2014 raise a quote for it instead. Only a size change is allowed here; the new code is '+pcE(info.special)+' plus the size.</p>'
       : '<p class="pcnote" style="margin-top:8px">'+pcE(code)+' is a stock style, so its fabric may change. The new code keeps the base <strong>'+pcE(pcProductBase(code))+'</strong>.</p>')
     +'<div id="pcChgSizeWrap" style="display:none;margin-top:8px;max-width:260px"><div class="pclab">New size</div><select id="pcChgSize"><option value="">\u2014 pick a size \u2014</option>'+opts+'</select></div>'
+    +'<div id="pcChgColWrap" style="display:none;margin-top:8px;max-width:340px"><div class="pclab">New colour code (the last digits of the product code)</div>'
+      +'<input id="pcChgCol" list="pcColDL" placeholder="e.g. 15 for navy" autocomplete="off" style="text-transform:uppercase">'
+      +'<datalist id="pcColDL">'+PC_COLOURS.map(function(c){ return '<option value="'+c[0]+'">'+pcE(c[1])+'</option>'; }).join('')+'</datalist>'
+      +'<p class="pcnote">'+pcE(code)+' ends in <strong>'+pcE(pcColourOf(code)||'\u2014')+'</strong>; the new code takes the colour you give here, e.g. OHCJMOXFORD--15 for navy.</p></div>'
     +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" onclick="pcChgStart()">Start</button><button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCopyOpen(\'product\')">Back</button></div>'
     +'</div></div>';
 }
-function pcChgUI(){ var v=(document.querySelector('input[name=pcChg]:checked')||{}).value||''; var w=document.getElementById('pcChgSizeWrap'); if(w) w.style.display=(v==='size'||v==='both')?'':'none'; }
+function pcChgUI(){
+  var v=(document.querySelector('input[name=pcChg]:checked')||{}).value||'';
+  var w=document.getElementById('pcChgSizeWrap'); if(w) w.style.display=(v==='size'||v==='both')?'':'none';
+  var cw=document.getElementById('pcChgColWrap'); if(cw) cw.style.display=(v==='fabric'||v==='both')?'':'none';
+}
+/* the colour part of a stock code: OHCJMOXFORD--01 -> 01, CJ0193LL15 -> 15 */
+function pcColourOf(code){
+  var c=String(code||'').toUpperCase(), base=pcProductBase(c), m=/^(--|\d\d)(--|\d\d)([A-Z]?)$/.exec(c.slice(base.length));
+  return m?m[2]:'';
+}
 function pcChgStart(){
   if(!PC_CHG||!PC_IS_EDITOR) return;
   var scope=(document.querySelector('input[name=pcChg]:checked')||{}).value||'';
   if(!scope){ alert('Choose what is changing first.'); return; }
-  var info=PC_CHG.info, src=PC_CHG.src, code=PC_CHG.code, tok='', size='';
+  var info=PC_CHG.info, src=PC_CHG.src, code=PC_CHG.code, tok='', size='', col='';
   if(scope!=='fabric'){ size=(document.getElementById('pcChgSize')||{}).value||''; if(!size){ alert('Pick the new size.'); return; } tok=pcSizeTok(size); }
+  if(scope!=='size'){
+    col=String((document.getElementById('pcChgCol')||{}).value||'').trim().toUpperCase();
+    if(!col){ alert('Enter the new colour code \u2014 the last digits of the product code (e.g. 15 for navy).'); return; }
+    if(!/^[A-Z0-9]{2,4}$/.test(col)){ alert('A colour code is 2 to 4 letters or digits, e.g. 15 or 248.'); return; }
+    if(col===pcColourOf(code)){ alert(code+' already ends in '+col+'. A fabric change needs a different colour code.'); return; }
+  }
   var s=pcCopyBuild(src, code);
   /* product-only record: no quote number, no sample - it becomes a product when created */
   s.quoteRef=''; s.isProduct=true; s.status='production'; s.sampleQty='';
@@ -2114,8 +2144,8 @@ function pcChgStart(){
   } else {
     var base=pcProductBase(code), rem=code.slice(base.length), m=/^(--|\d\d)(--|\d\d)([A-Z]?)$/.exec(rem);
     s.baseCode=base;
-    if(m) s.prodCodeDraft=base+((scope!=='fabric')?tok:m[1])+((scope!=='size')?'--':m[2])+m[3];
-    else s.prodCodeDraft=(scope==='size')?code+tok:((base===code)?code:base+'----');
+    if(m) s.prodCodeDraft=base+((scope!=='fabric')?tok:m[1])+((scope!=='size')?col:m[2])+m[3];
+    else s.prodCodeDraft=(scope==='size')?code+tok:((base===code)?code:base+'--'+col);
   }
   PC.srs.unshift(s); pcSaveData();          /* no quote number is taken */
   pcOpen(0);
