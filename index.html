@@ -712,8 +712,39 @@ function pcSizeRefresh(){
   if(wrap) wrap.style.display='';
   var cur=sel.value; sel.innerHTML=pcSizeOpts(o,cur);
 }
-/* a costing-app special make (CJ0002…) or a stock style / family from the Production plan app */
-function pcFamilyOf(s){ return s.family || (s.quoteRef?'special':(s.copiedFrom?'stock':'special')); }
+/* Split a stock code into base + size + colour (+ length letter): OHCJMOXFORD5201 -> OHCJMOXFORD / 52 / 01,
+   OHCJMOXFORD--01 -> OHCJMOXFORD / -- / 01, CJ0193LL15 -> CJ0193 / LL / 15. Null for a special make
+   (CJ0002M, OHLCJ000112, CO0001104), whose base is the special make code and whose tail is only the size. */
+var PC_SIZE_TOKS='XXXL|XXL|XXS|3XL|4XL|5XL|6XL|XS|XL|SS|MM|LL|S|M|L|1\\d\\d|\\d\\d|--';   /* a 3-digit size only for the MTC 100-140 range */
+function pcSmHasFamily(base){
+  var sm=PC_SM; if(!sm){ try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); sm=c&&c.styles; }catch(e){} }
+  var b=String(base||'').toUpperCase()+'--';
+  return !!(sm||[]).some(function(st){ return String(st.code||'').toUpperCase().indexOf(b)===0; });
+}
+function pcStockParts(code){
+  var c=String(code||'').toUpperCase().trim();
+  if(!c || c.indexOf('/')>0) return null;
+  var m=null;
+  /* a family the Production plan app knows (CJ0193--01, OHCJMOXFORD--01) fixes where the base ends,
+     so CJ019352115N splits as CJ0193 / 52 / 115 / N */
+  var sm=PC_SM; if(!sm){ try{ var cc=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); sm=cc&&cc.styles; }catch(e){} }
+  var best='';
+  (sm||[]).forEach(function(st){ var k=String(st.code||'').toUpperCase(), i=k.indexOf('--'); if(i>=5){ var b=k.slice(0,i); if(c.indexOf(b)===0 && b.length>best.length) best=b; } });
+  if(best){ var r=new RegExp('^('+PC_SIZE_TOKS+')(\\d{2,3}|--)([A-Z]?)$').exec(c.slice(best.length)); if(r) m=[c,best,r[1],r[2],r[3]]; }
+  /* otherwise the longest base that leaves a size, a colour (two digits by preference) and at most one letter */
+  if(!m) m=new RegExp('^(.{5,})('+PC_SIZE_TOKS+')(\\d\\d|\\d{3}|--)([A-Z]?)$').exec(c);
+  if(!m) return null;
+  /* CJ0001…, OHCJ00…, OHLCJ00…, CJB000… read as a special make base - unless the sheet or the Production
+     plan app knows the code as a stock line (CJ0193LL15 is a Tibard stock jacket) */
+  if(/^(?:OH)?L?[A-Z]{2}B?\d{0,4}$/.test(m[1]) && !pcSheetHas(c) && !pcSmHasFamily(m[1])) return null;
+  return {base:m[1], size:m[2], colour:m[3], len:m[4]};
+}
+/* a costing-app special make (CJ0002…) or a stock style / family from the Production plan app. A product's
+   own code decides: a sized stock code typed at conversion is a stock line however it was made. */
+function pcFamilyOf(s){
+  if(s.productCode){ if(pcStockParts(s.productCode)) return 'stock'; if(s.specialBase||s.quoteRef||s.family==='special') return 'special'; return s.family||'special'; }
+  return s.family || (s.quoteRef?'special':(s.copiedFrom?'stock':'special'));
+}
 /* the special make code without its size: CJ0002M -> CJ0002 */
 function pcSpecialBase(s){
   if(s.specialBase) return s.specialBase;
@@ -741,6 +772,7 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.logoImg===undefined) s.logoImg='';
     if(s.placeImg===undefined) s.placeImg='';
     if(s.logo2Img===undefined) s.logo2Img='';
+    if(s.productCode && s.family==='special' && pcStockParts(s.productCode)){ s.family='stock'; delete s.specialBase; }
     if(s.srRaisedAt===undefined) s.srRaisedAt='';
     if(s.sampleApprovedAt===undefined) s.sampleApprovedAt='';
     if(s.weightG===undefined) s.weightG='';
@@ -1567,7 +1599,7 @@ function pcConvert(){
     s.specialBase=base;
   }
   /* a typed stock code (with -- for the size) is a stock family; anything else is a special make whose base is the code without its size */
-  if(choice.trim()){ if(/--/.test(code)) s.family='stock'; else { s.family='special'; s.specialBase=(tok&&code.slice(-tok.length)===tok)?code.slice(0,-tok.length):code; } }
+  if(choice.trim()){ if(/--/.test(code)||pcStockParts(code)) s.family='stock'; else { s.family='special'; s.specialBase=(tok&&code.slice(-tok.length)===tok)?code.slice(0,-tok.length):code; } }
   else s.family='special';
   s.productCode=code; s.status='production'; s.convertedAt=pcToday(); s.savedAt=pcNow();
   pcSaveData(); pcOpen(PC_CUR); pcRender();
@@ -2087,10 +2119,10 @@ function pcChgSrcInfo(src){
 }
 function pcChgStep(src, code){
   var info=pcChgSrcInfo(src); PC_CHG={src:src, code:code, info:info};
-  var special=info.family==='special', sized=!!pcSizeList(info);
-  var taken={}; if(special) PC.srs.forEach(function(x){ if(x.productCode && pcSpecialBase(x)===info.special) taken[String(x.productCode).toUpperCase()]=1; });
+  var special=info.family==='special', sized=!!pcSizeList(info), parts=special?null:pcStockParts(code);
+  var taken={}; PC.srs.forEach(function(x){ if(x.productCode) taken[String(x.productCode).toUpperCase()]=1; });
   var opts=''; (pcSizeList(info)||[]).forEach(function(z){
-    var c=special?(info.special+pcSizeTok(z)).toUpperCase():'', ex=!!(c&&taken[c]);
+    var c=special?(info.special+pcSizeTok(z)).toUpperCase():(parts?(parts.base+pcSizeTok(z)+parts.colour+parts.len):''), ex=!!(c&&(taken[c]||pcSheetHas(c)));
     opts+='<option value="'+pcE(z)+'"'+(ex?' disabled':'')+'>'+pcE(z)+(ex?' (already exists)':(z===info.size?' (current size)':''))+'</option>'; });
   var b=document.getElementById('pcMBody');
   b.innerHTML='<div class="pcsec"><h4>What is changing on '+pcE(code)+'?</h4><div class="in">'
@@ -2103,10 +2135,14 @@ function pcChgStep(src, code){
       ? '<p class="pcnote" style="margin-top:8px">\u26a0 <strong>'+pcE(info.special)+'</strong> is a special make code. A different fabric would be a new special make \u2014 raise a quote for it instead. Only a size change is allowed here; the new code is '+pcE(info.special)+' plus the size.</p>'
       : '<p class="pcnote" style="margin-top:8px">'+pcE(code)+' is a stock style, so its fabric may change. The new code keeps the base <strong>'+pcE(pcProductBase(code))+'</strong>.</p>')
     +'<div id="pcChgSizeWrap" style="display:none;margin-top:8px;max-width:260px"><div class="pclab">New size</div><select id="pcChgSize"><option value="">\u2014 pick a size \u2014</option>'+opts+'</select></div>'
-    +'<div id="pcChgColWrap" style="display:none;margin-top:8px;max-width:340px"><div class="pclab">New colour code (the last digits of the product code)</div>'
-      +'<input id="pcChgCol" list="pcColDL" placeholder="e.g. 15 for navy" autocomplete="off" style="text-transform:uppercase">'
+    +'<div id="pcChgColWrap" style="display:none;margin-top:8px;max-width:420px">'
+      +'<div class="pclab">New main fabric (Sage code)</div><input id="pcChgFab" list="pcChgFabDL" placeholder="e.g. PC2015ECO" autocomplete="off" style="text-transform:uppercase" oninput="pcChgFabPick(this)">'
+      +'<datalist id="pcChgFabDL">'+pcFabricOptions()+'</datalist><div id="pcChgFabName" class="pcnote"></div>'
+      +'<div class="pclab" style="margin-top:8px">New colour code (the last digits of the product code)</div>'
+      +'<input id="pcChgCol" list="pcColDL" placeholder="e.g. 15 for navy" autocomplete="off" style="text-transform:uppercase" oninput="this.dataset.auto=\'0\'">'
       +'<datalist id="pcColDL">'+PC_COLOURS.map(function(c){ return '<option value="'+c[0]+'">'+pcE(c[1])+'</option>'; }).join('')+'</datalist>'
-      +'<p class="pcnote">'+pcE(code)+' ends in <strong>'+pcE(pcColourOf(code)||'\u2014')+'</strong>; the new code takes the colour you give here, e.g. OHCJMOXFORD--15 for navy.</p></div>'
+      +'<p class="pcnote">'+pcE(code)+' ends in <strong>'+pcE(pcColourOf(code)||'\u2014')+'</strong>. The colour code is usually the last two digits of the fabric code (PC2015ECO \u2192 15, CO5364ECO \u2192 64), so it is filled in from the fabric you pick \u2014 change it if the code differs. '
+        +(parts?'The new code replaces the colour part: <strong>'+pcE(parts.base+parts.size)+'</strong> + colour'+(parts.len?' + '+pcE(parts.len):''):'The new code keeps the base and takes this colour')+'.</p></div>'
     +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" onclick="pcChgStart()">Start</button><button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCopyOpen(\'product\')">Back</button></div>'
     +'</div></div>';
 }
@@ -2116,17 +2152,30 @@ function pcChgUI(){
   var cw=document.getElementById('pcChgColWrap'); if(cw) cw.style.display=(v==='fabric'||v==='both')?'':'none';
 }
 /* the colour part of a stock code: OHCJMOXFORD--01 -> 01, CJ0193LL15 -> 15 */
-function pcColourOf(code){
-  var c=String(code||'').toUpperCase(), base=pcProductBase(c), m=/^(--|\d\d)(--|\d\d)([A-Z]?)$/.exec(c.slice(base.length));
-  return m?m[2]:'';
+function pcColourOf(code){ var p=pcStockParts(code); return p?p.colour:''; }
+/* our colour codes are usually the last two digits of the fabric code: PC2015ECO -> 15, CO5364ECO -> 64 */
+function pcColourFromFabric(code){ var m=/(\d{2,})(?!.*\d)/.exec(String(code||'').toUpperCase()); return m?m[1].slice(-2):''; }
+function pcFabricOptions(){
+  var seen={}, h='';
+  (PC.fabricsList||[]).forEach(function(f){ var k=String(f.code||'').toUpperCase(); if(!k||seen[k]) return; seen[k]=1; h+='<option value="'+pcE(f.code)+'">'+pcE(f.name||'')+'</option>'; });
+  if(typeof FABCOSTS!=='undefined') FABCOSTS.forEach(function(f){ var k=String(f[0]||'').toUpperCase(); if(!k||seen[k]) return; seen[k]=1; h+='<option value="'+pcE(f[0])+'">'+pcE(f[1]||'')+'</option>'; });
+  return h;
+}
+function pcChgFabPick(inp){
+  var code=String(inp.value||'').trim().toUpperCase(), lk=code?pcFabricLookup(code):null;
+  var nm=document.getElementById('pcChgFabName'), col=document.getElementById('pcChgCol');
+  if(nm) nm.textContent=lk?((lk.name||'')+(lk.cost!=null&&lk.cost!==''?' \u2014 \u00a3'+lk.cost+'/m':'')):(code?'Not in the Sage fabric list \u2014 the code can still be used.':'');
+  var d=pcColourFromFabric(code);
+  if(col && d && (!col.value || col.dataset.auto==='1')){ col.value=d; col.dataset.auto='1'; }
 }
 function pcChgStart(){
   if(!PC_CHG||!PC_IS_EDITOR) return;
   var scope=(document.querySelector('input[name=pcChg]:checked')||{}).value||'';
   if(!scope){ alert('Choose what is changing first.'); return; }
-  var info=PC_CHG.info, src=PC_CHG.src, code=PC_CHG.code, tok='', size='', col='';
+  var info=PC_CHG.info, src=PC_CHG.src, code=PC_CHG.code, tok='', size='', col='', fab='';
   if(scope!=='fabric'){ size=(document.getElementById('pcChgSize')||{}).value||''; if(!size){ alert('Pick the new size.'); return; } tok=pcSizeTok(size); }
   if(scope!=='size'){
+    fab=String((document.getElementById('pcChgFab')||{}).value||'').trim().toUpperCase();
     col=String((document.getElementById('pcChgCol')||{}).value||'').trim().toUpperCase();
     if(!col){ alert('Enter the new colour code \u2014 the last digits of the product code (e.g. 15 for navy).'); return; }
     if(!/^[A-Z0-9]{2,4}$/.test(col)){ alert('A colour code is 2 to 4 letters or digits, e.g. 15 or 248.'); return; }
@@ -2142,10 +2191,21 @@ function pcChgStart(){
   if(info.family==='special'){
     s.specialBase=info.special; s.baseCode=info.special; s.prodCodeDraft=info.special+tok;
   } else {
-    var base=pcProductBase(code), rem=code.slice(base.length), m=/^(--|\d\d)(--|\d\d)([A-Z]?)$/.exec(rem);
-    s.baseCode=base;
-    if(m) s.prodCodeDraft=base+((scope!=='fabric')?tok:m[1])+((scope!=='size')?col:m[2])+m[3];
-    else s.prodCodeDraft=(scope==='size')?code+tok:((base===code)?code:base+'--'+col);
+    /* a stock code: swap the size part and / or the colour part, keep the rest - OHCJMOXFORD5201 -> OHCJMOXFORD6001 / OHCJMOXFORD5215 */
+    var parts=pcStockParts(code);
+    if(parts){
+      s.baseCode=parts.base;
+      s.prodCodeDraft=parts.base+((scope!=='fabric')?tok:parts.size)+((scope!=='size')?col:parts.colour)+parts.len;
+    } else {
+      var base=pcProductBase(code); s.baseCode=base;
+      s.prodCodeDraft=(scope==='size')?code+tok:((base===code)?code:base+'--'+col);
+    }
+  }
+  /* the new main fabric picked up front replaces the first fabric line; the rating stays */
+  if(fab){
+    var lk=pcFabricLookup(fab), f0=s.fabrics[0]||{name:'',code:'',loc:'',rating:'',cost:''};
+    f0.code=fab; f0.name=lk?(lk.name||''):f0.name; f0.cost=(lk&&lk.cost!=null)?String(lk.cost):f0.cost; f0.loc=lk?(lk.loc||''):'';
+    if(!s.fabrics.length) s.fabrics.push(f0);
   }
   PC.srs.unshift(s); pcSaveData();          /* no quote number is taken */
   pcOpen(0);
