@@ -84,6 +84,22 @@ tfoot td{font-weight:700;background:#f7f9fc;border-top:2px solid var(--line)}
 .set.show{display:block}
 .set h2{font-size:14px;color:var(--navy);margin-bottom:12px}
 .setgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.ratecard{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.rcTop{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;margin-bottom:12px}
+.rcBig{display:flex;align-items:baseline;gap:8px}
+.rcBig .rcLab{font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.rcBig .rcNum{font-size:26px;font-weight:800;color:var(--navy);letter-spacing:-.5px}
+.rcBig .rcUnit{font-size:12px;color:var(--mut)}
+.rcSplit{font-size:12.5px;color:var(--steel)}
+.rcGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:12px}
+.rcCalc{display:flex;align-items:center;gap:8px;min-height:30px}
+.rcCalc span{font-weight:800;color:var(--navy);font-size:15px}
+.rcCalc .btn{font-size:11px;padding:4px 10px}
+.rcTbl{width:auto;border-collapse:collapse;margin-bottom:10px;font-size:12.5px}
+.rcTbl th,.rcTbl td{border:1px solid var(--line);padding:4px 12px;text-align:right}
+.rcTbl th{background:#EEF1F5;color:var(--steel);font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.rcTbl td:first-child,.rcTbl th:first-child{text-align:left}
+.rcTbl tr.on td{background:#FCF6E8;font-weight:800;color:var(--navy)}
 .set .field select,.set .field input{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:14px}
 .set .exp{font-size:11.5px;color:var(--mut);margin-top:4px;line-height:1.45}
 @media print{header .spacer,header button,.addbar,.set{display:none}}
@@ -170,20 +186,38 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
         <div class="exp">Minutes per unit = PW price ÷ (rate ÷ 60). Pick the rate the estimator's PW prices were set against.</div>
       </div>
       <div class="field">
-        <label>Actual labour cost (£/hr)</label>
+        <label>Direct labour (£/hr)</label>
         <input type="number" id="labRate" step="0.01">
         <div class="exp" id="labExp"></div>
       </div>
       <div class="field">
-        <label>OH uplift % (Tibard → Oliver Harvey)</label>
+        <label>Production overhead (£/hr)</label>
+        <input type="number" id="ovhRate" step="0.01" min="0">
+        <div class="exp">Absorbed on the same minutes as labour, so every cost here is labour + overhead. Default £7.00/hr — a working figure until the FD signs off the pool below.</div>
+      </div>
+      <div class="field">
+        <label>Intercompany uplift % (Tibard → Oliver Harvey)</label>
         <input type="number" id="ohPctIn" step="0.5" min="0">
-        <div class="exp">Used on the OH Costing tab only: OH price = Tibard cost + this uplift. Default 25%.</div>
+        <div class="exp">OH Costing tab only: OH price = Tibard cost + this uplift. Default 25%. This is the intercompany margin, <strong>not</strong> an overhead absorption — production overhead is the field to its left, and the two do not overlap.</div>
       </div>
       <div class="field">
         <label>Show legacy +80.5% comparison</label>
         <select id="legacySel"><option value="1">Yes</option><option value="0">No</option></select>
         <div class="exp">The old flat uplift for trims, overheads and other production labour — shown side-by-side so you can see the gap it was covering.</div>
       </div>
+    </div>
+    <div class="ratecard">
+      <div class="rcTop">
+        <div class="rcBig"><span class="rcLab">Rate for Sage</span><span class="rcNum" id="rcCombined">£25.00</span><span class="rcUnit">per hour</span></div>
+        <div class="rcSplit" id="rcSplit"></div>
+      </div>
+      <div class="rcGrid">
+        <div class="field"><label>Overhead pool (£/yr)</label><input type="number" id="ovhPool" step="1000" min="0"></div>
+        <div class="field"><label>Capacity hours (std hrs/yr)</label><input type="number" id="ovhHours" step="50" min="1"></div>
+        <div class="field"><label>Pool ÷ hours</label><div class="rcCalc"><span id="rcDerived">—</span><button class="btn btn-gold" id="rcUse" type="button">Use this rate</button></div></div>
+      </div>
+      <table class="rcTbl" id="rcTbl"></table>
+      <div class="exp" id="rcNote"></div>
     </div>
   </div>
 
@@ -254,15 +288,19 @@ function customCalc(s, qty){
   const cutShare=num(s.cutMins)/(num(s.cutBatch)||35);
   const mins=mach+fin+cutShare;
   const lab=mins/60*S.lab;
-  const newUnit=fab+tr+lab;
+  const oh=mins/60*ovh();                       /* production overhead on the same minutes */
+  const newUnit=fab+tr+lab+oh;
   const legacyUnit=(fab + mach/60*S.rate)*1.805;
-  return {fab,tr,mins,mach,fin,cutShare,lab,newUnit,legacyUnit,
-          totMins:mins*qty, totLab:lab*qty, totFab:fab*qty, totTr:tr*qty,
+  return {fab,tr,mins,mach,fin,cutShare,lab,oh,newUnit,legacyUnit,
+          totMins:mins*qty, totLab:lab*qty, totOh:oh*qty, totFab:fab*qty, totTr:tr*qty,
           totNew:newUnit*qty, totLegacy:legacyUnit*qty};
 }
 
 // ---- settings ----
-const DEF = {rate:12.71, lab:18, legacy:1, ohPct:25};
+/* ovh: production overhead absorbed per standard hour, alongside the £18 direct labour.
+   It is a working default, not a constant - the FD builds the pool up and the rate follows.
+   ohPct is a different thing entirely: the Tibard -> Oliver Harvey intercompany uplift. */
+const DEF = {rate:12.71, lab:18, legacy:1, ohPct:25, ovh:7, pool:200000, hrs:28650};
 let S = Object.assign({}, DEF);
 try{ const s = localStorage.getItem('tibardCostSettings'); if(s) S = Object.assign({},DEF,JSON.parse(s)); }catch(e){}
 if(S.lab===16.26) S.lab=18;   // old default bumped to the £18/hr production rate
@@ -270,25 +308,58 @@ function saveS(){ try{ localStorage.setItem('tibardCostSettings', JSON.stringify
 
 const rateSel=document.getElementById('rateSel'), rateCustom=document.getElementById('rateCustom'),
       labRate=document.getElementById('labRate'), legacySel=document.getElementById('legacySel'),
-      ohPctIn=document.getElementById('ohPctIn');
+      ohPctIn=document.getElementById('ohPctIn'), ovhRate=document.getElementById('ovhRate'),
+      ovhPool=document.getElementById('ovhPool'), ovhHours=document.getElementById('ovhHours');
 let OH=false;
 const ohF=()=>OH?1+(S.ohPct||0)/100:1;
+const ovh=()=>{ const v=parseFloat(S.ovh); return (isNaN(v)||v<0)?0:v; };      /* overhead £/hr */
+const combined=()=>S.lab+ovh();                                               /* the rate IT puts in Sage */
 window.costSetOH=function(on){ OH=!!on; render(); };
 document.getElementById('labExp').textContent =
- 'Default £18.00/hr — the production labour rate used for costing lines, specials and quotes.';
+ 'Default £18.00/hr — the production labour rate used for costing lines, specials and quotes. Overhead is on top, in the next field.';
+
+/* the pool build-up: what the rate is made of, and how it moves if the pool moves */
+function derivedRate(){ const p=parseFloat(S.pool), h=parseFloat(S.hrs); return (p>0&&h>0)?p/h:0; }
+function renderRateCard(){
+  const d=derivedRate();
+  document.getElementById('rcCombined').textContent=gbp(combined());
+  document.getElementById('rcSplit').innerHTML='direct labour <strong>'+gbp(S.lab)+'</strong> + production overhead <strong>'+gbp(ovh())+'</strong> — the combined rate to quote IT for the Sage standard cost.';
+  document.getElementById('rcDerived').textContent=d?gbp(d)+'/hr':'—';
+  document.getElementById('rcUse').style.display=d?'':'none';
+  const h=parseFloat(S.hrs)||0;
+  let t='<tr><th>If the pool is</th><th>Overhead £/hr</th><th>Combined £/hr</th></tr>';
+  [150000,200000,250000,300000].forEach(p=>{
+    const r=h>0?p/h:0, on=Math.abs(r-ovh())<0.005;
+    t+='<tr'+(on?' class="on"':'')+'><td>£'+(p/1000)+'k</td><td>'+(h>0?gbp(r):'—')+'</td><td>'+(h>0?gbp(S.lab+r):'—')+'</td></tr>';
+  });
+  document.getElementById('rcTbl').innerHTML=t;
+  document.getElementById('rcNote').innerHTML=
+    '<strong>The build-up the FD signs off:</strong> premises (rent + rates + utilities + insurance) × production&rsquo;s floor-space share, + machinery depreciation &amp; maintenance, + Lectra costs, + production consumables (needles, thread, bags, tissue, cartons), + indirect production wages (Gail, the supervisor, and the GT if they sit outside the £'+S.lab.toFixed(2)+') = the pool above.'
+    +'<br><br>Two things to put to the FD. The £168k rent is the production / EMB building only and is not exact; after EMB&rsquo;s share, production&rsquo;s slice of <em>rent alone</em> is roughly £126k, before rates, utilities, depreciation, consumables and indirect wages — so £7.00/hr is a reasonable working figure but may well come out higher once it is built up properly.'
+    +'<br><br>The hours are <strong>capacity</strong> hours, not budgeted output. That is deliberate: a quiet month&rsquo;s unabsorbed overhead falls to the P&amp;L instead of being buried in stock. Absorbing on forecast output instead would raise the rate and inflate stock in slow months.';
+}
 
 function initSettings(){
   const std=['12.71','12.21','11.44'];
   if(std.includes(String(S.rate))){ rateSel.value=String(S.rate); rateCustom.style.display='none'; }
   else { rateSel.value='custom'; rateCustom.style.display='block'; rateCustom.value=S.rate; }
   labRate.value=S.lab; legacySel.value=String(S.legacy); ohPctIn.value=S.ohPct;
+  ovhRate.value=ovh(); ovhPool.value=S.pool; ovhHours.value=S.hrs;
+  renderRateCard();
 }
 rateSel.onchange=()=>{ if(rateSel.value==='custom'){rateCustom.style.display='block';rateCustom.focus();}
   else {rateCustom.style.display='none'; S.rate=parseFloat(rateSel.value); saveS(); render();} };
 rateCustom.oninput=()=>{ const v=parseFloat(rateCustom.value); if(v>0){S.rate=v; saveS(); render();} };
-labRate.oninput=()=>{ const v=parseFloat(labRate.value); if(v>0){S.lab=v; saveS(); render();} };
+labRate.oninput=()=>{ const v=parseFloat(labRate.value); if(v>0){S.lab=v; saveS(); renderRateCard(); render();} };
 legacySel.onchange=()=>{ S.legacy=+legacySel.value; saveS(); };
 ohPctIn.oninput=()=>{ const v=parseFloat(ohPctIn.value); if(!isNaN(v)&&v>=0){ S.ohPct=v; saveS(); render(); } };
+ovhRate.oninput=()=>{ const v=parseFloat(ovhRate.value); if(!isNaN(v)&&v>=0){ S.ovh=v; saveS(); renderRateCard(); render(); } };
+ovhPool.oninput=()=>{ const v=parseFloat(ovhPool.value); if(!isNaN(v)&&v>=0){ S.pool=v; saveS(); renderRateCard(); } };
+ovhHours.oninput=()=>{ const v=parseFloat(ovhHours.value); if(v>0){ S.hrs=v; saveS(); renderRateCard(); } };
+document.getElementById('rcUse').onclick=()=>{
+  const d=derivedRate(); if(!d) return;
+  S.ovh=Math.round(d*100)/100; ovhRate.value=S.ovh; saveS(); renderRateCard(); render();
+};
 document.getElementById('setBtn').onclick=()=>document.getElementById('setPanel').classList.toggle('show');
 
 // ---- helpers ----
@@ -304,10 +375,11 @@ function calc(row, qty){
   if(fr){ const sg=FABLOOK.get(String(fr[0]).toUpperCase()); if(sg&&sg[2]>0){ cpm=sg[2]; sage=true; } }
   const fab=(u!=null&&cpm!=null)?u*cpm:null;
   const labUnit=mins*(S.lab/60);
+  const ohUnit=mins*(ovh()/60);                  /* production overhead on the same minutes */
   const legacyUnit=(fab!=null)?(pw+fab)*1.805:null;
-  const newUnit=labUnit+(fab||0);
-  return {pw,mins,fab,cpm,sage,labUnit,legacyUnit,newUnit,totMins:mins*qty,
-          totLab:labUnit*qty, totFab:fab!=null?fab*qty:null,
+  const newUnit=labUnit+ohUnit+(fab||0);
+  return {pw,mins,fab,cpm,sage,labUnit,ohUnit,legacyUnit,newUnit,totMins:mins*qty,
+          totLab:labUnit*qty, totOh:ohUnit*qty, totFab:fab!=null?fab*qty:null,
           totNew:newUnit*qty, totLegacy:legacyUnit!=null?legacyUnit*qty:null};
 }
 
@@ -409,22 +481,23 @@ function render(){
   const F=ohF();
   document.getElementById('rateNote').textContent =
     (OH?'OH prices = Tibard cost +'+(S.ohPct||0)+'% · ':'')
-    +'PW @ £'+S.rate.toFixed(2)+'/hr ('+gbp(S.rate/60)+'/min) · labour @ £'+S.lab.toFixed(2)+'/hr';
+    +'PW @ £'+S.rate.toFixed(2)+'/hr ('+gbp(S.rate/60)+'/min) · labour £'+S.lab.toFixed(2)+' + overhead £'+ovh().toFixed(2)+' = £'+combined().toFixed(2)+'/hr';
   const w=document.getElementById('tblWrap');
   if(!lines.length){ w.innerHTML='<div class="empty">No lines yet — search a code above to begin.</div>'; return; }
-  let tMins=0,tLab=0,tFab=0,tNew=0,tQty=0, anyNoFab=false, anyCustom=false;
-  let h='<table><thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Mins / unit</th><th class="num">Total time</th><th class="num">Sewing £ / unit</th><th class="num">Fabric £ / unit</th><th class="num">Cost / unit</th><th class="num">Total cost</th><th></th></tr></thead><tbody>';
+  let tMins=0,tLab=0,tOh=0,tFab=0,tNew=0,tQty=0, anyNoFab=false, anyCustom=false;
+  let h='<table><thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Mins / unit</th><th class="num">Total time</th><th class="num">Labour £ / unit</th><th class="num">Overhead £ / unit</th><th class="num">Fabric £ / unit</th><th class="num">Cost / unit</th><th class="num">Total cost</th><th></th></tr></thead><tbody>';
   lines.forEach((l,k)=>{
     const si=byCode.get(l.code);
     if(si!=null){
       const r=rows[si], c=calc(r,l.qty);
-      tMins+=c.totMins; tLab+=c.totLab; tNew+=c.totNew; tQty+=l.qty;
+      tMins+=c.totMins; tLab+=c.totLab; tOh+=c.totOh; tNew+=c.totNew; tQty+=l.qty;
       if(c.fab!=null) tFab+=c.totFab; else anyNoFab=true;
       h+='<tr data-k="'+k+'"><td><div class="code">'+r[0]+'</div><div class="desc">'+(r[2]||'<span class="warn">no description in source</span>')+'</div></td>'
         +'<td class="num"><input class="qtyEd" data-k="'+k+'" type="number" min="1" value="'+l.qty+'"></td>'
         +'<td class="num">'+n1(c.mins)+'</td>'
         +'<td class="num">'+hhmm(c.totMins)+'</td>'
         +'<td class="num">'+gbp(c.labUnit*F)+'</td>'
+        +'<td class="num">'+gbp(c.ohUnit*F)+'</td>'
         +'<td class="num">'+(c.fab!=null?gbp(c.fab*F):'<span class="warn">n/a</span>')+'</td>'
         +'<td class="num"><b>'+gbp(c.newUnit*F)+'</b></td>'
         +'<td class="num"><b>'+gbp(c.totNew*F)+'</b></td>'
@@ -433,12 +506,13 @@ function render(){
       const s=customByCode(l.code); if(!s) return;
       const c=customCalc(s,l.qty);
       anyCustom=true;
-      tMins+=c.totMins; tLab+=c.totLab; tFab+=c.totFab+c.totTr; tNew+=c.totNew; tQty+=l.qty;
+      tMins+=c.totMins; tLab+=c.totLab; tOh+=c.totOh; tFab+=c.totFab+c.totTr; tNew+=c.totNew; tQty+=l.qty;
       h+='<tr data-k="'+k+'"><td><div class="code">'+esc(s.productCode)+' <span class="tag">SPECIAL</span></div><div class="desc">'+esc(((s.garment||'')+(s.customer?' — '+s.customer:''))||'no details')+'</div></td>'
         +'<td class="num"><input class="qtyEd" data-k="'+k+'" type="number" min="1" value="'+l.qty+'"></td>'
         +'<td class="num">'+n1(c.mins)+'</td>'
         +'<td class="num">'+hhmm(c.totMins)+'</td>'
         +'<td class="num">'+gbp(c.lab*F)+'</td>'
+        +'<td class="num">'+gbp(c.oh*F)+'</td>'
         +'<td class="num">'+gbp((c.fab+c.tr)*F)+'</td>'
         +'<td class="num"><b>'+gbp(c.newUnit*F)+'</b>'+(S.legacy?'<div class="desc" style="max-width:none">legacy '+gbp(c.legacyUnit*F)+'</div>':'')+'</td>'
         +'<td class="num"><b>'+gbp(c.totNew*F)+'</b></td>'
@@ -446,7 +520,7 @@ function render(){
     }
   });
   h+='</tbody><tfoot><tr><td>Total'+(OH?' (OH +'+(S.ohPct||0)+'%)':'')+'</td><td class="num">'+tQty.toLocaleString()+'</td><td></td>'
-    +'<td class="num">'+hhmm(tMins)+'</td><td class="num">'+gbp(tLab*F)+'</td>'
+    +'<td class="num">'+hhmm(tMins)+'</td><td class="num">'+gbp(tLab*F)+'</td><td class="num">'+gbp(tOh*F)+'</td>'
     +'<td class="num">'+gbp(tFab*F)+(anyNoFab?'<span class="warn">*</span>':'')+'</td><td></td>'
     +'<td class="num">'+gbp(tNew*F)+'</td><td></td></tr></tfoot></table>';
   if(anyNoFab) h+='<div class="hint" style="padding:8px 12px">* one or more lines have no fabric cost in the source sheet — fabric excluded for those lines.</div>';
@@ -481,14 +555,15 @@ function openModal(k){
     +'<div class="ln"><span class="l">Estimated sewing time per unit</span><span class="v gold">'+n1(c.mins)+' min</span></div>'
     +'<div class="ln"><span class="l">Total for '+l.qty.toLocaleString()+' units</span><span class="v gold">'+hhmm(c.totMins)+'</span></div></div>';
   h+='<div class="sec"><h3>Per-unit cost build-up</h3>'
-    +'<div class="ln"><span class="l">Sewing labour at actual cost<small>'+n1(c.mins)+' min × £'+S.lab.toFixed(2)+'/hr</small></span><span class="v">'+gbp(c.labUnit)+'</span></div>';
+    +'<div class="ln"><span class="l">Sewing labour at actual cost<small>'+n1(c.mins)+' min × £'+S.lab.toFixed(2)+'/hr</small></span><span class="v">'+gbp(c.labUnit)+'</span></div>'
+    +'<div class="ln"><span class="l">Production overhead absorbed<small>'+n1(c.mins)+' min × £'+ovh().toFixed(2)+'/hr — combined rate £'+combined().toFixed(2)+'/hr</small></span><span class="v">'+gbp(c.ohUnit)+'</span></div>';
   if(c.fab!=null){
     h+='<div class="ln"><span class="l">Fabric<small>'+(fabRef?fabRef[0]+' — '+(fabRef[1]||''):'')+' · '+r[5]+' m × '+gbp(c.cpm)+'/m'+(c.sage?' (Sage price list)':'')+'</small></span><span class="v">'+gbp(c.fab)+'</span></div>';
   } else {
     h+='<div class="ln"><span class="l">Fabric</span><span class="v red">no cost in source</span></div>';
   }
   h+='<div class="ln tot"><span class="l">Identified cost so far</span><span class="v">'+gbp(c.newUnit)+'</span></div>'
-    +'<div class="ln sub"><span class="l">Still to cost: trims, cutting & finishing labour, production overheads</span><span class="v"></span></div></div>';
+    +'<div class="ln sub"><span class="l">Still to cost: trims, cutting &amp; finishing labour</span><span class="v"></span></div></div>';
   if(S.legacy && c.legacyUnit!=null){
     const pot=c.legacyUnit-(c.pw+c.fab);
     const gap=c.legacyUnit-c.newUnit;
@@ -500,6 +575,7 @@ function openModal(k){
   }
   h+='<div class="sec"><h3>Order totals ('+l.qty.toLocaleString()+' units)</h3>'
     +'<div class="ln"><span class="l">Sewing labour</span><span class="v">'+gbp(c.totLab)+'</span></div>'
+    +'<div class="ln"><span class="l">Production overhead</span><span class="v">'+gbp(c.totOh)+'</span></div>'
     +(c.totFab!=null?'<div class="ln"><span class="l">Fabric</span><span class="v">'+gbp(c.totFab)+'</span></div>':'')
     +'<div class="ln tot"><span class="l">Identified cost</span><span class="v">'+gbp(c.totNew)+'</span></div>'
     +(S.legacy&&c.totLegacy!=null?'<div class="ln sub"><span class="l">Legacy method total</span><span class="v">'+gbp(c.totLegacy)+'</span></div>':'')
@@ -512,7 +588,7 @@ function openModal(k){
       +'<div class="ln tot"><span class="l">OH price per unit</span><span class="v gold">'+gbp(c.newUnit*F)+'</span></div>'
       +'<div class="ln"><span class="l">OH order total ('+l.qty.toLocaleString()+' units)</span><span class="v">'+gbp(c.totNew*F)+'</span></div></div>';
   }
-  h+='<div class="note">Sewing minutes are reverse-engineered from the PW piece price and depend on the wage rate in Settings. Fabric is per All Costings usage × cost/metre. The "identified cost" deliberately excludes the old 80.5% uplift — trims and cutting/finishing labour are still to be costed properly.</div>';
+  h+='<div class="note">Sewing minutes are reverse-engineered from the PW piece price and depend on the wage rate in Settings. Fabric is per All Costings usage × cost/metre. Overhead is absorbed at £'+ovh().toFixed(2)+'/hr on the same minutes, so labour and overhead together run at £'+combined().toFixed(2)+'/hr — that combined rate is what IT sets up in Sage. The "identified cost" deliberately excludes the old 80.5% uplift — trims and cutting/finishing labour are still to be costed properly.</div>';
   document.getElementById('mBody').innerHTML=h;
   ov.classList.add('show');
 }
@@ -529,13 +605,14 @@ function openCustomModal(l){
   });
   h+='<div class="ln"><span class="l">Trims ('+(s.trims||[]).length+' line'+((s.trims||[]).length===1?'':'s')+')</span><span class="v">'+gbp(c.tr)+'</span></div>'
     +'<div class="ln tot"><span class="l">Materials per unit</span><span class="v">'+gbp(c.fab+c.tr)+'</span></div></div>';
-  h+='<div class="sec"><h3>Labour ('+n1(c.mins)+' min/unit @ £'+S.lab.toFixed(2)+'/hr)</h3>'
+  h+='<div class="sec"><h3>Labour &amp; overhead ('+n1(c.mins)+' min/unit @ £'+combined().toFixed(2)+'/hr)</h3>'
     +'<div class="ln sub"><span class="l">Machining</span><span class="v">'+n1(c.mach)+' min</span></div>'
     +'<div class="ln sub"><span class="l">Finishing</span><span class="v">'+n1(c.fin)+' min</span></div>'
     +'<div class="ln sub"><span class="l">Cutting share</span><span class="v">'+n1(c.cutShare)+' min</span></div>'
-    +'<div class="ln"><span class="l">Labour per unit</span><span class="v">'+gbp(c.lab)+'</span></div></div>';
+    +'<div class="ln"><span class="l">Labour per unit<small>@ £'+S.lab.toFixed(2)+'/hr</small></span><span class="v">'+gbp(c.lab)+'</span></div>'
+    +'<div class="ln"><span class="l">Production overhead per unit<small>@ £'+ovh().toFixed(2)+'/hr</small></span><span class="v">'+gbp(c.oh)+'</span></div></div>';
   h+='<div class="sec"><h3>Prices per unit</h3>'
-    +'<div class="ln"><span class="l">New method<small>materials + all labour</small></span><span class="v gold">'+gbp(c.newUnit)+'</span></div>'
+    +'<div class="ln"><span class="l">New method<small>materials + labour + overhead</small></span><span class="v gold">'+gbp(c.newUnit)+'</span></div>'
     +(S.legacy?'<div class="ln"><span class="l">Legacy method<small>(fabric + machining) + 80.5% uplift</small></span><span class="v">'+gbp(c.legacyUnit)+'</span></div>':'')+'</div>';
   h+='<div class="sec"><h3>Order totals ('+l.qty.toLocaleString()+' units)</h3>'
     +'<div class="ln"><span class="l">New method</span><span class="v">'+gbp(c.totNew)+'</span></div>'
@@ -549,7 +626,7 @@ function openCustomModal(l){
       +(S.legacy?'<div class="ln sub"><span class="l">OH legacy price per unit</span><span class="v">'+gbp(c.legacyUnit*F)+'</span></div>':'')
       +'<div class="ln"><span class="l">OH order total ('+l.qty.toLocaleString()+' units)</span><span class="v">'+gbp(c.totNew*F)+'</span></div></div>';
   }
-  h+='<div class="note">This product was created in New costing ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour is costed at the labour rate from Settings. The legacy price uplifts only fabric + machining (at the PW rate) by 80.5%, matching the old All Costings method.</div>';
+  h+='<div class="note">This product was created in New costing ('+esc([s.quoteRef,s.ref].filter(Boolean).join(' → ')||'—')+'). Labour and production overhead are costed at the rates from Settings — £'+S.lab.toFixed(2)+' + £'+ovh().toFixed(2)+' = £'+combined().toFixed(2)+'/hr combined. The legacy price uplifts only fabric + machining (at the PW rate) by 80.5%, matching the old All Costings method.</div>';
   document.getElementById('mBody').innerHTML=h;
   ov.classList.add('show');
 }
@@ -878,6 +955,13 @@ function pcRate(){                       // current PW rate from the costing cal
 function pcLabRate(){                    // labour rate used for quote costing (£18/hr default)
   try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}'); if(pcNum(s.lab)>0&&pcNum(s.lab)!==16.26) return pcNum(s.lab); }catch(e){}
   return 18;
+}
+/* production overhead absorbed per standard hour, set in the calculator's Settings (£7/hr default).
+   Labour + overhead is the combined rate IT sets up against the code in Sage. */
+function pcOvhRate(){
+  try{ var s=JSON.parse(localStorage.getItem('tibardCostSettings')||'{}');
+    if(s.ovh!=null && s.ovh!=='' && pcNum(s.ovh)>=0) return pcNum(s.ovh); }catch(e){}
+  return 7;
 }
 function pcPos(v){ v=parseFloat(v); return (isNaN(v)||v<=0)?0:v; }
 var PC_SHEET=null;
@@ -1529,26 +1613,29 @@ function pcToSR(){
 }
 
 /* ── costing ── */
-function pcCostCalc(s, rate, fabrics){
+function pcCostCalc(s, rate, fabrics, ovhRate){
   var fab=0; (fabrics||s.fabrics).forEach(function(f){ fab+=pcNum(f.rating)*pcNum(f.cost); });
   var tr=0; s.trims.forEach(function(t){ tr+=(pcNum(t.qty)||1)*pcNum(t.cost); });
   var mins=pcNum(s.machMins)+pcNum(s.finMins)+(pcNum(s.cutMins)/(pcNum(s.cutBatch)||35));
-  var lab=mins/60*rate;
-  return {fab:fab, tr:tr, mins:mins, lab:lab, total:fab+tr+lab};
+  var orate=(ovhRate==null)?pcOvhRate():pcNum(ovhRate);
+  var lab=mins/60*rate, oh=mins/60*orate;
+  return {fab:fab, tr:tr, mins:mins, lab:lab, oh:oh, ovhRate:orate, total:fab+tr+lab+oh};
 }
 function pcCost(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
   if(s.productCode && pcLatestWO(s)) s=pcWithLatestWO(s);   /* a product is costed from the live works order */
-  var rate=pcLabRate();
+  var rate=pcLabRate(), orate=pcOvhRate();
   var box=document.getElementById('pcCostBox');
   var whatif=JSON.parse(JSON.stringify(s.fabrics));
   function draw(){
-    var c=pcCostCalc(s, rate, whatif);
-    var base=pcCostCalc(s, rate, s.fabrics);
+    var c=pcCostCalc(s, rate, whatif, orate);
+    var base=pcCostCalc(s, rate, s.fabrics, orate);
     var h='<div class="pccost"><strong style="color:var(--navy)">Costing \u2014 '+pcE(pcRefLabel(s))+(s.productCode?' / '+pcE(s.productCode):'')+'</strong>'
-      +'<div class="pcrow" style="grid-template-columns:220px 1fr;margin:8px 0"><div><div class="pclab">Labour rate \u00a3/hr</div><input id="pcCRate" type="number" step="0.01" value="'+rate+'"></div><div class="pcnote" style="align-self:end">Change the rate or any fabric line below to see a what-if price \u2014 nothing is saved.</div></div>'
+      +'<div class="pcrow" style="grid-template-columns:150px 150px 1fr;margin:8px 0"><div><div class="pclab">Labour rate \u00a3/hr</div><input id="pcCRate" type="number" step="0.01" value="'+rate+'"></div>'
+      +'<div><div class="pclab">Overhead \u00a3/hr</div><input id="pcCOvh" type="number" step="0.01" min="0" value="'+orate+'"></div>'
+      +'<div class="pcnote" style="align-self:end">Labour + overhead = <strong>\u00a3'+(rate+orate).toFixed(2)+'/hr</strong> \u2014 the combined rate behind this cost. Change a rate or any fabric line for a what-if price; nothing is saved, and the defaults live in the calculator\u2019s Settings.</div></div>'
       +'<table><tr><th>Fabric (what-if editable)</th><th style="width:90px">Rating m</th><th style="width:90px">\u00a3/m</th><th style="width:90px">\u00a3</th></tr>';
     whatif.forEach(function(f,ix){
       h+='<tr><td><input class="pcWCode" list="pcFabDL" data-ix="'+ix+'" value="'+pcE(f.code)+'" style="width:130px;background:#fffbea;border:1px solid var(--line);border-radius:4px;padding:3px 6px"> '+pcE((f.name||'').slice(0,44))+'</td>'
@@ -1558,12 +1645,14 @@ function pcCost(){
     });
     h+='<tr><td colspan="3">Trims ('+s.trims.length+' line'+(s.trims.length===1?'':'s')+')</td><td>\u00a3'+c.tr.toFixed(2)+'</td></tr>'
       +'<tr><td colspan="3">Labour \u2014 '+c.mins.toFixed(2)+' mins/unit @ \u00a3'+rate.toFixed(2)+'/hr (mach + fin + cutting share)</td><td>\u00a3'+c.lab.toFixed(2)+'</td></tr>'
+      +'<tr><td colspan="3">Production overhead \u2014 same '+c.mins.toFixed(2)+' mins @ \u00a3'+orate.toFixed(2)+'/hr</td><td>\u00a3'+c.oh.toFixed(2)+'</td></tr>'
       +'<tr><td colspan="3" class="pctot">Cost per unit</td><td class="pctot">\u00a3'+c.total.toFixed(2)+'</td></tr>';
     if(Math.abs(c.total-base.total)>0.004)
       h+='<tr><td colspan="3">vs current fabrics (\u00a3'+base.total.toFixed(2)+')</td><td style="font-weight:800;color:'+(c.total>base.total?'#c0392b':'#1e7e46')+'">'+(c.total>base.total?'+':'')+'\u00a3'+(c.total-base.total).toFixed(2)+'</td></tr>';
     h+='</table></div>';
     box.innerHTML=h;
     box.querySelector('#pcCRate').addEventListener('change',function(){ rate=pcNum(this.value)||rate; draw(); });
+    box.querySelector('#pcCOvh').addEventListener('change',function(){ var v=pcNum(this.value); orate=(this.value===''||v<0)?orate:v; draw(); });
     box.querySelectorAll('.pcWCode').forEach(function(inp){ inp.addEventListener('change',function(){
       var ix=+this.getAttribute('data-ix'); var f=pcFabricLookup(this.value);
       whatif[ix].code=this.value.trim();
@@ -1806,8 +1895,8 @@ function pcQuotePrint(){
     alert('Cannot print the quote yet \u2014 these required fields are blank (highlighted in red):\n\n\u2022 '+reqMissing.join('\n\u2022 ')+'\n\nOptional fields (Lectra, Variant\u2026) can stay empty. Save part-done quotes any time \u2014 only printing needs everything filled in.');
     return;
   }
-  var rate=pcLabRate();
-  var c=pcCostCalc(s, rate, s.fabrics);
+  var rate=pcLabRate(), orate=pcOvhRate();
+  var c=pcCostCalc(s, rate, s.fabrics, orate);
   var mk=(s.quoteMarkup==null||s.quoteMarkup==='')?60:pcNum(s.quoteMarkup);
   var isEMB=s.brandType==='EMB', isDTF=s.brandType==='DTF';
   var sell=c.total*(1+mk/100)+(isEMB?PC_EMB_CHARGE:0);
@@ -1842,6 +1931,8 @@ function pcQuotePrint(){
     +(s.logo2Img&&s.brandType!=='None'?'<tr><th>Second logo / artwork</th><td><img src="'+s.logo2Img+'" alt="second logo" style="max-height:80px;max-width:240px"></td></tr>':'')
     +(s.placeImg&&s.brandType!=='None'?'<tr><th>Logo placement photo</th><td><img src="'+s.placeImg+'" alt="logo placement photo" style="max-height:200px;max-width:300px"></td></tr>':'')+'</table>'
     +'<div class="band">PRICE</div><table>'
+    +'<tr><th>Fabric &amp; trims</th><td>£'+(c.fab+c.tr).toFixed(2)+'</td></tr>'
+    +'<tr><th>Labour &amp; overhead</th><td>£'+(c.lab+c.oh).toFixed(2)+' &nbsp;<span style="font-weight:400;font-size:11px;color:#666">'+c.mins.toFixed(2)+' mins @ £'+(rate+orate).toFixed(2)+'/hr (labour £'+rate.toFixed(2)+' + overhead £'+orate.toFixed(2)+')</span></td></tr>'
     +'<tr><th>Cost per unit</th><td style="font-weight:700;font-size:15px">£'+c.total.toFixed(2)+'</td></tr>'
     +(missingLab?'<tr><td colspan="2" style="color:#C00000;font-weight:700">Warning: machining/finishing time not set — labour is incomplete in this cost</td></tr>':'')
     +(showSell&&isEMB?'<tr><th>EMB embroidery charge</th><td>+ £'+PC_EMB_CHARGE.toFixed(2)+' per unit</td></tr>':'')
@@ -1851,7 +1942,7 @@ function pcQuotePrint(){
     +'<div class="band">MOQ / CUTTING</div><table>'
     +'<tr><th>Lay qty</th><td style="font-weight:700">'+(layQ? layQ+' garment'+(layQ===1?'':'s')+' cut per lay — set the MOQ in multiples of '+layQ : '—')+'</td></tr>'
     +'</table>'
-    +'<p class="note">Internal quotation sheet — prices exclude VAT and carriage. Cost per unit is fabric + trims + labour at the current rates; check with production before committing to lead times.</p>';
+    +'<p class="note">Internal quotation sheet — prices exclude VAT and carriage. Cost per unit is fabric + trims + labour + production overhead, absorbed at £'+orate.toFixed(2)+'/hr on the same minutes as labour (combined £'+(rate+orate).toFixed(2)+'/hr). Check with production before committing to lead times.</p>';
   h+='<script>window.onload=function(){window.print();};<\/script></body></html>';
   var w=window.open('','_blank');
   if(!w){ alert('Pop-up blocked — allow pop-ups for this site and try again.'); return false; }
