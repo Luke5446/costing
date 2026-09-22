@@ -238,7 +238,9 @@ const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function customList(){
   let pc = window.PC;
   if(!pc){ try{ pc = JSON.parse(localStorage.getItem('pcData')||'null'); }catch(e){} }
-  return (pc && Array.isArray(pc.srs)) ? pc.srs.filter(s=>s.productCode) : [];
+  const list=(pc && Array.isArray(pc.srs)) ? pc.srs.filter(s=>s.productCode) : [];
+  /* a converted product is costed from the buffer app's live works order when one has been published */
+  return (typeof pcWithLatestWO==='function') ? list.map(s=>pcWithLatestWO(s)) : list;
 }
 function customByCode(code){
   code = String(code||'').toUpperCase();
@@ -1509,6 +1511,7 @@ function pcCost(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
+  if(s.productCode && pcLatestWO(s)) s=pcWithLatestWO(s);   /* a product is costed from the live works order */
   var rate=pcLabRate();
   var box=document.getElementById('pcCostBox');
   var whatif=JSON.parse(JSON.stringify(s.fabrics));
@@ -1987,8 +1990,10 @@ function pcWithLatestWO(s){
   var st=pcLatestWO(s); if(!st) return s;
   var o=JSON.parse(JSON.stringify(s)), str=function(v){ return (v==null||v==='')?'':String(v); };
   o.desc=st.desc||o.desc; o.lectra=st.lectra||''; o.variant=st.variant||'';
-  o.fabrics=(st.fabrics||[]).map(function(f){ return {name:f[0]||'', code:f[1]||'', loc:f[2]||'', rating:str(f[3]), cost:str(f[4])}; });
-  o.trims=(st.trims||[]).map(function(t){ return {code:t[3]||'', desc:(t[0]&&t[1])?t[0]+' — '+t[1]:(t[1]||t[0]||''), qty:str(t[2]), cost:str(t[4])}; });
+  o.fabrics=(st.fabrics||[]).map(function(f){ var c=str(f[4]); if(!(pcNum(c)>0)&&f[1]){ var lk=pcFabricLookup(f[1]); if(lk&&lk.cost!=null) c=String(lk.cost); }
+    return {name:f[0]||'', code:f[1]||'', loc:f[2]||'', rating:str(f[3]), cost:c}; });
+  o.trims=(st.trims||[]).map(function(t){ var c=str(t[4]); if(!(pcNum(c)>0)&&t[3]){ var lk=pcTrimLookup(t[3]); if(lk&&lk.cost!=null) c=String(lk.cost); }
+    return {code:t[3]||'', desc:(t[0]&&t[1])?t[0]+' — '+t[1]:(t[1]||t[0]||''), qty:str(t[2]), cost:c}; });
   o.mfg=(st.mfg||[]).join('\n'); o.fin=(st.fin||[]).join('\n');
   o.machMins=str(st.machMins); o.finMins=str(st.finMins); o.cutBatch=str(st.cutBatch); o.cutMins=st.cutMins!=null?st.cutMins:o.cutMins;
   o.markerMain=st.markerMain||''; o.markerMesh=st.markerMesh||''; o.markerLen=str(st.markerLen); o.layQty=str(st.layQty);
