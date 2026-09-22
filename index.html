@@ -1228,7 +1228,7 @@ function pcOpen(i){
         +(scope==='size'?'New size <strong>'+pcE(s.size)+'</strong> of ':scope==='fabric'?'New fabric / colour of ':scope==='both'?'New size <strong>'+pcE(s.size)+'</strong> in a new fabric, from ':'Based on ')
         +'<strong>'+pcE(s.sourceCode||'')+'</strong>. '
         +((scope==='size'&&pcFamilyOf(s)==='special')?'The code is fixed: the special make code plus the size.':'The code must start with <strong>'+pcE(s.baseCode||'')+'</strong> \u2014 change only the size / colour part after it.')
-        +(scope==='size'?' The marker number and length, lay, fabric ratings, measurements and trims are open; everything else is copied as it is.':scope==='fabric'?' The fabric lines, trims and the description are open; everything else is copied as it is.':scope==='both'?' The fabric lines, trims, description, marker, lay and measurements are open.':'')
+        +(scope?' Everything is copied from it and can be edited; the size was chosen in step 2 (press Back there to change it).':'')
       +'</div>'
       +'</div></div></div>';
   }
@@ -1357,22 +1357,10 @@ function pcOpen(i){
   }
   document.getElementById('pcOv').classList.add('on');
   if(scope && !ro){
-    /* only what is changing is open: size change - marker, lay and measurements; fabric change - the fabric lines and the description */
-    b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; });
-    b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; });
-    b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); });
-    var open=['pcF_status'];
-    if(scope!=='fabric') open=open.concat(['pcF_mkMain','pcF_mkLen','pcF_layQty','pcF_hasMesh','pcF_mkMesh','pcF_meshLen','pcF_meshLay']);
-    if(scope!=='size') open=open.concat(['pcF_desc']);
-    open.forEach(function(id){ var el=document.getElementById(id); if(el) el.disabled=false; });
-    /* trims are always open on a change: a navy fabric wants navy thread and black buttons, a bigger size more studs */
-    var tbls=['pcTrimT']; if(scope!=='fabric') tbls.push('pcMeasT'); if(scope!=='size') tbls.push('pcFabT');
-    tbls.forEach(function(id){ var tb=document.getElementById(id); if(!tb) return;
-      tb.querySelectorAll('input').forEach(function(el){ el.disabled=false; });
-      tb.querySelectorAll('button').forEach(function(el){ el.style.display=''; });
-      if(tb.nextElementSibling&&tb.nextElementSibling.tagName==='BUTTON') tb.nextElementSibling.style.display=''; });
-    /* a size change: the fabric ratings too - a smaller jacket uses less - while the fabric itself stays */
-    if(scope==='size') b.querySelectorAll('#pcFabT input[data-k=rating]').forEach(function(el){ el.disabled=false; });
+    /* Everything copied is open to edit - the GT decides what a new size or fabric needs. Two things are
+       fixed by the choice made in step 2: the size itself (go Back to pick another) and, on a special make's
+       size change, the code, which is the special make code plus the size. */
+    var szSel=document.getElementById('pcF_size'); if(szSel && scope!=='fabric') szSel.disabled=true;
     var pcIn=document.getElementById('pcF_prodCode'); if(pcIn) pcIn.disabled=(scope==='size'&&pcFamilyOf(s)==='special');
   }
   if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); el.style.visibility='hidden'; });
@@ -2129,8 +2117,8 @@ function pcChgStep(src, code){
   var b=document.getElementById('pcMBody');
   b.innerHTML='<div class="pcsec"><h4>What is changing on '+pcE(code)+'?</h4><div class="in">'
     +'<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
-    +'<label><input type="radio" name="pcChg" value="size" onchange="pcChgUI()"'+(sized?'':' disabled')+'> <strong>New size</strong> \u2014 pick the size; the marker number and length, lay, fabric ratings, measurements and trims can be edited'+(sized?'':' (this garment has no size)')+'</label>'
-    +'<label><input type="radio" name="pcChg" value="fabric" onchange="pcChgUI()"'+(special?' disabled':'')+'> <strong>New fabric / colour</strong> \u2014 the fabric lines, trims (thread, buttons\u2026) and the description can be edited</label>'
+    +'<label><input type="radio" name="pcChg" value="size" onchange="pcChgUI()"'+(sized?'':' disabled')+'> <strong>New size</strong> \u2014 pick the size; the code takes it and everything else is copied to edit'+(sized?'':' (this garment has no size)')+'</label>'
+    +'<label><input type="radio" name="pcChg" value="fabric" onchange="pcChgUI()"'+(special?' disabled':'')+'> <strong>New fabric / colour</strong> \u2014 pick the fabric; the code takes its colour and everything else is copied to edit</label>'
     +'<label><input type="radio" name="pcChg" value="both" onchange="pcChgUI()"'+((special||!sized)?' disabled':'')+'> <strong>Both</strong> \u2014 a new size in a new fabric</label>'
     +'</div>'
     +(special
