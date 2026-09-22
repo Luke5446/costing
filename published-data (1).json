@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-09-21",
- "publishedTS": "2026-09-21T14:21:16.758Z",
+ "publishedAt": "2026-09-22",
+ "publishedTS": "2026-09-22T10:08:54.892Z",
  "qSeq": 11,
  "srSeq": 9,
  "prodSeq": {
@@ -13,158 +13,146 @@
    "quoteRef": "",
    "ref": "",
    "status": "production",
-   "created": "2026-09-21",
+   "created": "2026-09-22",
    "due": "",
-   "customer": "Scoop",
+   "customer": "Stock",
    "garment": "Chef jacket",
-   "desc": "Blade single-breasted shirt-style chef jacket  - size 40— long sleeve, gents — Single-breasted button-fastened shirt-style chef jacket · Chest pocket left side as worn with pen pocket detail · Side seam pockets for iPad · Collar and collar stand · Boxy jacket with straight hem · Long sleeve with slit cuff · No OH tax tab",
+   "desc": "Oxford chef jacket — short sleeve, white, long length — Stand collar · Panelled back · Long length · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex",
    "brandType": "None",
    "brandPlace": "",
    "fabrics": [
     {
-     "code": "PC2003ECO",
-     "name": "BLACK SUSTAINABLE 65/35 POLY/COTTON (X133 - AM125)",
-     "rating": "1.60",
+     "code": "PC2015ECO",
+     "name": "NAVY SUSTAINABLE 65/35 POLY/COTTON (X133 - AM297)",
+     "rating": "1.69",
      "cost": "2.32",
-     "loc": "B1"
+     "loc": "B4"
     },
     {
-     "code": "FUS1256",
-     "name": "Interlining for collar and collar stand — quality 8816, cut 1 (Arley Trimmings)",
-     "rating": "0.06",
-     "cost": "2.78",
-     "loc": "D7"
+     "code": "MESHPW31415",
+     "name": "NAVY 100% POLYESTER MESH 160CM (PW314)",
+     "rating": "0.04",
+     "cost": "2.35",
+     "loc": "B5"
     }
    ],
    "trims": [
     {
-     "code": "CMP-THR-EP80-09700-03",
-     "desc": "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
-     "qty": "180",
-     "cost": "0.000648"
+     "code": "CMP-THR-EP80-07935-15",
+     "desc": "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     "qty": "200",
+     "cost": "0.000714"
     },
     {
-     "code": "CMP-BTN-P64-24-15",
-     "desc": "JONES 4 HOLE BUTTON P64/24 (COL 15)",
-     "qty": "8",
-     "cost": "0.075"
+     "code": "OHDETACHABLEBUTTON03",
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     "qty": "12",
+     "cost": "0.053"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
      "desc": "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
-     "qty": "1",
+     "qty": "0.7",
      "cost": "1.4"
     },
     {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
      "code": "LABELOH5771",
-     "desc": "OH woven label: Oliver Harvey woven label, back neck",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
      "qty": "1",
      "cost": "0.04335"
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
-     "desc": "OH wash label: Wash instruction: 65% polyester 35% cotton · 60° wash · 2 dot iron · low tumble dry · P dry clean · do not bleach. Right side inside seam, 8 cm up from finished hem.",
+     "desc": "OLIVER HARVEY WASH CARE LABEL",
      "qty": "1",
      "cost": "0.032"
     },
     {
-     "code": "CMP-LBL-NYL-25-01",
-     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
-     "qty": ".1",
-     "cost": "0.039067"
-    },
-    {
-     "code": "OHSWINGTAG",
-     "desc": "POS swing tag: Oliver Harvey kraft swing tag 50x75mm — fix through the garment label. Removed by customer.",
-     "qty": "1",
-     "cost": "0.0646"
-    },
-    {
-     "code": "CMP-OH-LBL-TIB10W-01",
-     "desc": "WOVEN SIZE LABEL (WEAVABEL TIB10W)",
-     "qty": "1",
-     "cost": "0.03075"
-    },
-    {
-     "code": "CMP-THR-EP80-05164-56",
-     "desc": "THREAD — COATS EPIC 80'S AQUA 05164 — cost per metre",
-     "qty": "20",
-     "cost": "0.000714"
-    },
-    {
      "code": "PKG-OH-GPS-500X750-01",
      "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
-     "qty": "",
+     "qty": "1",
      "cost": "0.07544"
     },
     {
      "code": "PKG-TAPE-MSK-25x50-01",
      "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
-     "qty": "9",
+     "qty": "0.9",
      "cost": "0.0129"
+    },
+    {
+     "code": "OHSWINGTAG",
+     "desc": "Oliver Harvey Kraft Swing Tag 50x75mm",
+     "qty": "1",
+     "cost": "0.0646"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.2",
+     "cost": "0.039067"
     }
    ],
    "meas": [
     {
      "label": "Chest in cm",
-     "value": "111",
+     "value": "144",
      "value2": ""
     },
     {
      "label": "Centre back length",
-     "value": "74.7",
+     "value": "80",
      "value2": ""
     },
     {
      "label": "Sleeve length",
-     "value": "64.7",
-     "value2": ""
-    },
-    {
-     "label": "Collar length measured from buttonhole to button",
-     "value": "42.6",
+     "value": "29.5",
      "value2": ""
     }
    ],
-   "mfg": "Fuse collar and collar stand.  Set fusible 6 mm from top edge.\nMake and set collar and collar stand: 6 mm seam, 1 cm seam at neck. Follow edge of fusible when making up collar. Use small stitch when sewing and edgestitch collar stand. 6 mm topstitch collar leaf edge.\nPress front edges for front placket 1 + 3 cm.\nSet chest pocket hem — double turn 1 + 2 cm. Set pocket to left side as worn; use the Bedford jacket marker. Edgestitch to jacket.\nSet 2.5 cm pen pocket detail to front side of pocket as worn. Bartack top of pocket.\nOverlock side edge of top pocket bag. Make side pockets. Set top pocket bag (narrower pocket bag) to front and create pocket opening (notch = top of pocket bags). 6 mm stitch pocket opening. Stitch side of lower pocket to top pocket bag. Lower pocket bag (widest) to be caught into the centre front placket — align to notches.\nStitch pocket bags to side seam before joining front to back on 5 thread.\nSet front placket, double turn 1 + 3 cm. Insert wide pocket bag to secure; align to notch.\nSet yoke to front and back. Yoke seams to be enclosed. Edgestitch shoulder and back.\nSet OH back neck tape to back neck of yoke, shoulder seam to shoulder seam. Set OH back neck label to centre back.\nSet collar to neck and topstitch neck.\nBlack thread - 5 thread: join sleeves, sleeve underarm / side seam. Insert care label.  6cm up from right side seam as worn.\nSet sleeve split. Bag out at underarm seam to form V split. Split to finish 3.5 cm.\nSet body hem — double turn 1 cm + 2.5 cm.",
-   "fin": "Use black thread. Use marker for position.  Mark and set buttonholes: 5/8 blade 15.8 mm. Ensure buttonholes sit centrally within the front placket.  Front buttonholes vertical: neck edge to centre of first buttonhole 6.5 cm, then 9 cm spacing.\nCollar buttonhole horizontal, central to the depth of the collar stand, centre of buttonhole 2cm from front edge of collar stand.\nUse black thread. Mark and set buttons.  Ensure buttons sit centrally within the front placket.\nSet spare button to care label\nUse Aqua thread. Set bartacks: vertical to top of chest pocket x 3; horizontal top and bottom of side pockets x 2 per pocket; Horizontal to top of sleeve split x 1 per sleeve.\nTo be individually wrapped in OH tissue. Set label to front bottom right-hand corner.",
-   "machMins": "40.7",
-   "finMins": "7",
+   "mfg": "5 cm deep stand collar — edge stitched\nShort sleeved with twin-needle hem\nPanelled back\nAll seams to go to the back — right side of overlocking to be visible\nBottom hem double turned — twin-needle detail hem\nPen pocket left hand sleeve as worn — with centre divide\nRed tax tab in pen pocket towards back of sleeve — no red to show through pocket\nFront facing edge stitched\n\"Oliver Harvey\" British button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nButtonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner\nSquashed detachable buttons — unisex fasten\nSemi-circle of mesh under the arm/sleeve",
+   "fin": "Pressed and trimmed\nIndividually wrapped in OH tissue paper — fold in tissue with description label bottom right front",
+   "machMins": "",
+   "finMins": "",
    "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 1,
-   "markerMain": "SCOOPNEW04",
-   "markerMesh": "",
-   "markerLen": "1.57",
+   "markerMain": "OH5300",
+   "markerMesh": "OXFORD100",
+   "markerLen": "1.69",
    "layQty": "1",
-   "hasMesh": false,
-   "meshLen": "",
-   "meshLay": "",
-   "lectra": "Model OH7 — variant SCOOPJKTNEWLS",
-   "variant": "SCOOPJKTNEWLS",
+   "hasMesh": true,
+   "meshLen": "0.54",
+   "meshLay": "16",
+   "lectra": "OH5 LONG — Oxford — short sleeved, long length · with mesh fabric curved underarm panels",
+   "variant": "LNGOH5SSLV",
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": false,
    "quotePrintedAt": "",
    "printed": false,
    "printedAt": "",
-   "productCode": null,
-   "convertedAt": "",
-   "copiedFrom": "OHCJ40074003",
+   "productCode": "OHCJSMOXFORD5415L",
+   "convertedAt": "2026-09-22",
+   "copiedFrom": "OHCJSMOXFORD4815L",
    "version": 1,
    "history": [],
    "isOH": true,
    "ladies": false,
    "mtc": false,
-   "size": "38",
-   "savedAt": "2026-09-21T13:53:07.640Z",
+   "size": "54",
+   "savedAt": "2026-09-22T09:05:38.530Z",
    "isProduct": true,
-   "family": "special",
+   "family": "stock",
    "editScope": "size",
-   "sourceCode": "OHCJ40074003",
-   "specialBase": "OHCJ40074003",
-   "baseCode": "OHCJ40074003",
-   "prodCodeDraft": "OHCJ4007400338",
+   "sourceCode": "OHCJSMOXFORD4815L",
+   "baseCode": "OHCJSMOXFORD",
+   "prodCodeDraft": "OHCJSMOXFORD5415L",
    "weightG": "",
    "logoImg": "",
    "placeImg": "",
@@ -201,10 +189,323 @@
    ],
    "trims": [
     {
-     "code": "",
-     "desc": "Thread: White Epic 80's from Coats",
+     "code": "CMP-THR-EP80-07935-15",
+     "desc": "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     "qty": "200",
+     "cost": "0.000714"
+    },
+    {
+     "code": "OHDETACHABLEBUTTON03",
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     "qty": "12",
+     "cost": "0.053"
+    },
+    {
+     "code": "CMP-OH-PIP-TIB0011B-03",
+     "desc": "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "qty": "0.7",
+     "cost": "1.4"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.9",
+     "cost": "0.0129"
+    },
+    {
+     "code": "OHSWINGTAG",
+     "desc": "Oliver Harvey Kraft Swing Tag 50x75mm",
+     "qty": "1",
+     "cost": "0.0646"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.2",
+     "cost": "0.039067"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Chest in cm",
+     "value": "139",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length",
+     "value": "80",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length",
+     "value": "29.5",
+     "value2": ""
+    }
+   ],
+   "mfg": "5 cm deep stand collar — edge stitched\nShort sleeved with twin-needle hem\nPanelled back\nAll seams to go to the back — right side of overlocking to be visible\nBottom hem double turned — twin-needle detail hem\nPen pocket left hand sleeve as worn — with centre divide\nRed tax tab in pen pocket towards back of sleeve — no red to show through pocket\nFront facing edge stitched\n\"Oliver Harvey\" British button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nButtonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner\nSquashed detachable buttons — unisex fasten\nSemi-circle of mesh under the arm/sleeve",
+   "fin": "Pressed and trimmed\nIndividually wrapped in OH tissue paper — fold in tissue with description label bottom right front",
+   "machMins": "",
+   "finMins": "",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 1,
+   "markerMain": "OH5257",
+   "markerMesh": "OXFORD100",
+   "markerLen": "1.55",
+   "layQty": "1",
+   "hasMesh": true,
+   "meshLen": "0.54",
+   "meshLay": "16",
+   "lectra": "OH5 LONG — Oxford — short sleeved, long length · with mesh fabric curved underarm panels",
+   "variant": "LNGOH5SSLV",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": "OHCJSMOXFORD5215L",
+   "convertedAt": "2026-09-22",
+   "copiedFrom": "OHCJSMOXFORD4815L",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "52",
+   "savedAt": "2026-09-22T08:19:46.739Z",
+   "isProduct": true,
+   "family": "stock",
+   "editScope": "size",
+   "sourceCode": "OHCJSMOXFORD4815L",
+   "baseCode": "OHCJSMOXFORD",
+   "prodCodeDraft": "OHCJSMOXFORD5215L",
+   "weightG": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
+  },
+  {
+   "quoteRef": "",
+   "ref": "",
+   "status": "production",
+   "created": "2026-09-21",
+   "due": "",
+   "customer": "Stock",
+   "garment": "Chef jacket",
+   "desc": "Blade single-breasted shirt-style chef jacket — long sleeve, ladies (shorter) — Ladies short single-breasted button-fastened shirt-style chef jacket, 11 cm shorter than the gents OHCJ4007 · Long sleeves with slit cuff · Side seam pockets for iPad · Collar and collar stand · Chest pocket left side as worn with pen pocket detail · Boxy jacket with straight hem · Fastens right over left (ladies fastening) · No OH tax tab",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC2003ECO",
+     "name": "BLACK SUSTAINABLE 65/35 POLY/COTTON (X133 - AM125)",
+     "rating": "1.50",
+     "cost": "2.32",
+     "loc": "B1"
+    },
+    {
+     "code": "FUS1256",
+     "name": "Interlining for collar and collar stand — quality 8816, cut 1 (Arley Trimmings)",
+     "rating": "0.06",
+     "cost": "2.78",
+     "loc": "D7"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-09700-03",
+     "desc": "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     "qty": "180",
+     "cost": "0.000648"
+    },
+    {
+     "code": "CMP-BTN-P64-24-15",
+     "desc": "JONES 4 HOLE BUTTON P64/24 (COL 15)",
+     "qty": "7",
+     "cost": "0.075"
+    },
+    {
+     "code": "CMP-OH-PIP-TIB0011B-03",
+     "desc": "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "qty": "1",
+     "cost": "1.4"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "OH woven label: Oliver Harvey woven label, back neck",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OH wash label: Wash instruction: 65% polyester 35% cotton · 60° wash · 2 dot iron · low tumble dry · P dry clean · do not bleach. Right-hand side inside seam.",
+     "qty": "0.03",
+     "cost": "0.032"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "1",
+     "cost": "0.039067"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "OHSWINGTAG",
+     "desc": "POS swing tag: Oliver Harvey kraft swing tag 50x75mm — fix through the garment label. Removed by customer.",
+     "qty": "1",
+     "cost": "0.0646"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "1",
+     "cost": "0.0129"
+    },
+    {
+     "code": "CMP-THR-EP80-05164-56",
+     "desc": "THREAD — COATS EPIC 80'S AQUA 05164 — cost per metre",
+     "qty": "20",
+     "cost": "0.000714"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Chest in cm",
+     "value": "116",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length in cm",
+     "value": "64",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length",
+     "value": "65",
+     "value2": ""
+    },
+    {
+     "label": "Collar length",
+     "value": "43.8",
+     "value2": ""
+    }
+   ],
+   "mfg": "Cutting: 1 x collar stand and collar — outer collars to be fused.\nFuse collar and collar stand. Set fusible 6 mm from top edge. Make and set collar and collar stand: 6 mm seam, 1 cm seam at neck. Follow edge of fusible when making up collar. Use small stitch when sewing and edgestitch collar stand. 6 mm topstitch collar leaf edge.\nLadies fastening (right over left). Ensure the correct buttonhole marker is used: one marker for sizes 36 and 38, another for sizes 40 upwards.\nPress front edge for placket.\nSet pocket hem — double turn 1 + 2 cm. Set pocket to left side as worn; use the Bedford jacket marker. Edgestitch to jacket.\nSet 2.5 cm pen pocket detail to front side of pocket as worn. Bartack top of pocket.\nOverlock side edge of top pocket bag. Make side pockets. Set top pocket bag to pocket opening (narrower pocket) (notch = top of pocket bags). 6 mm stitch pocket opening. Stitch side of lower pocket to top pocket bag.\nTurn 1 + 3 cm placket front edge. Lower pocket bag (widest) to be caught into the centre front placket — align to notches.\nSet yoke to front and back. Yoke seams to be enclosed. Edgestitch shoulder and back.\nSet OH back neck tape to back neck of yoke, shoulder seam to shoulder seam. Set OH back neck label to centre back.\nSet collar to neck and topstitch neck.\nSet sleeve split. Bag out at underarm seam to form V split. Split to finish 3.5 cm.\nSet sleeves. Join underarm / side seams.\nSet body hem — double turn 1 cm + 2.5 cm.",
+   "fin": "Mark and set buttons and buttonholes — 6 buttonholes in total including the collar; use the marker. Spacing from neck edge 6.5 cm then 8.5 cm for sizes 36 and 38; for size 40 upwards 6.5 cm then 9 cm. Ladies fastening (right over left): buttonholes set to right front. 5/8 blade 15.8 mm. Ensure buttons and buttonholes sit centrally within the front placket. Set 1 spare button on the care label.\nCollar buttonhole horizontal, central to the depth of the collar stand, centre of buttonhole 2 cm from front edge of collar stand. Front buttonholes vertical.\nSet bartacks: vertical to top of chest pocket x 3; horizontal top and bottom of side pockets x 2 per pocket; horizontal to top of sleeve split x 1 per sleeve.\nTo be individually wrapped in OH tissue. Set label to front bottom right-hand corner.",
+   "machMins": "",
+   "finMins": "",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 1,
+   "markerMain": "",
+   "markerMesh": "",
+   "markerLen": "1.50",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "lectra": "Model OH7 — variant SCOOPJKTLSLADIES",
+   "variant": "SCOOPJKTLSLADIES",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHLCJ4008--93",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": true,
+   "mtc": false,
+   "size": "42",
+   "savedAt": "2026-09-21T15:22:23.878Z",
+   "isProduct": true,
+   "family": "stock",
+   "editScope": "both",
+   "sourceCode": "OHLCJ4008--93",
+   "baseCode": "OHLCJ4008",
+   "prodCodeDraft": "OHLCJ40084203",
+   "weightG": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
+  },
+  {
+   "quoteRef": "",
+   "ref": "",
+   "status": "production",
+   "created": "2026-09-21",
+   "due": "",
+   "customer": "Stock",
+   "garment": "Chef jacket",
+   "desc": "Oxford chef jacket — short sleeve, white, long length — Stand collar · Panelled back · Long length · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC2015ECO",
+     "name": "NAVY SUSTAINABLE 65/35 POLY/COTTON (X133 - AM297)",
+     "rating": "1.53",
+     "cost": "2.32",
+     "loc": "B4"
+    },
+    {
+     "code": "MESHPW31415",
+     "name": "NAVY 100% POLYESTER MESH 160CM (PW314)",
+     "rating": "0.04",
+     "cost": "2.35",
+     "loc": "B5"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-07935-15",
+     "desc": "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
      "qty": "",
-     "cost": ""
+     "cost": "0.000714"
     },
     {
      "code": "OHDETACHABLEBUTTON03",
@@ -300,8 +601,8 @@
    "quotePrintedAt": "",
    "printed": false,
    "printedAt": "",
-   "productCode": null,
-   "convertedAt": "",
+   "productCode": "OHCJSMOXFORD4815L",
+   "convertedAt": "2026-09-21",
    "copiedFrom": "OHCJSMOXFORD--01L",
    "version": 1,
    "history": [],
@@ -309,7 +610,7 @@
    "ladies": false,
    "mtc": false,
    "size": "48",
-   "savedAt": "2026-09-21T14:20:24.925Z",
+   "savedAt": "2026-09-21T15:26:40.773Z",
    "isProduct": true,
    "family": "stock",
    "editScope": "both",
@@ -729,8 +1030,7 @@
    "mtc": false,
    "size": "40",
    "logo2Img": "",
-   "family": "special",
-   "specialBase": "OHCJ40074003"
+   "family": "stock"
   },
   {
    "quoteRef": "Q0008",
