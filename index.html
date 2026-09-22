@@ -1177,6 +1177,7 @@ function pcOpen(i){
   PC_CUR=i; PC_LOGO_PENDING=undefined; PC_LOGO2_PENDING=undefined; PC_PLACE_PENDING=undefined;
   var s=PC.srs[i];
   var locked=!!s.productCode;
+  var woLive=locked?pcLatestWO(s):null; if(woLive) s=pcWithLatestWO(s);
   var ro=(!PC_IS_EDITOR)||locked;
   var sized=!!pcSizeList(s), famRec=pcIsFamilyRec(s), scope=(s.isProduct&&!s.productCode&&s.editScope)?s.editScope:'';
   document.getElementById('pcMTitle').innerHTML=pcE(pcRefLabel(s))+(s.productCode?' &nbsp;→&nbsp; '+pcE(s.productCode):'')+' <span style="font-weight:400;font-size:12px;opacity:.8">'+PC_STATUS[s.status]+'</span>';
@@ -1210,7 +1211,8 @@ function pcOpen(i){
   var stOpts=stKeys.map(function(k){return '<option value="'+k+'"'+(s.status===k?' selected':'')+(k==='production'&&!s.productCode&&!s.isProduct?' disabled':'')+'>'+PC_STATUS[k]+'</option>';}).join('');
 
   var h=dl;
-  if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> — it is searchable and printable but no longer editable.</div>';
+  if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> — it is searchable and printable but no longer editable.'
+    +(woLive?' <strong>Works order last edited '+pcE(pcFmtD(s.woEditedAt)||'—')+'</strong> in the Works Order Editor — that version is shown here and printed.':' Works order as converted on '+pcE(pcFmtD(s.convertedAt))+' — the buffer app has not published a newer version'+(PC_WO.live?'':' (or could not be reached)')+'.')+'</div>';
   var pubCopy=pcPublishedCopy(s);
   if(PC_IS_EDITOR && pubCopy && pcCanon(pubCopy)!==pcCanon(s) && !s.draft){
     var pm=(pubCopy.productCode?2:0)+(pubCopy.ref?1:0), lm=(s.productCode?2:0)+(s.ref?1:0);
@@ -1663,6 +1665,7 @@ function pcPrint(prodQty){
   var pm=prodQty>0;   // product mode: qty supplied, headed by the product code
   var s=PC.srs[PC_CUR];
   if(PC_IS_EDITOR && !s.productCode) pcCollect(s);
+  if(pm && pcLatestWO(s)) s=pcWithLatestWO(s);
   var qty=pm?prodQty:Math.max(1, pcNum(s.sampleQty)||1);
   var today=new Date().toLocaleDateString('en-GB');
   var cutTot=Math.ceil(qty/(pcNum(s.cutBatch)||35))*(pcNum(s.cutMins)||15);
@@ -1696,6 +1699,7 @@ function pcPrint(prodQty){
     +'<tr><th>Customer</th><td>'+e(s.customer||'\u2014')+'</td><th>'+(pm?'Order qty':'Sample qty')+'</th><td>'+qty+'</td></tr>'
     +'<tr><th>Garment</th><td'+(s.size?'':' colspan="3"')+'>'+e(s.garment||'\u2014')+'</td>'+(s.size?'<th>Size</th><td>'+e(s.size)+'</td>':'')+'</tr>'
     +(s.productCode?'<tr><th>Product code</th><td colspan="3">'+e(s.productCode)+'</td></tr>':'')
+    +(pm?'<tr><th>Works order last edited</th><td colspan="3">'+(s.woLive?e(pcFmtD(s.woEditedAt)||'\u2014')+' <span style="font-weight:400;font-size:12px">(Works Order Editor)</span>':e(pcFmtD(s.convertedAt||s.created))+' <span style="font-weight:400;font-size:12px">(as converted here)</span>')+'</td></tr>':'')
     +(s.quoteRef?'<tr><th>Quote ref</th><td colspan="3">'+e(s.quoteRef)+'</td></tr>':'')
     +(pm&&s.ref?'<tr><th>From sample</th><td colspan="3">'+e(s.ref)+((s.version||1)>1?' V'+s.version:'')+'</td></tr>':'')
     +(pm?'<tr><th>Garment weight</th><td colspan="3">'+(pcPos(s.weightG)?'<strong>'+pcPos(s.weightG)+' g</strong>':'<em style="color:#C00000">to be confirmed \u2014 weigh after the first production run</em>')+'</td></tr>'
@@ -1955,6 +1959,46 @@ function pcViewRevision(ix){
 }
 
 /* ── copy a new quote from an existing product ── */
+/* ── the buffer app's published works-order edits ──
+   Works orders are edited in the Works Order Editor and reach everyone through the buffer app's data.json
+   (styleEdits, chartEdits). A converted product here is locked, so the buffer app's copy is the live version:
+   it is shown and printed for the product, and offered when copying an existing product into a new quote. */
+var PC_WO={styles:{},charts:{},at:'',live:false};
+function pcWoLoad(cb){
+  try{ var c=JSON.parse(localStorage.getItem('pcWoEdits')||'null'); if(c&&c.styles){ PC_WO.styles=c.styles; PC_WO.charts=c.charts||{}; PC_WO.at=c.savedAt||''; } }catch(e){}
+  if(typeof fetch!=='function'){ if(cb)cb(); return; }
+  fetch('https://luke5446.github.io/Tibard-Productionplan/data.json?t='+Date.now())
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(d){
+      if(!d||!d.styleEdits) throw 0;
+      var st={}; Object.keys(d.styleEdits).forEach(function(k){ if(d.styleEdits[k]) st[String(k).toUpperCase()]=d.styleEdits[k]; });
+      PC_WO.styles=st; PC_WO.charts=d.chartEdits||{}; PC_WO.at=pcToday(); PC_WO.live=true;
+      try{ localStorage.setItem('pcWoEdits',JSON.stringify({savedAt:PC_WO.at,styles:st,charts:PC_WO.charts})); }catch(e){}
+      /* a product record open in the form shows the live works order */
+      if(PC_CUR>=0 && PC.srs[PC_CUR] && PC.srs[PC_CUR].productCode) pcOpen(PC_CUR);
+      if(cb)cb();
+    })
+    .catch(function(){ if(cb)cb(); });
+}
+function pcLatestWO(s){ if(!s||!s.productCode) return null; return PC_WO.styles[String(s.productCode).toUpperCase()]||null; }
+function pcWoDate(st){ return st?(st.editedAt||st.importedAt||''):''; }
+/* the buffer app's copy of a product, in this app's record shape, for showing and printing */
+function pcWithLatestWO(s){
+  var st=pcLatestWO(s); if(!st) return s;
+  var o=JSON.parse(JSON.stringify(s)), str=function(v){ return (v==null||v==='')?'':String(v); };
+  o.desc=st.desc||o.desc; o.lectra=st.lectra||''; o.variant=st.variant||'';
+  o.fabrics=(st.fabrics||[]).map(function(f){ return {name:f[0]||'', code:f[1]||'', loc:f[2]||'', rating:str(f[3]), cost:str(f[4])}; });
+  o.trims=(st.trims||[]).map(function(t){ return {code:t[3]||'', desc:(t[0]&&t[1])?t[0]+' — '+t[1]:(t[1]||t[0]||''), qty:str(t[2]), cost:str(t[4])}; });
+  o.mfg=(st.mfg||[]).join('\n'); o.fin=(st.fin||[]).join('\n');
+  o.machMins=str(st.machMins); o.finMins=str(st.finMins); o.cutBatch=str(st.cutBatch); o.cutMins=st.cutMins!=null?st.cutMins:o.cutMins;
+  o.markerMain=st.markerMain||''; o.markerMesh=st.markerMesh||''; o.markerLen=str(st.markerLen); o.layQty=str(st.layQty);
+  o.hasMesh=!!st.hasMesh; o.meshLen=str(st.meshLen); o.meshLay=str(st.meshLay);
+  o.brandType=st.brandType||'None'; o.brandPlace=st.brandPlace||''; if(st.logoImg) o.logoImg=st.logoImg; if(st.placeImg) o.placeImg=st.placeImg;
+  var rows=st.chart?PC_WO.charts[st.chart]:null;
+  if(rows&&rows.length) o.meas=rows.map(function(r){ return {label:str(r[0]), value:str(r[1]), value2:''}; });
+  o.woEditedAt=pcWoDate(st); o.woLive=true;
+  return o;
+}
 var PC_SM=null;   // style master fetched from the Production plan app
 var PC_SM_LIVE=false, PC_SM_AT='', PC_SM_ERR=false;   // read from the live page this visit? / date of the saved copy / last read failed
 function pcStyleMasterLoad(cb){
@@ -1983,7 +2027,9 @@ function pcStyleMasterNote(){
 }
 function pcCopySources(){
   var out=[];
-  (PC_SM||[]).forEach(function(st){ out.push({key:String(st.code).toUpperCase(), label:st.code+' \u2014 '+(st.name||''), src:'wo', st:st}); });
+  var seen={};
+  Object.keys(PC_WO.styles).forEach(function(k){ var st=PC_WO.styles[k]; seen[k]=1; out.push({key:k, label:st.code+' \u2014 '+(st.name||'')+(pcWoDate(st)?' (works order edited '+pcFmtD(pcWoDate(st))+')':''), src:'wo', st:st}); });
+  (PC_SM||[]).forEach(function(st){ var k=String(st.code).toUpperCase(); if(seen[k]) return; out.push({key:k, label:st.code+' \u2014 '+(st.name||''), src:'wo', st:st}); });
   PC.srs.forEach(function(s,i){
     var key=(s.productCode||s.ref||s.quoteRef);
     if(key) out.push({key:String(key).toUpperCase(), label:key+' \u2014 '+(s.garment||'')+(s.customer?' ('+s.customer+')':''), src:'pc', st:s});
@@ -2304,6 +2350,7 @@ function pcPublish(){
   PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender();
   alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\nThe name does not matter \u2014 if your browser saved it as \u201cpublished-data (2).json\u201d, upload it as it is. The app always reads the newest one.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
 }
+pcWoLoad();
 /* on every load, pull the published snapshot in (viewers take it as truth; editors only gain records they do not have) */
 (function(){
   if(typeof fetch!=='function') return;
