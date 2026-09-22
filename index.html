@@ -723,6 +723,20 @@ function pcSmHasFamily(base){
   var b=String(base||'').toUpperCase()+'--';
   return !!(sm||[]).some(function(st){ return String(st.code||'').toUpperCase().indexOf(b)===0; });
 }
+/* the stock families the All Costings sheet itself vouches for: OHCJ40073893 on the sheet makes OHCJ4007 a
+   stock base, so OHCJ40073603 reads as a size of it even before the Production plan app has been reached */
+var PC_SHEET_FAM=null;
+function pcSheetFams(){
+  if(!PC_SHEET_FAM){
+    PC_SHEET_FAM={};
+    if(typeof COSTDATA!=='undefined' && COSTDATA.rows){
+      var rx=new RegExp('^((?:OH)?L?[A-Z]{2}B?\\d{4})('+PC_SIZE_TOKS+')(\\d{2,3}|--)([A-Z]?)$');
+      COSTDATA.rows.forEach(function(r){ var m=rx.exec(String(r[0]||'').toUpperCase()); if(m) PC_SHEET_FAM[m[1]]=1; });
+    }
+  }
+  return PC_SHEET_FAM;
+}
+function pcSheetHasFamily(base){ return !!pcSheetFams()[String(base||'').toUpperCase()]; }
 function pcStockParts(code){
   var c=String(code||'').toUpperCase().trim();
   if(!c || c.indexOf('/')>0) return null;
@@ -730,15 +744,17 @@ function pcStockParts(code){
   /* a family the Production plan app knows (CJ0193--01, OHCJMOXFORD--01) fixes where the base ends,
      so CJ019352115N splits as CJ0193 / 52 / 115 / N */
   var sm=PC_SM; if(!sm){ try{ var cc=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); sm=cc&&cc.styles; }catch(e){} }
-  var best='';
-  (sm||[]).forEach(function(st){ var k=String(st.code||'').toUpperCase(), i=k.indexOf('--'); if(i>=5){ var b=k.slice(0,i); if(c.indexOf(b)===0 && b.length>best.length) best=b; } });
-  if(best){ var r=new RegExp('^('+PC_SIZE_TOKS+')(\\d{2,3}|--)([A-Z]?)$').exec(c.slice(best.length)); if(r) m=[c,best,r[1],r[2],r[3]]; }
+  var best='', tail=new RegExp('^('+PC_SIZE_TOKS+')(\\d{2,3}|--)([A-Z]?)$');
+  var anchor=function(b){ if(c.indexOf(b)===0 && b.length>best.length && tail.test(c.slice(b.length))) best=b; };
+  (sm||[]).forEach(function(st){ var k=String(st.code||'').toUpperCase(), i=k.indexOf('--'); if(i>=5) anchor(k.slice(0,i)); });
+  Object.keys(pcSheetFams()).forEach(anchor);
+  if(best){ var r=tail.exec(c.slice(best.length)); if(r) m=[c,best,r[1],r[2],r[3]]; }
   /* otherwise the longest base that leaves a size, a colour (two digits by preference) and at most one letter */
   if(!m) m=new RegExp('^(.{5,})('+PC_SIZE_TOKS+')(\\d\\d|\\d{3}|--)([A-Z]?)$').exec(c);
   if(!m) return null;
   /* CJ0001…, OHCJ00…, OHLCJ00…, CJB000… read as a special make base - unless the sheet or the Production
      plan app knows the code as a stock line (CJ0193LL15 is a Tibard stock jacket) */
-  if(/^(?:OH)?L?[A-Z]{2}B?\d{0,4}$/.test(m[1]) && !pcSheetHas(c) && !pcSmHasFamily(m[1])) return null;
+  if(/^(?:OH)?L?[A-Z]{2}B?\d{0,4}$/.test(m[1]) && !pcSheetHas(c) && !pcSmHasFamily(m[1]) && !pcSheetHasFamily(m[1])) return null;
   return {base:m[1], size:m[2], colour:m[3], len:m[4]};
 }
 /* a costing-app special make (CJ0002…) or a stock style / family from the Production plan app. A product's
@@ -757,9 +773,12 @@ function pcSpecialBase(s){
 function pcIsFamilyRec(s){ return !!(s.isProduct && pcFamilyOf(s)==='stock' && /--/.test(String(s.productCode||s.prodCodeDraft||'')) && !(s.editScope==='size'||s.editScope==='both')); }
 
 function pcNormalize(d){                 // shared by initial load and Restore — older data pre-dates the quote stage
-  d.srSeq=d.srSeq||0; d.qSeq=d.qSeq||0; d.prodSeq=d.prodSeq||{};
+  d.srSeq=d.srSeq||0; d.qSeq=d.qSeq||0; d.prodSeq=d.prodSeq||{}; d.chgSeq=d.chgSeq||0;
   d.srs=Array.isArray(d.srs)?d.srs:[]; d.trimsList=Array.isArray(d.trimsList)?d.trimsList:[]; d.fabricsList=Array.isArray(d.fabricsList)?d.fabricsList:[];
   d.srs.forEach(function(s){
+    if(s.chgRef===undefined) s.chgRef='';
+    /* a change saved before C-numbers existed had no key at all, so it never left this PC */
+    if(s.isProduct && !s.productCode && !s.quoteRef && !s.ref && !s.chgRef){ d.chgSeq++; s.chgRef='C'+String(d.chgSeq).padStart(4,'0'); }
     if(s.quoteRef===undefined) s.quoteRef='';
     if(s.ref===undefined) s.ref='';
     if(s.markerLen===undefined) s.markerLen='';
@@ -867,9 +886,19 @@ function pcSheetHas(code){
   if(!PC_SHEET){ PC_SHEET={}; COSTDATA.rows.forEach(function(r){ PC_SHEET[String(r[0]).toUpperCase()]=1; }); }
   return !!PC_SHEET[String(code||'').toUpperCase()];
 }
-function pcKey(s){ return s.quoteRef||s.ref||s.productCode||''; }
+/* a size / fabric change has no quote number: its C-number is the key until it is created, so it
+   travels to the other PCs like everything else and is matched again once it has a product code */
+function pcKey(s){ return s.quoteRef||s.ref||s.productCode||s.chgRef||''; }
+function pcFindIx(p){
+  var key=pcKey(p); if(!key) return -1;
+  for(var i=0;i<PC.srs.length;i++){ var l=PC.srs[i]; if(pcKey(l)===key || (p.chgRef && l.chgRef===p.chgRef)) return i; }
+  /* a change still part-done here whose code has since been created elsewhere is the same job */
+  if(p.productCode){ var pc=String(p.productCode).toUpperCase();
+    for(var j=0;j<PC.srs.length;j++){ var x=PC.srs[j]; if(x.isProduct && !x.productCode && String(x.prodCodeDraft||'').toUpperCase()===pc) return j; } }
+  return -1;
+}
 function pcRefLabel(s){
-  if(s.isProduct && !s.quoteRef) return s.productCode || ((s.editScope==='size'?'New size of ':s.editScope==='fabric'?'New fabric of ':s.editScope==='both'?'New size & fabric of ':'New product from ')+(s.copiedFrom||'\u2026'));
+  if(s.isProduct && !s.quoteRef) return s.productCode || ((s.chgRef?s.chgRef+' \u00b7 ':'')+(s.editScope==='size'?'New size of ':s.editScope==='fabric'?'New fabric of ':s.editScope==='both'?'New size & fabric of ':'New product from ')+(s.copiedFrom||'\u2026'));
   var base = s.ref ? (s.quoteRef? s.quoteRef+' → '+s.ref : s.ref) : (s.quoteRef||'');
   if(s.ref && (s.version||1)>1) base+=' V'+s.version;
   return base;
@@ -2248,6 +2277,7 @@ function pcChgStart(){
     f0.code=fab; f0.name=lk?(lk.name||''):f0.name; f0.cost=(lk&&lk.cost!=null)?String(lk.cost):f0.cost; f0.loc=lk?(lk.loc||''):'';
     if(!s.fabrics.length) s.fabrics.push(f0);
   }
+  PC.chgSeq=(PC.chgSeq||0)+1; s.chgRef='C'+String(PC.chgSeq).padStart(4,'0');   /* its key until it has a product code */
   PC.srs.unshift(s); pcSaveData();          /* no quote number is taken */
   pcOpen(0);
 }
@@ -2325,7 +2355,7 @@ function pcPublishRegressions(){
   var out=[];
   pub.srs.forEach(function(p){
     var k=pcKey(p); if(!k) return;
-    var l=null; for(var i=0;i<PC.srs.length;i++){ if(pcKey(PC.srs[i])===k){ l=PC.srs[i]; break; } }
+    var li=pcFindIx(p), l=li<0?null:PC.srs[li];
     if(!l||l.draft) return;
     if(p.productCode && !l.productCode) out.push({key:k, what:'product code '+p.productCode, pub:p});
     else if(p.ref && !l.ref) out.push({key:k, what:'sample works order '+p.ref, pub:p});
@@ -2339,12 +2369,12 @@ function pcPublish(){
     var lines=regress.map(function(r){ return '\u2022 '+r.key+' \u2014 the published file has '+r.what+', this PC\u2019s copy does not'; }).join('\n');
     if(confirm('\u26a0 Publishing now would UNDO work that is already published:\n\n'+lines+'\n\nThis PC is behind on those records. Take the published copies first (recommended)?\n\nOK = take them and continue publishing.  Cancel = do not publish.')){
       regress.forEach(function(r){
-        for(var i=0;i<PC.srs.length;i++){ if(pcKey(PC.srs[i])===r.key){ pcKeepReplaced(PC.srs[i]); PC.srs[i]=r.pub; break; } }
+        var ri=pcFindIx(r.pub); if(ri>=0){ pcKeepReplaced(PC.srs[ri]); PC.srs[ri]=r.pub; }
       });
       pcSaveData(); pcRender();
     } else return;
   }
-  var out={publishedAt:pcToday(), publishedTS:pcNow(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq,
+  var out={publishedAt:pcToday(), publishedTS:pcNow(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq, chgSeq:PC.chgSeq||0,
            srs:PC.srs.filter(function(s){ return !s.draft; }),
            /* the pasted trim & fabric price lists travel too, so every PC and the Works Order Editor can pick from them */
            trimsList:PC.trimsList||[], fabricsList:PC.fabricsList||[]};
@@ -2393,6 +2423,7 @@ pcWoLoad();
       window.PC_PUB_LAST=pub;
       if((pub.qSeq||0)>(PC.qSeq||0)){ PC.qSeq=pub.qSeq; changed=true; }
       if((pub.srSeq||0)>(PC.srSeq||0)){ PC.srSeq=pub.srSeq; changed=true; }
+      if((pub.chgSeq||0)>(PC.chgSeq||0)){ PC.chgSeq=pub.chgSeq; changed=true; }
       if(pub.prodSeq) Object.keys(pub.prodSeq).forEach(function(k){
         if((pub.prodSeq[k]||0)>(PC.prodSeq[k]||0)){ PC.prodSeq[k]=pub.prodSeq[k]; changed=true; }
       });
@@ -2409,9 +2440,8 @@ pcWoLoad();
         if(JSON.stringify(out)!==JSON.stringify(loc)){ PC[k]=out; changed=true; }
       });
       pub.srs.forEach(function(p){
-        var key=pcKey(p); if(!key) return;
-        var ix=-1;
-        for(var i=0;i<PC.srs.length;i++){ var l=PC.srs[i]; if(pcKey(l)===key){ ix=i; break; } }
+        if(!pcKey(p)) return;
+        var ix=pcFindIx(p);
         if(ix<0){ PC.srs.push(p); changed=true; return; }
         var l=PC.srs[ix];
         /* never disturb an unsaved draft, or the record open in the form */
