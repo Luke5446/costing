@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-09-24",
- "publishedTS": "2026-09-24T15:07:54.353Z",
+ "publishedTS": "2026-09-24T15:21:24.531Z",
  "qSeq": 11,
  "srSeq": 9,
  "prodSeq": {
@@ -8,8 +8,160 @@
   "CT": 1,
   "CJB": 1
  },
- "chgSeq": 4,
+ "chgSeq": 5,
  "srs": [
+  {
+   "quoteRef": "",
+   "ref": "",
+   "status": "production",
+   "created": "2026-09-24",
+   "due": "",
+   "customer": "Stock",
+   "garment": "Chef jacket",
+   "desc": "Oxford chef jacket — long sleeve, black, long length — Stand collar · Panelled back  · Long length · Curved French cuff with wide 'V' opening · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC14003",
+     "name": "Black Cooltex 1 poly-cotton 50% / 50%",
+     "rating": "1.76",
+     "cost": "3.09",
+     "loc": "A6"
+    },
+    {
+     "code": "MESH2290903",
+     "name": "Coolmax mesh fabric, qual 22909, black",
+     "rating": "0.04",
+     "cost": "1.3385",
+     "loc": "A1"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-09700-03",
+     "desc": "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     "qty": "200",
+     "cost": "0.000714"
+    },
+    {
+     "code": "OHDETACHABLEBUTTON03",
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     "qty": "1",
+     "cost": "0.053"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL 50% polyester 50% cotton 100% mesh",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
+    },
+    {
+     "code": "OHSWINGTAG",
+     "desc": "Oliver Harvey Kraft Swing Tag 50x75mm",
+     "qty": "1",
+     "cost": "0.0646"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "",
+     "cost": "0.01678"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.016",
+     "cost": "0.0129"
+    },
+    {
+     "code": "CMP-OH-PIP-TIB0011B-03",
+     "desc": "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "qty": "",
+     "cost": "1.4"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Chest in cm",
+     "value": "139",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length in cm",
+     "value": "29.5",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length",
+     "value": "74.5",
+     "value2": ""
+    }
+   ],
+   "mfg": "5 cm deep stand collar — edge stitched\nHigher quality French cuffs — flat sewn\nPanelled back\nAll seams to go to the back — right side of overlocking to be visible\nBottom hem double turned — twin-needle detail hem\nPen pocket left hand sleeve as worn — with centre divide\nRed tax tab in pen pocket towards back of sleeve — no red to show through pocket\nFront facing edge stitched\n\"Oliver Harvey\" British button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nButtonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner\nDetachable button fasten — unisex, using squashed detachable buttons\n2 bartacks on cuffs\nSemi-circle of mesh under the arm/sleeve",
+   "fin": "Pressed and trimmed\nIndividually wrapped in OH tissue paper — fold in tissue with description label bottom right front",
+   "machMins": "32",
+   "finMins": "6",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 1,
+   "markerMain": "OH5207",
+   "markerMesh": "OXFORD100",
+   "markerLen": "1.73",
+   "layQty": "1",
+   "hasMesh": true,
+   "meshLen": "0.51",
+   "meshLay": "16",
+   "lectra": "OH5 — Oxford — long sleeved · with mesh fabric curved underarm panels · cut pen pockets",
+   "variant": "LNGOH5LSL",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": "OHCJMOXFORD5203L",
+   "convertedAt": "2026-09-24",
+   "copiedFrom": "OHCJMOXFORD--03L",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "52",
+   "savedAt": "2026-09-24T15:19:28.236Z",
+   "isProduct": true,
+   "family": "stock",
+   "editScope": "size",
+   "sourceCode": "OHCJMOXFORD--03L",
+   "baseCode": "OHCJMOXFORD",
+   "prodCodeDraft": "OHCJMOXFORD5203L",
+   "chgRef": "C0005",
+   "weightG": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
+  },
   {
    "quoteRef": "",
    "ref": "",
@@ -155,7 +307,12 @@
    "baseCode": "OHCJMOXFORD",
    "prodCodeDraft": "OHCJMOXFORD4203",
    "chgRef": "C0004",
-   "weightG": ""
+   "weightG": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "",
