@@ -1795,6 +1795,11 @@ function pcPrint(prodQty){
   var mach=pcNum(s.machMins), fin=pcNum(s.finMins);
   var machTot=mach?mach*qty:null, finTot=fin?fin*qty:null;
   var grand=(machTot!=null&&finTot!=null)?cutTot+machTot+finTot:null;
+  /* The standard cost goes on the product works order only - the copy IT set the code up
+     from - so the GT no longer has to write it in an email. The sample works order and the
+     buffer app's shop-floor print never carry a cost. */
+  var cost=null, labRate=0, ovhRate=0;
+  if(pm){ labRate=pcLabRate(); ovhRate=pcOvhRate(); cost=pcCostCalc(s, labRate, s.fabrics, ovhRate); }
   function e(x){ return pcE(x); }
   var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+(pm?'Product WO '+e(s.productCode):'Sample WO '+e(s.ref))+'</title><style>'
     +'@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
@@ -1809,6 +1814,7 @@ function pcPrint(prodQty){
     +'.times td,.times th{text-align:center}.times td:first-child,.times th:first-child{text-align:left}'
     +'.tot td{background:#5b7ba6;color:#fff;font-weight:700}.sign td{height:34px}'
     +'.smp{background:#C9A24B;color:#22262e;font-weight:800;padding:2px 10px;border-radius:8px;font-size:13px}'
+    +'.cost td{font-size:14px}.cost .sub{font-weight:400;font-size:11px;color:#666}.cost .tot td{background:#1F3864}'
     +'</style></head><body>';
   var lastRev=(s.history&&s.history.length)?s.history[s.history.length-1]:null;
   h+='<div class="page"><div class="hdr"><h1>'+(pm?'PRODUCT WORKS ORDER &nbsp;&middot;&nbsp; '+e(s.productCode):'SAMPLE WORKS ORDER &nbsp;&middot;&nbsp; '+e(s.ref)+((s.version||1)>1?' &nbsp;&middot;&nbsp; V'+s.version:''))+'</h1>'
@@ -1826,6 +1832,15 @@ function pcPrint(prodQty){
     +(pm?'<tr><th>Garment weight</th><td colspan="3">'+(pcPos(s.weightG)?'<strong>'+pcPos(s.weightG)+' g</strong>':'<em style="color:#C00000">to be confirmed \u2014 weigh after the first production run</em>')+'</td></tr>'
         :(pcPos(s.weightG)?'<tr><th>Garment weight</th><td colspan="3">'+pcPos(s.weightG)+' g</td></tr>':''))
     +'</table>'
+    +(pm?'<div class="band" style="background:#1F3864">STANDARD COST FOR SAGE \u2014 per unit</div><table class="cost">'
+      +'<tr><th style="width:26%">Minutes per unit</th><td><strong>'+cost.mins.toFixed(2)+'</strong> <span class="sub">machining '+(mach||0)+' + finishing '+(fin||0)+' + cutting share '+(cost.mins-mach-fin).toFixed(2)+'</span></td>'
+      +'<th style="width:26%">Rate per hour</th><td><strong>\u00a3'+(labRate+ovhRate).toFixed(2)+'</strong> <span class="sub">labour \u00a3'+labRate.toFixed(2)+' + production overhead \u00a3'+ovhRate.toFixed(2)+'</span></td></tr>'
+      +'<tr><th>Labour</th><td>\u00a3'+cost.lab.toFixed(2)+' <span class="sub">'+cost.mins.toFixed(2)+' mins @ \u00a3'+labRate.toFixed(2)+'/hr</span></td>'
+      +'<th>Production overhead</th><td>\u00a3'+cost.oh.toFixed(2)+' <span class="sub">'+cost.mins.toFixed(2)+' mins @ \u00a3'+ovhRate.toFixed(2)+'/hr</span></td></tr>'
+      +'<tr><th>Fabric</th><td>\u00a3'+cost.fab.toFixed(2)+' <span class="sub">rating \u00d7 price per metre</span></td><th>Trims</th><td>\u00a3'+cost.tr.toFixed(2)+' <span class="sub">'+s.trims.length+' line'+(s.trims.length===1?'':'s')+'</span></td></tr>'
+      +'<tr class="tot"><td>STANDARD COST PER UNIT</td><td colspan="3" style="font-size:16px">\u00a3'+cost.total.toFixed(2)+' <span style="font-weight:400;font-size:11px">= labour \u00a3'+cost.lab.toFixed(2)+' + overhead \u00a3'+cost.oh.toFixed(2)+' + fabric \u00a3'+cost.fab.toFixed(2)+' + trims \u00a3'+cost.tr.toFixed(2)+'</span></td></tr>'
+      +((!mach||!fin)?'<tr><td colspan="4" style="color:#C00000;font-weight:700">Machining or finishing time is not set \u2014 the labour and overhead above are incomplete. Set the times and reprint before this cost goes into Sage.</td></tr>':'')
+      +'</table>':'')
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(s.desc||'\u2014')+'</td></tr></table>'
     +'<div class="band">CUSTOMER BRANDING</div><table><tr><th>Type</th><td>'+e(s.brandType)+'</td></tr>'
     +(s.brandPlace?'<tr><th>Placement</th><td>'+e(s.brandPlace)+'</td></tr>':'')
