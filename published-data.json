@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-09-28",
- "publishedTS": "2026-09-28T14:13:32.320Z",
+ "publishedTS": "2026-09-28T14:32:45.131Z",
  "qSeq": 13,
  "srSeq": 9,
  "prodSeq": {
@@ -18,7 +18,7 @@
    "due": "2026-09-28",
    "customer": "Rangeford Villages",
    "garment": "Tabard",
-   "desc": "Olive Tabard with wide curved pocket.  Side straps for adjustment stud fastenend.  Self fabric Binding.",
+   "desc": "Olive Tabard with wide curved pocket.  Side straps for adjustment.  Self fabric Binding.",
    "brandType": "None",
    "brandPlace": "",
    "fabrics": [
@@ -90,7 +90,7 @@
    "mfg": "Make side tabs. Bag out ends and pull through.\nSet tabs in position following notches in side seam.\n5 thread join shoulder seam left side as worn.\n5 thread neaten right shoulders as worn\nSet binding all round panels.  Start at open shoulder.\n5 thread Close shoulder seam. Right side as worn.\n6mm topstitch shoulder seam onto back both sides to hold seam down.\nSet pocket hem. Double turn and topstitch 1cm\nSet binding all round pocket.\nEdgestitch pocket to front - Pocket set centrally within front of tabard and bottom of pocket to be set 10cm up from finished hem of tabard.\nPull tabs back over binding and edgestitch tab down to secure.\nBartack pocket mouth at each side.  Total 2 bartacks.",
    "fin": "",
    "machMins": "14",
-   "finMins": "6",
+   "finMins": "5",
    "cutBatch": "1",
    "cutMins": 15,
    "sampleQty": 2,
@@ -117,7 +117,7 @@
    "ladies": false,
    "mtc": false,
    "size": "M",
-   "savedAt": "2026-09-28T14:13:30.777Z",
+   "savedAt": "2026-09-28T14:32:30.334Z",
    "weightG": "",
    "chgRef": "",
    "logoImg": "",
@@ -150,6 +150,12 @@
      "desc": "THREAD — COATS EPIC 80'S AQUA 05164 — cost per metre",
      "qty": "4",
      "cost": "0.000714"
+    },
+    {
+     "code": "PKG-BAG-LRPB-12x18-934",
+     "desc": "CLEAR RECYCLED POLYTHENE BAG (12x18in)",
+     "qty": "1",
+     "cost": "0.03385"
     }
    ],
    "meas": [
@@ -189,7 +195,7 @@
    "ladies": false,
    "mtc": false,
    "size": "S",
-   "savedAt": "2026-09-28T12:39:22.274Z",
+   "savedAt": "2026-09-28T14:29:33.227Z",
    "weightG": "",
    "chgRef": "",
    "logoImg": "",
