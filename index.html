@@ -867,6 +867,12 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.hasMesh===undefined) s.hasMesh=!!(s.markerMesh);
     if(s.meshLen===undefined) s.meshLen='';
     if(s.meshLay===undefined) s.meshLay='';
+    /* a contrast fabric cut from its own marker - a second cloth like the mesh */
+    if(s.hasCon===undefined) s.hasCon=!!(s.markerCon);
+    if(s.conFab===undefined) s.conFab='';
+    if(s.markerCon===undefined) s.markerCon='';
+    if(s.conLen===undefined) s.conLen='';
+    if(s.conLay===undefined) s.conLay='';
     if(s.logoImg===undefined) s.logoImg='';
     if(s.placeImg===undefined) s.placeImg='';
     if(s.logo2Img===undefined) s.logo2Img='';
@@ -1316,7 +1322,7 @@ function pcNew(){
     customer:'', garment:'', desc:'', brandType:'None', brandPlace:'',
     fabrics:[], trims:[], meas:[], mfg:'', fin:'',
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
-    markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
+    markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', hasCon:false, conFab:'', markerCon:'', conLen:'', conLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
     printed:false, printedAt:'', productCode:null, convertedAt:'', version:1, history:[], draft:true, isOH:false, ladies:false, mtc:false, size:'', savedAt:pcNow()};
   PC.srs.unshift(s); PC.qSeq++; pcSaveData();
@@ -1455,13 +1461,23 @@ function pcOpen(i){
     +'<div><div class="pclab">Marker number (main)</div><input id="pcF_mkMain" value="'+pcE(s.markerMain)+'"></div>'
     +'<div><div class="pclab">Marker length (m)</div><input id="pcF_mkLen" type="number" step="0.01" min="0" value="'+pcE(s.markerLen)+'"></div>'
     +'<div><div class="pclab">Lay qty (garments per lay)</div><input id="pcF_layQty" type="number" step="1" min="1" value="'+pcE(s.layQty)+'"></div>'
-    +'<div style="align-self:end;padding-bottom:8px"><label style="font-size:12px;font-weight:700;color:var(--mut)"><input type="checkbox" id="pcF_hasMesh"'+(s.hasMesh?' checked':'')+' onchange="pcMeshToggle()"> Mesh marker</label></div>'
+    +'<div style="align-self:end;padding-bottom:4px;display:flex;flex-direction:column;gap:6px;align-items:flex-start"><label style="font-size:12px;font-weight:700;color:var(--mut);display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" id="pcF_hasMesh"'+(s.hasMesh?' checked':'')+' onchange="pcMeshToggle()" style="margin:0"> Mesh marker</label>'
+    +'<label style="font-size:12px;font-weight:700;color:var(--mut);display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" id="pcF_hasCon"'+(s.hasCon?' checked':'')+' onchange="pcConToggle()" style="margin:0"> Contrast fabric</label></div>'
     +'</div>'
     +'<div class="pcrow" id="pcMeshFields" style="grid-template-columns:repeat(4,1fr);display:'+(s.hasMesh?'grid':'none')+'">'
     +'<div><div class="pclab">Marker number (mesh)</div><input id="pcF_mkMesh" value="'+pcE(s.markerMesh)+'"></div>'
     +'<div><div class="pclab">Mesh marker length (m)</div><input id="pcF_meshLen" type="number" step="0.01" min="0" value="'+pcE(s.meshLen)+'"></div>'
     +'<div><div class="pclab">Mesh lay qty</div><input id="pcF_meshLay" type="number" step="1" min="1" value="'+pcE(s.meshLay)+'"></div>'
     +'</div>'
+    /* a contrast fabric: a second cloth cut from its own marker (a contrast collar, ties, a trim). It is
+       picked from the Sage fabric list and given a fabric line above so it is costed like any other cloth */
+    +'<div class="pcrow" id="pcConFields" style="grid-template-columns:repeat(4,1fr);display:'+(s.hasCon?'grid':'none')+'">'
+    +'<div><div class="pclab">Contrast fabric (Sage code)</div><input id="pcF_conFab" list="pcFabDL" value="'+pcE(s.conFab)+'" placeholder="pick from the fabric list" autocomplete="off" onchange="pcConFabPick(this)"></div>'
+    +'<div><div class="pclab">Marker number (contrast)</div><input id="pcF_mkCon" value="'+pcE(s.markerCon)+'"></div>'
+    +'<div><div class="pclab">Contrast marker length (m)</div><input id="pcF_conLen" type="number" step="0.01" min="0" value="'+pcE(s.conLen)+'"></div>'
+    +'<div><div class="pclab">Contrast lay qty</div><input id="pcF_conLay" type="number" step="1" min="1" value="'+pcE(s.conLay)+'"></div>'
+    +'</div>'
+    +'<p class="pcnote" id="pcConNote" style="display:'+(s.hasCon?'':'none')+'">A second fabric cut from its own marker — a contrast collar, ties or a trim. Pick it from the Sage fabric list: it is added to the fabric lines above so it is costed (enter its rating there), and its marker prints on the works order like the mesh marker.</p>'
     +'<div class="pcrow" style="grid-template-columns:repeat(4,1fr)">'
     +'<div><div class="pclab">Lectra pattern (optional)</div><input id="pcF_lectra" value="'+pcE(s.lectra)+'"></div>'
     +'<div><div class="pclab">Variant (optional)</div><input id="pcF_variant" value="'+pcE(s.variant)+'"></div>'
@@ -1557,6 +1573,11 @@ function pcCollect(s){
   s.markerMesh=document.getElementById('pcF_mkMesh').value.trim();
   s.meshLen=document.getElementById('pcF_meshLen').value.trim();
   s.meshLay=document.getElementById('pcF_meshLay').value.trim();
+  s.hasCon=document.getElementById('pcF_hasCon').checked;
+  s.conFab=document.getElementById('pcF_conFab').value.trim().toUpperCase();
+  s.markerCon=document.getElementById('pcF_mkCon').value.trim();
+  s.conLen=document.getElementById('pcF_conLen').value.trim();
+  s.conLay=document.getElementById('pcF_conLay').value.trim();
   s.lectra=document.getElementById('pcF_lectra').value.trim();
   s.variant=document.getElementById('pcF_variant').value.trim();
   s.weightG=document.getElementById('pcF_weightG').value.trim();
@@ -1569,6 +1590,29 @@ function pcCollect(s){
 function pcMeshToggle(){
   var c=document.getElementById('pcF_hasMesh'), r=document.getElementById('pcMeshFields');
   if(r) r.style.display=(c&&c.checked)?'grid':'none';
+}
+function pcConToggle(){
+  var c=document.getElementById('pcF_hasCon'), r=document.getElementById('pcConFields'), n=document.getElementById('pcConNote');
+  if(r) r.style.display=(c&&c.checked)?'grid':'none';
+  if(n) n.style.display=(c&&c.checked)?'':'none';
+  if(c&&c.checked){ var f=document.getElementById('pcF_conFab'); if(f&&!f.value) f.focus(); }
+}
+/* the contrast fabric picked gets a fabric line of its own (once), so it is costed and reaches the
+   works order's FABRIC table; the Sage name, price and location fill in, the rating is the GT's */
+function pcConFabPick(inp){
+  var code=String(inp.value||'').trim().toUpperCase(); inp.value=code; if(!code) return;
+  var tb=document.getElementById('pcFabT'); if(!tb) return;
+  var have=false; tb.querySelectorAll('input[data-k=code]').forEach(function(x){ if(String(x.value||'').trim().toUpperCase()===code) have=true; });
+  if(have) return;
+  var f=pcFabricLookup(code); if(!f) return;      /* a code the Sage list does not know is flagged, not given a line */
+  var trs=tb.querySelectorAll('tr'), last=trs[trs.length-1], blank=null;
+  /* reuse an empty last line if there is one (the heading row is not a line) */
+  if(last && last.querySelector('input[data-k=code]')){ var any=false; last.querySelectorAll('input').forEach(function(x){ if(x.value.trim()) any=true; }); if(!any) blank=last; }
+  if(!blank){ pcAddRow('pcFabT'); trs=tb.querySelectorAll('tr'); blank=trs[trs.length-1]; }
+  var c=blank.querySelector('input[data-k=code]'); if(c) c.value=code;
+  if(f && c) pcFabFill(c,true);
+  var nm=blank.querySelector('input[data-k=name]'); if(nm && !nm.value) nm.value=f?(f.name||''):'';
+  var rt=blank.querySelector('input[data-k=rating]'); if(rt) rt.focus();
 }
 function pcNumOnly(inp){
   var v=inp.value.replace(/[^0-9.]/g,'');
@@ -1593,6 +1637,17 @@ function pcValidate(){
   if(pcSizeList(szo) && document.getElementById('pcF_size')) req('pcF_size','Size');
   var hm=document.getElementById('pcF_hasMesh');
   if(hm&&hm.checked&&scope0!=='fabric'){ req('pcF_mkMesh','Mesh marker number'); req('pcF_meshLen','Mesh marker length'); req('pcF_meshLay','Mesh lay qty'); }
+  /* a contrast fabric needs the fabric itself (from the Sage list, with a fabric line so it is costed) and its marker */
+  var hc=document.getElementById('pcF_hasCon');
+  if(hc&&hc.checked){
+    req('pcF_conFab','Contrast fabric (Sage code)'); req('pcF_mkCon','Contrast marker number'); req('pcF_conLen','Contrast marker length'); req('pcF_conLay','Contrast lay qty');
+    var cf=document.getElementById('pcF_conFab'), cv=String((cf&&cf.value)||'').trim().toUpperCase();
+    if(cv){
+      var onLines=false; document.querySelectorAll('#pcFabT input[data-k=code]').forEach(function(x){ if(String(x.value||'').trim().toUpperCase()===cv) onLines=true; });
+      if(!pcFabricLookup(cv)){ flag(cf,true); missing.push('Contrast fabric '+cv+' is not in the Sage fabric list'); }
+      else if(!onLines){ flag(cf,true); missing.push('Contrast fabric '+cv+' needs a fabric line (rating and price)'); }
+    }
+  }
   function rowReq(tbl,keys,label){
     var tb=document.getElementById(tbl); if(!tb) return;
     var trs=tb.querySelectorAll('tr');
@@ -1606,7 +1661,8 @@ function pcValidate(){
   /* a quote or sample only needs to say what the fabric is, how much and at what price; the Sage
      code is checked when the record becomes a product (pcFabricCodesOK) */
   if(scope0!=='size') rowReq('pcFabT',['name','rating','cost'],'Fabric line (description / rating / cost)');
-  rowReq('pcTrimT',['desc','cost'],'Trim line (description / cost)');
+  /* every trim picked needs its quantity per unit - a label is 1, thread and tape are metres */
+  rowReq('pcTrimT',['desc','qty','cost'],'Trim line (description / qty / cost)');
   return missing;
 }
 function pcSave(){
@@ -1714,6 +1770,13 @@ function pcFabricCodesOK(s, verb){
   if(unknown.length && !confirm('These fabric codes are not in the Sage fabric list:\n\n'+unknown.map(function(f){return '\u2022 '+f.code+' \u2014 '+(f.name||'');}).join('\n')+'\n\nCheck they are real Sage codes (a new fabric may just not be in the pasted list yet). '+verb.charAt(0).toUpperCase()+verb.slice(1)+' anyway?')) return false;
   return true;
 }
+/* A product is bought against Sage, so every trim picked needs its quantity per unit - otherwise the
+   standard cost and the buffer app's works order both go out short. */
+function pcTrimQtyOK(s, verb){
+  var noQty=(s.trims||[]).filter(function(t){ return t.code && !(pcNum(t.qty)>0); });
+  if(noQty.length){ alert('Cannot '+verb+' yet — '+noQty.length+' trim line(s) have no quantity:\n\n'+noQty.map(function(t){ return '• '+t.code+' — '+(t.desc||''); }).join('\n')+'\n\nEvery trim picked needs its quantity per unit (1 for a label or tag, metres for thread or tape).'); return false; }
+  return true;
+}
 function pcConvert(){
   if(PC_CUR<0||!PC_IS_EDITOR) return;
   var s=PC.srs[PC_CUR];
@@ -1721,6 +1784,7 @@ function pcConvert(){
   pcCollect(s);
   var missing=s.trims.filter(function(t){ return !t.code; });
   if(missing.length){ alert('Cannot convert yet — '+missing.length+' trim line(s) have no Sage code:\n\n'+missing.map(function(t){return '• '+(t.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
+  if(!pcTrimQtyOK(s,'convert')) return;
   if(!pcFabricCodesOK(s,'convert')) return;
   var tok=pcSizeTok(s.size);
   if(pcSizeList(s) && !s.size){ alert('Pick the size first \u2014 the product code carries it (e.g. CJ0002M), so one special make code can cover several sizes.'); return; }
@@ -1770,6 +1834,9 @@ function pcExport(){
     markerMain:s.markerMain||'', markerMesh:s.markerMesh||'',
     markerLen:pcPos(s.markerLen)||null, layQty:pcPos(s.layQty)||null,
     hasMesh:!!s.hasMesh, meshLen:pcPos(s.meshLen)||null, meshLay:pcPos(s.meshLay)||null,
+    /* a contrast fabric and its marker - the buffer app prints them with the cutting detail */
+    hasCon:!!s.hasCon, conFab:s.hasCon?(s.conFab||''):'', markerCon:s.hasCon?(s.markerCon||''):'',
+    conLen:s.hasCon?(pcPos(s.conLen)||null):null, conLay:s.hasCon?(pcPos(s.conLay)||null):null,
     chart:s.meas.length?(s.productCode+'-MEAS'):'',
     chartCols:s.meas.length?["Measurement","Value"]:null,
     chartRows:s.meas.map(function(m){ return [m.label,m.value+(m.value2?' \u00d7 '+m.value2:'')]; }),
@@ -1840,6 +1907,7 @@ function pcPrint(prodQty){
      buffer app's shop-floor print never carry a cost. */
   var cost=null, labRate=0, ovhRate=0;
   if(pm){ labRate=pcLabRate(); ovhRate=pcOvhRate(); cost=pcCostCalc(s, labRate, s.fabrics, ovhRate); }
+  var conF=s.hasCon?(s.fabrics||[]).filter(function(f){ return String(f.code||'').toUpperCase()===String(s.conFab||'').toUpperCase(); })[0]:null;
   function e(x){ return pcE(x); }
   var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+(pm?'Product WO '+e(s.productCode):'Sample WO '+e(s.ref))+'</title><style>'
     +'@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
@@ -1893,6 +1961,10 @@ function pcPrint(prodQty){
     +(s.hasMesh?'<tr><th>Marker number (mesh)</th><td style="font-weight:700">'+e(s.markerMesh||'\u2014')+'</td></tr>'
       +'<tr><th>Mesh marker length</th><td style="font-weight:700">'+(pcPos(s.meshLen)? pcPos(s.meshLen)+' m':'\u2014')+'</td></tr>'
       +'<tr><th>Mesh lay qty</th><td style="font-weight:700">'+(pcPos(s.meshLay)? pcPos(s.meshLay)+' per lay':'\u2014')+'</td></tr>':'')
+    +(s.hasCon?'<tr><th>Contrast fabric</th><td style="font-weight:700">'+e(s.conFab||'\u2014')+(conF&&conF.name?' <span style="font-weight:400">\u2014 '+e(conF.name)+'</span>':'')+'</td></tr>'
+      +'<tr><th>Marker number (contrast)</th><td style="font-weight:700">'+e(s.markerCon||'\u2014')+'</td></tr>'
+      +'<tr><th>Contrast marker length</th><td style="font-weight:700">'+(pcPos(s.conLen)? pcPos(s.conLen)+' m':'\u2014')+'</td></tr>'
+      +'<tr><th>Contrast lay qty</th><td style="font-weight:700">'+(pcPos(s.conLay)? pcPos(s.conLay)+' per lay':'\u2014')+'</td></tr>':'')
     +'<tr><th>Marker length</th><td style="font-weight:700;font-size:15px">'+(mkLen? mkLen+' m':'\u2014')+'</td></tr>'
     +'<tr><th>Lay qty</th><td style="font-weight:700;font-size:15px">'+(layQ? layQ+' garment'+(layQ===1?'':'s')+' per lay':'\u2014')+'</td></tr>'
     +(plies?'<tr><th>Lay plan (qty '+qty+')</th><td style="font-weight:700">'+plies+' pl'+(plies===1?'y':'ies')+' of '+mkLen+' m \u2014 total '+(plies*mkLen).toFixed(2)+' m</td></tr>':'')
@@ -2083,7 +2155,7 @@ function pcRevise(){
   if(note===null) return;
   var KEYS=['customer','garment','desc','brandType','brandPlace','due','fabrics','trims','meas','mfg','fin',
             'machMins','finMins','cutBatch','cutMins','sampleQty','markerMain','markerMesh','markerLen','layQty',
-            'hasMesh','meshLen','meshLay','lectra','variant','status','logoImg','logo2Img','placeImg','isOH','weightG'];
+            'hasMesh','meshLen','meshLay','hasCon','conFab','markerCon','conLen','conLay','lectra','variant','status','logoImg','logo2Img','placeImg','isOH','weightG'];
   var snap={};                       // snapshot the record AS LAST SAVED — before pulling in the form edits,
   KEYS.forEach(function(k){ snap[k]=JSON.parse(JSON.stringify(s[k]===undefined?null:s[k])); });
   pcCollect(s);                      // so anything already typed becomes part of the new version
@@ -2120,6 +2192,7 @@ function pcViewRevision(ix){
   [['Machining mins/unit',d.machMins],['Finishing mins/unit',d.finMins],['Cutting batch',d.cutBatch],['Cutting mins/batch',d.cutMins],
    ['Marker number (main)',d.markerMain],['Marker length (m)',d.markerLen],['Lay qty',d.layQty],
    ['Mesh marker',d.hasMesh?((d.markerMesh||'—')+' · '+(d.meshLen||'—')+' m · lay '+(d.meshLay||'—')):'—'],
+   ['Contrast fabric',d.hasCon?((d.conFab||'—')+' · marker '+(d.markerCon||'—')+' · '+(d.conLen||'—')+' m · lay '+(d.conLay||'—')):'—'],
    ['Lectra',d.lectra],['Variant',d.variant]].forEach(function(r){
     h+='<tr><th style="width:26%">'+e(r[0])+'</th><td>'+e(r[1])+'</td></tr>'; });
   h+='</table></div></div>';
@@ -2173,6 +2246,7 @@ function pcWithLatestWO(s){
   o.machMins=str(st.machMins); o.finMins=str(st.finMins); o.cutBatch=str(st.cutBatch); o.cutMins=st.cutMins!=null?st.cutMins:o.cutMins;
   o.markerMain=st.markerMain||''; o.markerMesh=st.markerMesh||''; o.markerLen=str(st.markerLen); o.layQty=str(st.layQty);
   o.hasMesh=!!st.hasMesh; o.meshLen=str(st.meshLen); o.meshLay=str(st.meshLay);
+  o.hasCon=!!(st.hasCon||st.markerCon); o.conFab=st.conFab||''; o.markerCon=st.markerCon||''; o.conLen=str(st.conLen); o.conLay=str(st.conLay);
   o.brandType=st.brandType||'None'; o.brandPlace=st.brandPlace||''; if(st.logoImg) o.logoImg=st.logoImg; if(st.placeImg) o.placeImg=st.placeImg;
   var rows=st.chart?PC_WO.charts[st.chart]:null;
   if(rows&&rows.length) o.meas=rows.map(function(r){ return {label:str(r[0]), value:str(r[1]), value2:''}; });
@@ -2275,7 +2349,7 @@ function pcCopyBuild(src, code){
     customer:'', garment:'', desc:'', brandType:'None', brandPlace:'',
     fabrics:[], trims:[], meas:[], mfg:'', fin:'',
     machMins:'', finMins:'', cutBatch:'', cutMins:15, sampleQty:2,
-    markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', lectra:'', variant:'',
+    markerMain:'', markerMesh:'', markerLen:'', layQty:'', hasMesh:false, meshLen:'', meshLay:'', hasCon:false, conFab:'', markerCon:'', conLen:'', conLay:'', lectra:'', variant:'',
     quoteMarkup:60, quoteShowSell:true, quotePrinted:false, quotePrintedAt:'',
     printed:false, printedAt:'', productCode:null, convertedAt:'', copiedFrom:code, version:1, history:[], draft:true, isOH:false, ladies:false, mtc:false, size:'', savedAt:pcNow()};
   if(src.src==='wo'){
@@ -2304,7 +2378,7 @@ function pcCopyBuild(src, code){
   } else {
     var o=src.st;
     ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
-     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','mtc','size']
+     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','hasCon','conFab','markerCon','conLen','conLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','mtc','size']
       .forEach(function(k){ if(o[k]!==undefined) s[k]=o[k]; });
     s.fabrics=JSON.parse(JSON.stringify(o.fabrics||[]));
     s.trims=JSON.parse(JSON.stringify(o.trims||[])); s.threadOwn=!!o.threadOwn; pcThreadApply(s);
@@ -2448,6 +2522,7 @@ function pcCreateProduct(){
   var scope1=s.editScope||'';
   var noCode=(scope1&&pcFamilyOf(s)==='stock')?[]:s.trims.filter(function(tr){ return !tr.code; });
   if(noCode.length){ alert('Cannot create yet \u2014 '+noCode.length+' trim line(s) have no Sage code:\n\n'+noCode.map(function(tr){return '\u2022 '+(tr.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
+  if(!pcTrimQtyOK(s,'create')) return;
   if(scope1!=='size' && !pcFabricCodesOK(s,'create')) return;
   if(!confirm('Create product '+code+'?\n\nIt is then locked like a converted sample: printable for IT and downloadable for the buffer app. Only the garment weight stays editable.')) return;
   delete s.draft;
