@@ -878,6 +878,8 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     ['due','created','srRaisedAt','convertedAt','sampleApprovedAt'].forEach(function(k){ if(s[k]) s[k]=pcFixYear(s[k]); });
     if(s.isOH===undefined) s.isOH=false;
     if(s.version===undefined) s.version=1;
+    if(s.threadOwn===undefined) s.threadOwn=false;
+    pcThreadApply(s);
     if(!Array.isArray(s.history)) s.history=[];
   });
   return d;
@@ -964,6 +966,30 @@ function pcOvhRate(){
   return 7;
 }
 function pcPos(v){ v=parseFloat(v); return (isNaN(v)||v<=0)?0:v; }
+/* ── thread standard ──────────────────────────────────────────────────────
+   Luke, 28 Sep 2026: the metres of thread costed per garment. Chef jacket 220,
+   chef trousers 150, bib apron 70, waist apron 30. The MAIN thread row of a
+   record takes the standard when its quantity is blank, and existing records
+   are brought to it on load; a figure typed that differs from the standard is
+   the record's own (threadOwn) and is kept. A second thread row - a contrast
+   colour - keeps whatever it says. The buffer app applies the same rule. */
+var PC_THREAD_STD={CJ:220, CT:150, APB:70, APW:30};
+function pcGarmentKind(s){
+  var cat=pcCatOf(s&&s.garment), txt=(String((s&&s.desc)||'')+' '+String((s&&s.garment)||'')).toLowerCase();
+  if(cat==='AP' || /\bapron\b/.test(txt)) return /waist apron|half apron|waist ap\b/.test(txt)?'APW':'APB';
+  if(cat==='CJ') return 'CJ';
+  if(cat==='CT') return 'CT';
+  return '';
+}
+function pcThreadStd(s){ var k=pcGarmentKind(s); return k?PC_THREAD_STD[k]:0; }
+function pcIsThreadRow(t){ return /thread|^CMP-THR-/i.test(String((t&&t.code)||'')+' '+String((t&&t.desc)||'').slice(0,24)); }
+function pcThreadApply(s){
+  if(!s || s.threadOwn || !Array.isArray(s.trims)) return false;
+  var std=pcThreadStd(s); if(!std) return false;
+  var row=s.trims.filter(pcIsThreadRow)[0]; if(!row) return false;
+  if(pcNum(row.qty)===std) return false;
+  row.qty=String(std); return true;
+}
 var PC_SHEET=null;
 function pcSheetHas(code){
   if(typeof COSTDATA==='undefined'||!COSTDATA.rows) return false;
@@ -1251,6 +1277,14 @@ function pcTrimFill(inp,user){
   var dIn=tr.querySelector('input[data-k=desc]'); if(dIn && (user||!dIn.value)) dIn.value=t.name||'';
   var cIn=tr.querySelector('input[data-k=cost]');
   if(cIn){ if(user) cIn.value=(t.cost!=null?t.cost:''); else if(!cIn.value && t.cost!=null) cIn.value=t.cost; }
+  /* a thread code on the record's main thread row: the quantity is the garment's standard unless one is typed */
+  var qIn=tr.querySelector('input[data-k=qty]');
+  if(qIn && !qIn.value && /^CMP-THR-/i.test(inp.value)){
+    var tbl=tr.closest('table'), first=null;
+    if(tbl){ var trs=tbl.querySelectorAll('tr'); for(var i=1;i<trs.length;i++){ var c=trs[i].querySelector('input[data-k=code]'); if(c && /^CMP-THR-/i.test(c.value)){ first=trs[i]; break; } } }
+    if(first===tr){ var g=document.getElementById('pcF_garment'), d=document.getElementById('pcF_desc');
+      var std=pcThreadStd({garment:g?g.value:'', desc:d?d.value:''}); if(std) qIn.value=std; }
+  }
 }
 
 /* ── open / edit ── */
@@ -1402,7 +1436,8 @@ function pcOpen(i){
 
   h+='<div class="pcsec"><h4>Fabrics</h4><div class="in">'+pcRowsHTML('pcFabT',PC_COLDEFS.pcFabT,s.fabrics,'Add fabric')+'</div></div>';
   h+='<div class="pcsec"><h4>Trims</h4><div class="in">'+pcRowsHTML('pcTrimT',PC_COLDEFS.pcTrimT,s.trims,'Add trim')
-    +'<p class="pcnote">A new trim not yet in Sage can be added with just a description and cost \u2014 leave the code blank. A proper Sage code is required before the sample can become a product.</p></div></div>';
+    +'<p class="pcnote">A new trim not yet in Sage can be added with just a description and cost \u2014 leave the code blank. A proper Sage code is required before the sample can become a product.</p>'
+    +'<p class="pcnote">Thread is costed at the garment standard \u2014 chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m. The main thread row takes it when its quantity is left blank'+(pcThreadStd(s)?' ('+pcThreadStd(s)+' m for this record)':'')+'; a different figure typed here is kept as this record\u2019s own.</p></div></div>';
 
   h+='<div class="pcsec"><h4>Production times &amp; cutting</h4><div class="in"><div class="pcrow" style="grid-template-columns:repeat(5,1fr)">'
     +'<div><div class="pclab">Machining mins/unit</div><input id="pcF_mach" type="number" step="0.1" value="'+pcE(s.machMins)+'"></div>'
@@ -1506,6 +1541,9 @@ function pcCollect(s){
   s.brandPlace=document.getElementById('pcF_brandPlace').value.trim();
   s.fabrics=pcReadRows('pcFabT');
   s.trims=pcReadRows('pcTrimT');
+  /* the main thread row: blank takes the standard; a different figure typed is this record's own */
+  (function(){ var std=pcThreadStd(s), row=s.trims.filter(pcIsThreadRow)[0]; if(!std||!row) return;
+    if(!String(row.qty||'').trim()){ row.qty=String(std); s.threadOwn=false; } else s.threadOwn=(pcNum(row.qty)!==std); })();
   s.meas=pcReadRows('pcMeasT');
   s.machMins=document.getElementById('pcF_mach').value;
   s.finMins=document.getElementById('pcF_fin').value;
@@ -1723,6 +1761,7 @@ function pcExport(){
   if(PC_CUR<0) return;
   var s=PC.srs[PC_CUR];
   if(!s.productCode){ alert('Convert to a product first.'); return; }
+  pcThreadApply(s);
   var entry={
     code:s.productCode,
     name:(s.garment||s.productCode)+(s.customer?' \u2014 '+s.customer:''),
@@ -1748,6 +1787,7 @@ function pcExport(){
     cutBatch:pcNum(s.cutBatch)||35, cutMins:pcNum(s.cutMins)||15,
     oneSize:!(pcSizeTok(s.size)||/--/.test(String(s.productCode||''))), size:s.size||'',
     sr:s.ref, srVersion:s.version||1, customer:s.customer||'',
+    threadOwn:!!s.threadOwn,   /* a thread figure that is this record's own, not the standard */
     /* the branding spec and artwork must reach the buffer works order */
     brandType:s.brandType||'None', brandPlace:s.brandPlace||'',
     logoImg:(s.brandType&&s.brandType!=='None'&&s.logoImg)?s.logoImg:'',
@@ -2252,6 +2292,7 @@ function pcCopyBuild(src, code){
       var d=(tr[0]?tr[0]+': ':'')+(tr[1]||'');
       return {code:tc, desc:d||(lk&&lk.name)||'', qty:(tr.length>3&&tr[2]!=null&&tr[2]!=='')?String(tr[2]):'',
               cost:(lk&&lk.cost!=null)?String(lk.cost):((tr.length>4&&tr[4]!=null&&tr[4]!=='')?String(tr[4]):'')}; });
+    s.threadOwn=false; pcThreadApply(s);
     s.mfg=(st.mfg||[]).join('\n'); s.fin=(st.fin||[]).join('\n');
     s.machMins=st.machMins!=null?String(st.machMins):''; s.finMins=st.finMins!=null?String(st.finMins):'';
     s.cutBatch=st.cutBatch!=null?String(st.cutBatch):''; s.cutMins=st.cutMins!=null?st.cutMins:15;
@@ -2266,7 +2307,7 @@ function pcCopyBuild(src, code){
      'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','mtc','size']
       .forEach(function(k){ if(o[k]!==undefined) s[k]=o[k]; });
     s.fabrics=JSON.parse(JSON.stringify(o.fabrics||[]));
-    s.trims=JSON.parse(JSON.stringify(o.trims||[]));
+    s.trims=JSON.parse(JSON.stringify(o.trims||[])); s.threadOwn=!!o.threadOwn; pcThreadApply(s);
     s.meas=JSON.parse(JSON.stringify(o.meas||[]));
   }
   return s;
