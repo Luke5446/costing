@@ -1,7 +1,7 @@
 {
- "publishedAt": "2026-09-24",
- "publishedTS": "2026-09-24T15:21:24.531Z",
- "qSeq": 11,
+ "publishedAt": "2026-09-28",
+ "publishedTS": "2026-09-28T12:39:47.154Z",
+ "qSeq": 12,
  "srSeq": 9,
  "prodSeq": {
   "OHAPB": 2,
@@ -10,6 +10,78 @@
  },
  "chgSeq": 5,
  "srs": [
+  {
+   "quoteRef": "Q0012",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-09-28",
+   "due": "2026-09-28",
+   "customer": "Z Hotels",
+   "garment": "Chef trousers",
+   "desc": "Indigo ladies straight leg jeans regular length cut down by 2.5cm and re-hemmed to finish short leg length 29\".",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [],
+   "trims": [
+    {
+     "code": "",
+     "desc": "INDIGO LADIES WORKREADY STRAIGHT LEG JEANS SZ SMALL (PR577) REG  Premier",
+     "qty": "1",
+     "cost": "11.02"
+    },
+    {
+     "code": "CMP-THR-EP80",
+     "desc": "THREAD — COATS EPIC 80'S AQUA 05164 — cost per metre",
+     "qty": "4",
+     "cost": "0.000714"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Inside Leg length",
+     "value": "74",
+     "value2": ""
+    }
+   ],
+   "mfg": "CUTTING ROOM - remove from bag\nCUTTING ROOM - To cut down length by 2.5cm Trouser to then finish after hemming 29\" leg length\nMust have additional printed label that states SHORT LEG 29\"\nDouble turn hem 1cm and topstitch at 1cm in gold thread\nAdd additional label with leg length detail and set on top of care label.  New label to state SHORT LEG 29\"",
+   "fin": "Check leg length. Trim ends at hem.  Fold and set into bag.\nSet new bag sticker",
+   "machMins": "5",
+   "finMins": "2",
+   "cutBatch": "1",
+   "cutMins": 2.5,
+   "sampleQty": 1,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": "1",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "lectra": "1",
+   "variant": "1",
+   "quoteMarkup": 60,
+   "quoteShowSell": false,
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-09-28",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "version": 1,
+   "history": [],
+   "isOH": false,
+   "ladies": false,
+   "mtc": false,
+   "size": "S",
+   "savedAt": "2026-09-28T12:39:22.274Z",
+   "weightG": "",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
+  },
   {
    "quoteRef": "",
    "ref": "",
