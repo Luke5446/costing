@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-09-28",
- "publishedTS": "2026-09-28T13:44:19.677Z",
+ "publishedTS": "2026-09-28T14:13:32.320Z",
  "qSeq": 13,
  "srSeq": 9,
  "prodSeq": {
@@ -18,7 +18,7 @@
    "due": "2026-09-28",
    "customer": "Rangeford Villages",
    "garment": "Tabard",
-   "desc": "Olive Tabard with wide curved pocket.  Side straps for adjustment.  Self fabric Binding.",
+   "desc": "Olive Tabard with wide curved pocket.  Side straps for adjustment stud fastenend.  Self fabric Binding.",
    "brandType": "None",
    "brandPlace": "",
    "fabrics": [
@@ -105,8 +105,8 @@
    "variant": "TBO201 WTH POCKET",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-09-28",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -117,8 +117,14 @@
    "ladies": false,
    "mtc": false,
    "size": "M",
-   "savedAt": "2026-09-28T13:44:04.068Z",
-   "weightG": ""
+   "savedAt": "2026-09-28T14:13:30.777Z",
+   "weightG": "",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0012",
