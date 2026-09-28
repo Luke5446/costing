@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-09-28",
- "publishedTS": "2026-09-28T12:39:47.154Z",
- "qSeq": 12,
+ "publishedTS": "2026-09-28T13:44:19.677Z",
+ "qSeq": 13,
  "srSeq": 9,
  "prodSeq": {
   "OHAPB": 2,
@@ -10,6 +10,116 @@
  },
  "chgSeq": 5,
  "srs": [
+  {
+   "quoteRef": "Q0013",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-09-28",
+   "due": "2026-09-28",
+   "customer": "Rangeford Villages",
+   "garment": "Tabard",
+   "desc": "Olive Tabard with wide curved pocket.  Side straps for adjustment.  Self fabric Binding.",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC2083ECO",
+     "name": "OLIVE GREEN SUSTAINABLE 65/35 POLY/COTTON (X133 - AM298)",
+     "rating": "0.85",
+     "cost": "2.32",
+     "loc": "B4"
+    },
+    {
+     "code": "PC2083ECO",
+     "name": "OLIVE GREEN SUSTAINABLE 65/35 POLY/COTTON (X133 - AM298) for binding 40mm slit",
+     "rating": "0.24",
+     "cost": "2.32",
+     "loc": "B4"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-05742-83",
+     "desc": "THREAD — COATS EPIC 80'S OLIVE 05742 — cost per metre",
+     "qty": "50",
+     "cost": "0.000714"
+    },
+    {
+     "code": "LABELTIB4565",
+     "desc": "Tibard Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.02737"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.1",
+     "cost": "0.039067"
+    },
+    {
+     "code": "CMP-STD-SOC-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/B — MALE FITTING",
+     "qty": "4",
+     "cost": "0.016632"
+    },
+    {
+     "code": "CMP-STD-DUO-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/C — FEMALE FITTING",
+     "qty": "4",
+     "cost": "0.01958"
+    },
+    {
+     "code": "CMP-STD-RING-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/AR — PRONG FITTING",
+     "qty": "8",
+     "cost": "0.010395"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Across front chest in cm",
+     "value": "71",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length in cm",
+     "value": "79",
+     "value2": ""
+    }
+   ],
+   "mfg": "Make side tabs. Bag out ends and pull through.\nSet tabs in position following notches in side seam.\n5 thread join shoulder seam left side as worn.\n5 thread neaten right shoulders as worn\nSet binding all round panels.  Start at open shoulder.\n5 thread Close shoulder seam. Right side as worn.\n6mm topstitch shoulder seam onto back both sides to hold seam down.\nSet pocket hem. Double turn and topstitch 1cm\nSet binding all round pocket.\nEdgestitch pocket to front - Pocket set centrally within front of tabard and bottom of pocket to be set 10cm up from finished hem of tabard.\nPull tabs back over binding and edgestitch tab down to secure.\nBartack pocket mouth at each side.  Total 2 bartacks.",
+   "fin": "",
+   "machMins": "14",
+   "finMins": "6",
+   "cutBatch": "1",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": "1",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "lectra": "TBO201",
+   "variant": "TBO201 WTH POCKET",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "version": 1,
+   "history": [],
+   "isOH": false,
+   "ladies": false,
+   "mtc": false,
+   "size": "M",
+   "savedAt": "2026-09-28T13:44:04.068Z",
+   "weightG": ""
+  },
   {
    "quoteRef": "Q0012",
    "ref": "",
