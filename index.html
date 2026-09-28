@@ -1461,8 +1461,8 @@ function pcOpen(i){
     +'<div><div class="pclab">Marker number (main)</div><input id="pcF_mkMain" value="'+pcE(s.markerMain)+'"></div>'
     +'<div><div class="pclab">Marker length (m)</div><input id="pcF_mkLen" type="number" step="0.01" min="0" value="'+pcE(s.markerLen)+'"></div>'
     +'<div><div class="pclab">Lay qty (garments per lay)</div><input id="pcF_layQty" type="number" step="1" min="1" value="'+pcE(s.layQty)+'"></div>'
-    +'<div style="align-self:end;padding-bottom:4px;display:flex;flex-direction:column;gap:4px"><label style="font-size:12px;font-weight:700;color:var(--mut)"><input type="checkbox" id="pcF_hasMesh"'+(s.hasMesh?' checked':'')+' onchange="pcMeshToggle()"> Mesh marker</label>'
-    +'<label style="font-size:12px;font-weight:700;color:var(--mut)"><input type="checkbox" id="pcF_hasCon"'+(s.hasCon?' checked':'')+' onchange="pcConToggle()"> Contrast fabric</label></div>'
+    +'<div style="align-self:end;padding-bottom:4px;display:flex;flex-direction:column;gap:6px;align-items:flex-start"><label style="font-size:12px;font-weight:700;color:var(--mut);display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" id="pcF_hasMesh"'+(s.hasMesh?' checked':'')+' onchange="pcMeshToggle()" style="margin:0"> Mesh marker</label>'
+    +'<label style="font-size:12px;font-weight:700;color:var(--mut);display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" id="pcF_hasCon"'+(s.hasCon?' checked':'')+' onchange="pcConToggle()" style="margin:0"> Contrast fabric</label></div>'
     +'</div>'
     +'<div class="pcrow" id="pcMeshFields" style="grid-template-columns:repeat(4,1fr);display:'+(s.hasMesh?'grid':'none')+'">'
     +'<div><div class="pclab">Marker number (mesh)</div><input id="pcF_mkMesh" value="'+pcE(s.markerMesh)+'"></div>'
@@ -1606,7 +1606,8 @@ function pcConFabPick(inp){
   if(have) return;
   var f=pcFabricLookup(code); if(!f) return;      /* a code the Sage list does not know is flagged, not given a line */
   var trs=tb.querySelectorAll('tr'), last=trs[trs.length-1], blank=null;
-  if(last){ var any=false; last.querySelectorAll('input').forEach(function(x){ if(x.value.trim()) any=true; }); if(!any) blank=last; }
+  /* reuse an empty last line if there is one (the heading row is not a line) */
+  if(last && last.querySelector('input[data-k=code]')){ var any=false; last.querySelectorAll('input').forEach(function(x){ if(x.value.trim()) any=true; }); if(!any) blank=last; }
   if(!blank){ pcAddRow('pcFabT'); trs=tb.querySelectorAll('tr'); blank=trs[trs.length-1]; }
   var c=blank.querySelector('input[data-k=code]'); if(c) c.value=code;
   if(f && c) pcFabFill(c,true);
