@@ -1448,8 +1448,8 @@ function pcOpen(i){
   h+='<div class="pcsec"><h4>Production times &amp; cutting</h4><div class="in"><div class="pcrow" style="grid-template-columns:repeat(5,1fr)">'
     +'<div><div class="pclab">Machining mins/unit</div><input id="pcF_mach" type="number" step="0.1" value="'+pcE(s.machMins)+'"></div>'
     +'<div><div class="pclab">Finishing mins/unit</div><input id="pcF_fin" type="number" step="0.1" value="'+pcE(s.finMins)+'"></div>'
-    +'<div><div class="pclab">Cutting batch size</div><input id="pcF_batch" type="number" value="'+pcE(s.cutBatch)+'"></div>'
-    +'<div><div class="pclab">Cutting mins/batch</div><input id="pcF_cutmins" type="number" value="'+pcE(s.cutMins)+'"></div>'
+    +'<div><div class="pclab">Cutting batch size (garments cut together)</div><input id="pcF_batch" type="number" min="1" value="'+pcE(s.cutBatch)+'" oninput="pcCutNote()"></div>'
+    +'<div><div class="pclab">Cutting mins per batch</div><input id="pcF_cutmins" type="number" value="'+pcE(s.cutMins)+'" oninput="pcCutNote()"><div class="pcnote" id="pcCutNote" style="margin-top:4px">'+pcCutNoteText(s.cutMins, s.cutBatch)+'</div></div>'
     +'<div><div class="pclab">Sample qty</div><input id="pcF_sqty" type="number" min="1" value="'+pcE(s.sampleQty||1)+'"></div>'
     +'</div></div></div>';
 
@@ -1591,6 +1591,18 @@ function pcMeshToggle(){
   var c=document.getElementById('pcF_hasMesh'), r=document.getElementById('pcMeshFields');
   if(r) r.style.display=(c&&c.checked)?'grid':'none';
 }
+/* the cutting share spelled out under the two fields: 15 mins per batch of 24 is 0.63 mins a garment */
+function pcCutNoteText(cutMins, batch){
+  var m=pcNum(cutMins), b=pcNum(batch);
+  if(!(m>0)||!(b>0)) return 'Cutting time is per batch: the minutes to cut one lay, divided by the garments in it.';
+  var share=m/b;
+  return m+' mins ÷ '+b+' garment'+(b===1?'':'s')+' = <strong>'+share.toFixed(2)+' mins of cutting per garment</strong>'
+    +(b===1?' <span style="color:#c0392b;font-weight:700">— batch size 1 charges the whole '+m+' mins to every garment. Enter the number cut together in one lay.</span>':'');
+}
+function pcCutNote(){
+  var n=document.getElementById('pcCutNote'); if(!n) return;
+  n.innerHTML=pcCutNoteText((document.getElementById('pcF_cutmins')||{}).value, (document.getElementById('pcF_batch')||{}).value);
+}
 function pcConToggle(){
   var c=document.getElementById('pcF_hasCon'), r=document.getElementById('pcConFields'), n=document.getElementById('pcConNote');
   if(r) r.style.display=(c&&c.checked)?'grid':'none';
@@ -1710,10 +1722,14 @@ function pcToSR(){
 function pcCostCalc(s, rate, fabrics, ovhRate){
   var fab=0; (fabrics||s.fabrics).forEach(function(f){ fab+=pcNum(f.rating)*pcNum(f.cost); });
   var tr=0; s.trims.forEach(function(t){ tr+=(pcNum(t.qty)||1)*pcNum(t.cost); });
-  var mins=pcNum(s.machMins)+pcNum(s.finMins)+(pcNum(s.cutMins)/(pcNum(s.cutBatch)||35));
+  /* cutting is timed per batch (the garments cut together in one lay), so each unit carries its share:
+     15 mins per batch of 24 is 0.63 mins a garment. A batch of 1 puts the whole time on every garment. */
+  var mach=pcNum(s.machMins), fin=pcNum(s.finMins), cutMins=pcNum(s.cutMins), batch=pcNum(s.cutBatch)||35;
+  var cutShare=cutMins/batch, mins=mach+fin+cutShare;
   var orate=(ovhRate==null)?pcOvhRate():pcNum(ovhRate);
-  var lab=mins/60*rate, oh=mins/60*orate;
-  return {fab:fab, tr:tr, mins:mins, lab:lab, oh:oh, ovhRate:orate, total:fab+tr+lab+oh};
+  var lab=mins/60*rate, oh=mins/60*orate, total=fab+tr+lab+oh;
+  return {fab:fab, tr:tr, mins:mins, mach:mach, fin:fin, cutMins:cutMins, batch:batch, cutShare:cutShare,
+          lab:lab, oh:oh, ovhRate:orate, total:total, batchTotal:total*batch};
 }
 function pcCost(){
   if(PC_CUR<0) return;
@@ -1738,9 +1754,15 @@ function pcCost(){
         +'<td>\u00a3'+(pcNum(f.rating)*pcNum(f.cost)).toFixed(2)+'</td></tr>';
     });
     h+='<tr><td colspan="3">Trims ('+s.trims.length+' line'+(s.trims.length===1?'':'s')+')</td><td>\u00a3'+c.tr.toFixed(2)+'</td></tr>'
-      +'<tr><td colspan="3">Labour \u2014 '+c.mins.toFixed(2)+' mins/unit @ \u00a3'+rate.toFixed(2)+'/hr (mach + fin + cutting share)</td><td>\u00a3'+c.lab.toFixed(2)+'</td></tr>'
+      /* the minutes, one line each, so the cutting share is seen to be divided by the batch */
+      +'<tr><td colspan="3" style="color:var(--mut)">Machining \u2014 '+c.mach+' mins per unit</td><td></td></tr>'
+      +'<tr><td colspan="3" style="color:var(--mut)">Finishing \u2014 '+c.fin+' mins per unit</td><td></td></tr>'
+      +'<tr><td colspan="3" style="color:var(--mut)">Cutting \u2014 '+c.cutMins+' mins per batch \u00f7 '+c.batch+' garment'+(c.batch===1?'':'s')+' cut together = <strong>'+c.cutShare.toFixed(2)+' mins per unit</strong>'
+      +(c.batch===1&&c.cutMins>0?' <span style="color:#c0392b;font-weight:700">\u2014 batch size 1: the whole '+c.cutMins+' mins is charged to every garment. If more are cut together, set the batch size.</span>':'')+'</td><td></td></tr>'
+      +'<tr><td colspan="3">Labour \u2014 '+c.mins.toFixed(2)+' mins/unit @ \u00a3'+rate.toFixed(2)+'/hr (machining + finishing + cutting share)</td><td>\u00a3'+c.lab.toFixed(2)+'</td></tr>'
       +'<tr><td colspan="3">Production overhead \u2014 same '+c.mins.toFixed(2)+' mins @ \u00a3'+orate.toFixed(2)+'/hr</td><td>\u00a3'+c.oh.toFixed(2)+'</td></tr>'
-      +'<tr><td colspan="3" class="pctot">Cost per unit</td><td class="pctot">\u00a3'+c.total.toFixed(2)+'</td></tr>';
+      +'<tr><td colspan="3" class="pctot">Cost per unit</td><td class="pctot">\u00a3'+c.total.toFixed(2)+'</td></tr>'
+      +'<tr><td colspan="3">Cost per cutting batch \u2014 '+c.batch+' unit'+(c.batch===1?'':'s')+' \u00d7 \u00a3'+c.total.toFixed(2)+'</td><td style="font-weight:700">\u00a3'+c.batchTotal.toFixed(2)+'</td></tr>';
     if(Math.abs(c.total-base.total)>0.004)
       h+='<tr><td colspan="3">vs current fabrics (\u00a3'+base.total.toFixed(2)+')</td><td style="font-weight:800;color:'+(c.total>base.total?'#c0392b':'#1e7e46')+'">'+(c.total>base.total?'+':'')+'\u00a3'+(c.total-base.total).toFixed(2)+'</td></tr>';
     h+='</table></div>';
@@ -1941,7 +1963,7 @@ function pcPrint(prodQty){
         :(pcPos(s.weightG)?'<tr><th>Garment weight</th><td colspan="3">'+pcPos(s.weightG)+' g</td></tr>':''))
     +'</table>'
     +(pm?'<div class="band" style="background:#1F3864">STANDARD COST FOR SAGE \u2014 per unit</div><table class="cost">'
-      +'<tr><th style="width:26%">Minutes per unit</th><td><strong>'+cost.mins.toFixed(2)+'</strong> <span class="sub">machining '+(mach||0)+' + finishing '+(fin||0)+' + cutting share '+(cost.mins-mach-fin).toFixed(2)+'</span></td>'
+      +'<tr><th style="width:26%">Minutes per unit</th><td><strong>'+cost.mins.toFixed(2)+'</strong> <span class="sub">machining '+(mach||0)+' + finishing '+(fin||0)+' + cutting '+cost.cutMins+' mins ÷ batch of '+cost.batch+' = '+cost.cutShare.toFixed(2)+'</span></td>'
       +'<th style="width:26%">Rate per hour</th><td><strong>\u00a3'+(labRate+ovhRate).toFixed(2)+'</strong> <span class="sub">labour \u00a3'+labRate.toFixed(2)+' + production overhead \u00a3'+ovhRate.toFixed(2)+'</span></td></tr>'
       +'<tr><th>Labour</th><td>\u00a3'+cost.lab.toFixed(2)+' <span class="sub">'+cost.mins.toFixed(2)+' mins @ \u00a3'+labRate.toFixed(2)+'/hr</span></td>'
       +'<th>Production overhead</th><td>\u00a3'+cost.oh.toFixed(2)+' <span class="sub">'+cost.mins.toFixed(2)+' mins @ \u00a3'+ovhRate.toFixed(2)+'/hr</span></td></tr>'
@@ -2059,8 +2081,10 @@ function pcQuotePrint(){
     +(s.placeImg&&s.brandType!=='None'?'<tr><th>Logo placement photo</th><td><img src="'+s.placeImg+'" alt="logo placement photo" style="max-height:200px;max-width:300px"></td></tr>':'')+'</table>'
     +'<div class="band">PRICE</div><table>'
     +'<tr><th>Fabric &amp; trims</th><td>£'+(c.fab+c.tr).toFixed(2)+'</td></tr>'
-    +'<tr><th>Labour &amp; overhead</th><td>£'+(c.lab+c.oh).toFixed(2)+' &nbsp;<span style="font-weight:400;font-size:11px;color:#666">'+c.mins.toFixed(2)+' mins @ £'+(rate+orate).toFixed(2)+'/hr (labour £'+rate.toFixed(2)+' + overhead £'+orate.toFixed(2)+')</span></td></tr>'
+    +'<tr><th>Labour &amp; overhead</th><td>£'+(c.lab+c.oh).toFixed(2)+' &nbsp;<span style="font-weight:400;font-size:11px;color:#666">'+c.mins.toFixed(2)+' mins @ £'+(rate+orate).toFixed(2)+'/hr (labour £'+rate.toFixed(2)+' + overhead £'+orate.toFixed(2)+')'
+    +' — machining '+c.mach+' + finishing '+c.fin+' + cutting '+c.cutMins+' mins ÷ batch of '+c.batch+' = '+c.cutShare.toFixed(2)+'</span></td></tr>'
     +'<tr><th>Cost per unit</th><td style="font-weight:700;font-size:15px">£'+c.total.toFixed(2)+'</td></tr>'
+    +'<tr><th>Cost per cutting batch</th><td>£'+c.batchTotal.toFixed(2)+' &nbsp;<span style="font-weight:400;font-size:11px;color:#666">'+c.batch+' unit'+(c.batch===1?'':'s')+' cut together × £'+c.total.toFixed(2)+'</span></td></tr>'
     +(missingLab?'<tr><td colspan="2" style="color:#C00000;font-weight:700">Warning: machining/finishing time not set — labour is incomplete in this cost</td></tr>':'')
     +(showSell&&isEMB?'<tr><th>EMB embroidery charge</th><td>+ £'+PC_EMB_CHARGE.toFixed(2)+' per unit</td></tr>':'')
     +(showSell?'<tr class="tot"><td>Quoted price per unit (cost + '+mk+'%'+(isEMB?' + £'+PC_EMB_CHARGE.toFixed(2)+' EMB':'')+')</td><td>£'+sell.toFixed(2)+'</td></tr>':'')
