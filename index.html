@@ -796,7 +796,7 @@ function pcSizeRefresh(){
    (CJ0002M, OHLCJ000112, CO0001104), whose base is the special make code and whose tail is only the size. */
 var PC_SIZE_TOKS='XXXL|XXL|XXS|3XL|4XL|5XL|6XL|XS|XL|SS|MM|LL|S|M|L|1\\d\\d|\\d\\d|--';   /* a 3-digit size only for the MTC 100-140 range */
 function pcSmHasFamily(base){
-  var sm=PC_SM; if(!sm){ try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); sm=c&&c.styles; }catch(e){} }
+  var sm=PC_SM;
   var b=String(base||'').toUpperCase()+'--';
   return !!(sm||[]).some(function(st){ return String(st.code||'').toUpperCase().indexOf(b)===0; });
 }
@@ -820,7 +820,7 @@ function pcStockParts(code){
   var m=null;
   /* a family the Production plan app knows (CJ0193--01, OHCJMOXFORD--01) fixes where the base ends,
      so CJ019352115N splits as CJ0193 / 52 / 115 / N */
-  var sm=PC_SM; if(!sm){ try{ var cc=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); sm=cc&&cc.styles; }catch(e){} }
+  var sm=PC_SM;
   var best='', tail=new RegExp('^('+PC_SIZE_TOKS+')(\\d{2,3}|--)([A-Z]?)$');
   var anchor=function(b){ if(c.indexOf(b)===0 && b.length>best.length && tail.test(c.slice(b.length))) best=b; };
   (sm||[]).forEach(function(st){ var k=String(st.code||'').toUpperCase(), i=k.indexOf('--'); if(i>=5) anchor(k.slice(0,i)); });
@@ -1014,7 +1014,64 @@ function pcRefLabel(s){
   return base;
 }
 var PC=pcLoad();
-function pcSaveData(){ try{ localStorage.setItem('pcData',JSON.stringify(PC)); }catch(e){ alert('Could not save — browser storage full or blocked.'); } }
+/* ── where the records live ──
+   localStorage is capped (about 5 MB) for the whole luke5446.github.io site, which the
+   production planner and the stock planner share. Once the apps' data together passed
+   the cap every save here was refused, so the records also go to IndexedDB, which has
+   no such cap: both are written on every save, the newer copy is taken on load, and the
+   two big caches (the style master and the planner's works-order edits, about 1.4 MB
+   between them) live in IndexedDB only, to give the localStorage room back. */
+var PC_IDB='tibard_costing', PC_IDB_STORE='kv';
+function pcIdbOpen(cb){
+  try{
+    if(!window.indexedDB){ cb(null); return; }
+    var req=indexedDB.open(PC_IDB, 1);
+    req.onupgradeneeded=function(){ req.result.createObjectStore(PC_IDB_STORE); };
+    req.onsuccess=function(){ cb(req.result); };
+    req.onerror=function(){ cb(null); }; req.onblocked=function(){ cb(null); };
+  }catch(e){ cb(null); }
+}
+function pcIdbSet(key, json, cb){ cb=cb||function(){};
+  pcIdbOpen(function(db){ if(!db){ cb(false); return; }
+    try{ var tx=db.transaction(PC_IDB_STORE,'readwrite'); tx.objectStore(PC_IDB_STORE).put(json,key);
+         tx.oncomplete=function(){ cb(true); }; tx.onerror=function(){ cb(false); }; tx.onabort=function(){ cb(false); }; }
+    catch(e){ cb(false); } });
+}
+function pcIdbGet(key, cb){
+  pcIdbOpen(function(db){ if(!db){ cb(null); return; }
+    try{ var req=db.transaction(PC_IDB_STORE,'readonly').objectStore(PC_IDB_STORE).get(key);
+         req.onsuccess=function(){ cb(req.result||null); }; req.onerror=function(){ cb(null); }; }
+    catch(e){ cb(null); } });
+}
+function pcIdbDel(key){ pcIdbOpen(function(db){ if(!db) return; try{ db.transaction(PC_IDB_STORE,'readwrite').objectStore(PC_IDB_STORE).delete(key); }catch(e){} }); }
+var pcSaveTold=false;
+function pcSaveData(){
+  PC.savedAt=pcNow();
+  var json; try{ json=JSON.stringify(PC); }catch(e){ alert('Could not save — the records could not be serialised.'); return; }
+  var localOK=false;
+  try{ localStorage.setItem('pcData',json); localOK=true; }catch(e){ console.log('localStorage save failed:',e); }
+  pcIdbSet('pcData', json, function(ok){
+    if(ok || localOK) return;
+    if(pcSaveTold) return; pcSaveTold=true;
+    alert('This change could not be saved in the browser (localStorage and IndexedDB both refused).\n\nThe browser\'s storage for this site is full or blocked, so what you do here will be lost when the tab closes. Publish now to keep it, then tell Luke.');
+  });
+}
+/* At the start the localStorage copy is already in (it is synchronous); the IndexedDB
+   copy replaces it only when saved later - a save localStorage refused still reached
+   IndexedDB. An IndexedDB copy one save behind (its write is asynchronous, and a tab
+   closed the instant after a save aborts it) never undoes what localStorage kept. */
+function pcIdbLoad(cb){
+  var hadLocal=false; try{ hadLocal=!!localStorage.getItem('pcData'); }catch(e){}
+  pcIdbGet('pcData', function(json){
+    var d=null; try{ d=json?JSON.parse(json):null; }catch(e){ d=null; }
+    if(d && d.srs && (!hadLocal || (d.savedAt||'')>(PC.savedAt||''))){
+      PC=pcNormalize(d);
+      try{ localStorage.setItem('pcData',json); }catch(e){}
+      var pm=document.getElementById('pcMain'); if(pm && pm.style.display!=='none') pcRender();
+    }
+    cb();
+  });
+}
 function pcE(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function pcToday(){ return new Date().toISOString().slice(0,10); }
 function pcNow(){ return new Date().toISOString(); }
@@ -2143,7 +2200,13 @@ function pcViewRevision(ix){
    it is shown and printed for the product, and offered when copying an existing product into a new quote. */
 var PC_WO={styles:{},charts:{},at:'',live:false};
 function pcWoLoad(cb){
-  try{ var c=JSON.parse(localStorage.getItem('pcWoEdits')||'null'); if(c&&c.styles){ PC_WO.styles=c.styles; PC_WO.charts=c.charts||{}; PC_WO.at=c.savedAt||''; } }catch(e){}
+  try{ localStorage.removeItem('pcWoEdits'); }catch(e){}   /* the cache lived here once; the room goes back to the records */
+  pcIdbGet('pcWoEdits', function(json){
+    try{ var c=json?JSON.parse(json):null; if(c&&c.styles){ PC_WO.styles=c.styles; PC_WO.charts=c.charts||{}; PC_WO.at=c.savedAt||''; } }catch(e){}
+    pcWoFetch(cb);
+  });
+}
+function pcWoFetch(cb){
   if(typeof fetch!=='function'){ if(cb)cb(); return; }
   fetch('https://luke5446.github.io/Tibard-Productionplan/data.json?t='+Date.now())
     .then(function(r){ if(!r.ok) throw 0; return r.json(); })
@@ -2151,7 +2214,7 @@ function pcWoLoad(cb){
       if(!d||!d.styleEdits) throw 0;
       var st={}; Object.keys(d.styleEdits).forEach(function(k){ if(d.styleEdits[k]) st[String(k).toUpperCase()]=d.styleEdits[k]; });
       PC_WO.styles=st; PC_WO.charts=d.chartEdits||{}; PC_WO.at=pcToday(); PC_WO.live=true;
-      try{ localStorage.setItem('pcWoEdits',JSON.stringify({savedAt:PC_WO.at,styles:st,charts:PC_WO.charts})); }catch(e){}
+      pcIdbSet('pcWoEdits',JSON.stringify({savedAt:PC_WO.at,styles:st,charts:PC_WO.charts}));
       /* a product record open in the form shows the live works order */
       if(PC_CUR>=0 && PC.srs[PC_CUR] && PC.srs[PC_CUR].productCode) pcOpen(PC_CUR);
       if(cb)cb();
@@ -2184,14 +2247,22 @@ var PC_SM_LIVE=false, PC_SM_AT='', PC_SM_ERR=false;   // read from the live page
 function pcStyleMasterLoad(cb){
   /* The saved copy fills the list at once, but the live page is still read once per visit, so a
      stock style added to the Production plan app shows up here without anything being cleared. */
-  if(!PC_SM){ try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); if(c&&c.styles){ PC_SM=c.styles; PC_SM_AT=c.savedAt||''; } }catch(e){} }
+  if(PC_SM || PC_SM_LIVE){ pcStyleMasterFetch(cb); return; }
+  try{ localStorage.removeItem('pcStyleMaster'); }catch(e){}   /* the cache lived here once; the room goes back to the records */
+  pcIdbGet('pcStyleMaster', function(json){
+    try{ var c=json?JSON.parse(json):null; if(c&&c.styles && !PC_SM){ PC_SM=c.styles; PC_SM_AT=c.savedAt||''; } }catch(e){}
+    if(PC_SM && cb) cb();
+    pcStyleMasterFetch(cb);
+  });
+}
+function pcStyleMasterFetch(cb){
   if(PC_SM_LIVE){ cb(); return; }
   fetch('https://luke5446.github.io/Tibard-Productionplan/index.html?t='+Date.now(), {cache:'no-store'})
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(function(txt){
       var m=txt.match(/var STYLE_MASTER=(\{[\s\S]*?\});?\n/);
       if(m){ var d=JSON.parse(m[1]); PC_SM=d.styles||[]; PC_SM_LIVE=true; PC_SM_ERR=false; PC_SM_AT=pcToday();
-        try{ localStorage.setItem('pcStyleMaster',JSON.stringify({savedAt:pcToday(),styles:PC_SM})); }catch(e){}
+        pcIdbSet('pcStyleMaster',JSON.stringify({savedAt:pcToday(),styles:PC_SM}));
       } else { PC_SM_ERR=true; }
       cb();
     })
@@ -2244,7 +2315,6 @@ function pcCopyOpen(mode){
     dl.innerHTML=h;
     if(stat) stat.textContent=pcStyleMasterNote()+' \u00b7 '+PC.srs.length+' local quotes/SRs \u2014 all searchable below.';
   }
-  if(!PC_SM){ try{ var c=JSON.parse(localStorage.getItem('pcStyleMaster')||'null'); if(c&&c.styles) PC_SM=c.styles; }catch(e){} }
   fill();
   pcStyleMasterLoad(fill);
 }
@@ -2532,9 +2602,9 @@ function pcPublish(){
   PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender();
   alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\nThe name does not matter \u2014 if your browser saved it as \u201cpublished-data (2).json\u201d, upload it as it is. The app always reads the newest one.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
 }
-pcWoLoad();
+pcIdbLoad(function(){ pcWoLoad(); pcPubLoad(); });
 /* on every load, pull the published snapshot in (viewers take it as truth; editors only gain records they do not have) */
-(function(){
+function pcPubLoad(){
   if(typeof fetch!=='function') return;
   /* A browser saves a repeat download as "published-data (2).json" and GitHub
      keeps that name, so every numbered variant is looked for and the newest
@@ -2632,7 +2702,7 @@ pcWoLoad();
       if(pm && pm.style.display!=='none') pcRender();
     })
     .catch(function(){});
-})();
+}
 
 /* ── backup / restore ── */
 function pcBackup(){
