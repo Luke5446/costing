@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-09-30",
- "publishedTS": "2026-09-30T15:09:07.703Z",
+ "publishedAt": "2026-10-01",
+ "publishedTS": "2026-10-01T15:39:22.601Z",
  "qSeq": 15,
  "srSeq": 10,
  "prodSeq": {
@@ -90,9 +90,9 @@
      "value2": "30"
     }
    ],
-   "mfg": "Double turn side seam and hem and topstitch 12mm. Insert labels right side seam as worn 15cm down from top cut edge.\nDouble turn top of apron 1cm+5cm and topstitch at 5cm\nHem bellow pocket. Double turn 1cm + 3cm and stitch at 3cm\nUse marker for position of pocket.  Mark for centre and sides- top and bottom.\nPress 1cm all round pocket.\nFold pocket in half and crease centre line. Set centre crease line to centre mark on apron and twin needle down centre of pocket..\nTwin needle each side of pocket.\nSet lower edge of pocket.  Set pleat at each side of pocket and at centre- centre pleats fall to centre. Twin needle base of pocket.\nSet pocket hem of slant pocket.- double turn 1cm.\nSet pocket to right side of apron as worn.  Set 9cm up from finished hem and 9cm in from right side seam as worn.\nMake waist ties from non tangle ties.  Turn under end by 1cm to neaten and then fold over 10cm and stitch down to secure 2 rows 6mm apart.",
+   "mfg": "Double turn side seam and hem and topstitch 12mm. Insert labels right side seam as worn 15cm down from top cut edge.\nDouble turn top of apron 1cm+5cm and topstitch at 5cm\nHem bellow pocket. Double turn 1cm + 3cm and stitch at 3cm\nUse marker for position of pocket. Bottom of pocket to be 24cm up from finished hem and central to width of apron.  Mark for centre and sides- top and bottom\nPress 1cm all round pocket.\nFold pocket in half and crease centre line. Set centre crease line to centre mark on apron and twin needle down centre of pocket..\nTwin needle each side of pocket.\nSet lower edge of pocket.  Set pleat at each side of pocket and at centre- centre pleats fall to centre. Twin needle base of pocket.\nSet pocket hem of slant pocket.- double turn 1cm.\nSet pocket to right side of apron as worn.  Set 26cm up from finished hem and 9cm in from right side seam as worn.\nMake waist ties from non tangle ties.  Turn under end by 1cm to neaten and then fold over 10cm and stitch down to secure 2 rows 6mm apart.",
    "fin": "Set eyelets to top of waist apron. Set 1 each side. Set centre of eyelet 3cm in from side of waist apron and centrally within stitch line at top of apron.\nThread waist ties through eyelet. Set loop end through eyelet and thread tie through to secure.\nPress,check, trim and told.",
-   "machMins": "8",
+   "machMins": "10",
    "finMins": "5",
    "cutBatch": "24",
    "cutMins": 15,
@@ -125,7 +125,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-09-30T15:08:27.522Z",
+   "savedAt": "2026-10-01T15:37:41.962Z",
    "threadOwn": false,
    "weightG": "",
    "chgRef": "",
