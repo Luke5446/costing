@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T13:33:03.663Z",
+ "publishedTS": "2026-10-05T13:38:18.280Z",
  "qSeq": 16,
  "srSeq": 11,
  "prodSeq": {
@@ -162,8 +162,8 @@
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
-     "desc": "OLIVER HARVEY WASH CARE LABEL 100% cotton",
-     "qty": "0.1",
+     "desc": "OLIVER HARVEY WASH CARE LABEL 100% Organic cotton",
+     "qty": "1",
      "cost": "0.032"
     },
     {
@@ -248,7 +248,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-05T13:32:01.077Z",
+   "savedAt": "2026-10-05T13:36:17.355Z",
    "threadOwn": false,
    "weightG": "",
    "chgRef": "",
