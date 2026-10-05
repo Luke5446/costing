@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-10-01",
- "publishedTS": "2026-10-01T15:39:22.601Z",
+ "publishedAt": "2026-10-05",
+ "publishedTS": "2026-10-05T10:47:14.456Z",
  "qSeq": 15,
  "srSeq": 10,
  "prodSeq": {
@@ -145,7 +145,7 @@
    "garment": "Apron",
    "desc": "Black designer bib apron with webbing neck /waist strap.  Mitre fold to neaten edges.",
    "brandType": "EMB",
-   "brandPlace": "Set down side of apron T.B.C",
+   "brandPlace": "Sketch lettering.  Set down side of apron T.B.C",
    "fabrics": [
     {
      "code": "",
@@ -211,13 +211,13 @@
      "value2": ""
     }
    ],
-   "mfg": "Press 1 cm turn all round.\nSet mitres on all 4 corners.\nPress mitres and all round apron.\nFold under 1cm and stitch all round apron .  Set labels at top left side as worn.\nChange thread to colour of webbing. Double turn 1cm to neaten ends of webbing.\nChange thread to black on spool and top thread colour of webbing.  Set webbing tie to apron edge, Use marker. Mark webbing at 120cm and set at 42cm from RSAW edge. Set stitch line at 45degree at the end of the webbing.  End nearest centre of the bib top. Edge all round webbing onto apron.",
-   "fin": "Press, check trim and fold.\nSet into tissue and set product sticker.",
+   "mfg": "Press 1 cm turn all round.\nSet mitres on all 4 corners.\nPress mitres and all round apron.\nFold under 1cm and stitch all round apron .  Set labels at top left side as worn.\nChange thread to black on spool and top thread colour of webbing.  Set webbing tie to apron edge, Use marker. Mark webbing at 120cm and set at 42cm from RSAW edge. Set stitch line at 45degree at the end of the webbing.  End nearest centre of the bib top. Edge all round webbing onto apron.\nChange thread to colour of webbing top and spool. Double turn 1cm to neaten ends of webbing.",
+   "fin": "Set buttonhole  1\"blade. Set vertically. Set centrally within side stitching panel and centre of buttonhole 54cm from finished top edge right side as worn.\nPress, check trim and fold.\nSet into tissue and set product sticker.",
    "machMins": "15",
    "finMins": "3",
    "cutBatch": "2",
    "cutMins": 15,
-   "sampleQty": 2,
+   "sampleQty": 3,
    "markerMain": "SR1361",
    "markerMesh": "",
    "markerLen": "1.64",
@@ -235,9 +235,9 @@
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": true,
-   "quotePrintedAt": "2026-09-30",
-   "printed": false,
-   "printedAt": "",
+   "quotePrintedAt": "2026-10-05",
+   "printed": true,
+   "printedAt": "2026-10-05",
    "productCode": null,
    "convertedAt": "",
    "version": 1,
@@ -246,7 +246,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-09-30T12:19:54.360Z",
+   "savedAt": "2026-10-05T10:47:08.150Z",
    "threadOwn": true,
    "weightG": "",
    "srRaisedAt": "2026-09-30",
