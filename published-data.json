@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T14:20:59.938Z",
- "qSeq": 17,
+ "publishedTS": "2026-10-05T14:27:22.647Z",
+ "qSeq": 16,
  "srSeq": 11,
  "prodSeq": {
   "OHAPB": 2,
@@ -123,7 +123,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-05T14:18:29.635Z",
+   "savedAt": "2026-10-05T14:25:22.615Z",
    "threadOwn": false,
    "chgRef": "",
    "logoImg": "",
