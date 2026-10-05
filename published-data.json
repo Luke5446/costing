@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T11:50:41.958Z",
+ "publishedTS": "2026-10-05T13:01:54.958Z",
  "qSeq": 16,
  "srSeq": 10,
  "prodSeq": {
@@ -83,8 +83,8 @@
    "meas": [],
    "mfg": "Set darts to top of apron stitching 1mm past steck hole and then stitch for 1cm on edge. back tack to secure.\nDouble turn and topstitch 12mm all round apron. (side seam, top and bottom) insert labels right side seam as worn 1cm below eyelet re-inforcement piece.\nSet wide pocket hem. Set facing to top edge of pocket RS as worn - 1cm seam allowance. Snip at corners. Fold over and edgestitch along top edge.\nFold under 1cm of facing and edgstitch down.  Stitching to finish at 1.8cm from edge.\nSet pocket to apron.  Set base of pocket 12cm up from finished hem and centrally within width of apron.  Edgestitch in position.\nSet centre stitch tack to pocket hem stitch line. Set side pocket stitch divides at  14.2cm from side seam.  (Use marker)\nSet second row of stitching to hem stitch line for rivets.  1 at each side of slant pocket opening.  Total 4 rivets.\nChange thread. Set webbing to top of apron at side seam.  Set webbing 3cm over onto apron and with top edge of webbing level with top edge of apron.\nBox and cross stitch into position to width of strap by 3cm.\nDouble turn ends to neaten of webbing",
    "fin": "Set bartack vertical at side of pocket and horizontal at top of pocket. Total 1 bartacks per apron.\nSet eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nCheck,trim, press and fold.\nTissue in oliver harvey tissue .set description label bottom right hand corner.",
-   "machMins": "",
-   "finMins": "",
+   "machMins": "11.5",
+   "finMins": "4",
    "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 2,
@@ -117,7 +117,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-05T11:48:41.925Z",
+   "savedAt": "2026-10-05T13:00:00.216Z",
    "threadOwn": false,
    "chgRef": "",
    "logoImg": "",
