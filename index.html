@@ -720,6 +720,7 @@ initSettings(); render();
     <button class="btn btn-ghost2" id="pcNewProdBtn" onclick="pcNewProductOpen()" style="background:#e8ecf3;color:var(--navy);display:none">Additional size or fabric change for existing product</button>
     </div>
     <button class="btn btn-ghost2" id="pcPublishBtn" style="background:#d1fae5;color:#065f46;display:none">Publish for teams…</button>
+    <button class="btn btn-ghost2" id="pcTokenBtn" onclick="pcTokenSetup()" style="background:#e8ecf3;color:var(--navy);display:none;font-size:11px;padding:4px 10px" title="A GitHub token on this PC lets Publish write published-data.json straight to the costing repo — the Garment Technologist's PC, and whoever covers while they are away">&#9881; Set up this PC to publish</button>
     <button class="btn btn-ghost2" id="pcListsBtn" style="background:#e8ecf3;color:var(--navy);display:none">Trim &amp; fabric lists</button>
   </div>
   <div id="pcStats" class="pcstats"></div>
@@ -1161,10 +1162,59 @@ function pcToggleEditor(){
 function pcApplyMode(){
   var eb=document.getElementById('pcEditorBtn');
   if(eb) eb.textContent=PC_IS_EDITOR?'Editor \u2713 (log out)':'View only \u2014 log in';
-  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap','pcNewProdBtn'].forEach(function(id){
+  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap','pcNewProdBtn','pcTokenBtn'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=PC_IS_EDITOR?'':'none';
   });
   var rs=document.getElementById('pcRoleSel'); if(rs) rs.value=PC.role||'author';
+  pcTokenBtnRefresh();
+}
+
+/* ── publishing straight to GitHub ──
+   Publish used to download published-data.json for the GT to upload by hand. As the cutting log does in
+   the Production plan app, a fine-grained GitHub token that can write this one repo, kept in the browser
+   of the PC that publishes (the GT's, and Luke's when he covers), lets Publish put the file in the repo
+   itself through the contents API. Every publish is a commit; GitHub Pages serves it a minute or two later.
+   A PC without a token still gets the download. */
+var PC_REPO='Luke5446/costing', PC_PUB_FILE='published-data.json';
+var PC_PUB_API='https://api.github.com/repos/'+PC_REPO+'/contents/'+PC_PUB_FILE;
+function pcToken(){ try{ return localStorage.getItem('tibard_costing_token')||''; }catch(e){ return ''; } }
+function pcCanPush(){ return !!pcToken(); }
+function pcTokenSetup(){
+  if(!PC_IS_EDITOR) return;
+  var cur=pcToken();
+  var t=prompt((cur
+    ? 'This PC publishes straight to GitHub. Paste a new token to replace it, or clear the box to go back to downloading the file.'
+    : 'Paste the GitHub token for publishing (a fine-grained token that can write the '+PC_REPO+' repo and nothing else).\n\nGitHub → Settings → Developer settings → Fine-grained tokens → Generate: repository access "Only select repositories" → costing; Repository permissions → Contents: Read and write. Set an expiry and a reminder to renew it.\n\nWhoever covers for the Garment Technologist pastes it on their own PC too, and sets "This PC" to "Creates records here".'),
+    cur?'(kept)':'');
+  if(t===null) return;
+  t=t.trim();
+  try{ if(!t) localStorage.removeItem('tibard_costing_token'); else if(t!=='(kept)') localStorage.setItem('tibard_costing_token', t); }catch(e){ alert('Could not keep the token in this browser.'); }
+  pcTokenBtnRefresh(); pcPublishWarn();
+}
+function pcTokenBtnRefresh(){
+  var b=document.getElementById('pcTokenBtn'); if(!b) return;
+  b.innerHTML=pcCanPush()?'&#9881; Token':'&#9881; Set up this PC to publish';
+}
+function pcB64Enc(s){ return btoa(unescape(encodeURIComponent(s))); }
+/* Read the file's current sha, put the new copy with it. Another PC publishing in between makes GitHub
+   refuse the sha; then read it again and put once more. The file is read for its sha only (the object media
+   type, so a copy over 1 MB is still answered). */
+function pcPushPublish(txt, message, cb, attempt){
+  var tok=pcToken(); if(!tok){ cb(false,'no token'); return; }
+  attempt=attempt||1;
+  var hdr={'Authorization':'Bearer '+tok,'Accept':'application/vnd.github.object+json'};
+  fetch(PC_PUB_API+'?t='+Date.now(), {headers:hdr, cache:'no-store'})
+    .then(function(r){ if(r.status===404) return {empty:true}; if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused — expired, or not for this repo)':r.status===403?' (token cannot write this repo)':'')); return r.json(); })
+    .then(function(j){
+      var body={message:message, content:pcB64Enc(txt)}; if(!j.empty && j.sha) body.sha=j.sha;
+      return fetch(PC_PUB_API, {method:'PUT', headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'}, body:JSON.stringify(body)})
+        .then(function(r){
+          if((r.status===409 || r.status===422) && attempt<3){ pcPushPublish(txt, message, cb, attempt+1); return null; }
+          if(!r.ok) throw new Error('GitHub refused the publish ('+r.status+(r.status===401?', token refused':r.status===403?', token cannot write this repo':'')+')');
+          return r.json().then(function(res){ cb(true, '', (res&&res.content&&res.content.sha)||null); });
+        });
+    })
+    .catch(function(e){ cb(false, String(e.message||e)); });
 }
 
 /* ── board ── */
@@ -1183,12 +1233,13 @@ function pcTileToggle(which){ PC_TILE=(PC_TILE===which)?null:which; pcRender(); 
 function pcPublishWarn(){
   var b=document.getElementById('pcPublishBtn');
   if(!b || !PC_IS_EDITOR) return;
+  var how=pcCanPush()?' (straight to GitHub)':'';
   if(pcHasUnpublished()){
     b.style.background='#fee2e2'; b.style.color='#991b1b';
-    b.innerHTML='&#9888; Publish for teams\u2026 \u2014 changes NOT saved to the repo';
+    b.innerHTML='&#9888; Publish for teams'+how+'\u2026 \u2014 changes NOT saved to the repo';
   } else {
     b.style.background='#d1fae5'; b.style.color='#065f46';
-    b.textContent='Publish for teams\u2026';
+    b.textContent='Publish for teams'+how+'\u2026';
   }
 }
 window.addEventListener('beforeunload',function(e){
@@ -2695,11 +2746,32 @@ function pcPublish(){
            /* the pasted trim & fabric price lists travel too, so every PC and the Works Order Editor can pick from them */
            trimsList:PC.trimsList||[], fabricsList:PC.fabricsList||[]};
   var txt=JSON.stringify(out,null,1);
-  var a=document.createElement('a');
-  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
-  a.download='published-data.json'; a.click();
-  PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender();
-  alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\nThe name does not matter \u2014 if your browser saved it as \u201cpublished-data (2).json\u201d, upload it as it is. The app always reads the newest one.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
+  function markPublished(){ PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender(); }
+  function download(){
+    var a=document.createElement('a');
+    a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
+    a.download='published-data.json'; a.click();
+    markPublished();
+  }
+  if(pcCanPush()){
+    var b=document.getElementById('pcPublishBtn'), was=b?b.innerHTML:'';
+    if(b){ b.disabled=true; b.textContent='Publishing to GitHub\u2026'; }
+    var who=(PC.role==='follow')?'':' (creating PC)';
+    pcPushPublish(txt, 'Costing publish \u2014 '+out.srs.length+' records \u2014 '+pcToday()+who, function(ok, err){
+      if(b){ b.disabled=false; b.innerHTML=was; }
+      if(ok){
+        window.PC_PUB_LAST=out; window.PC_PUB_AT=out.publishedTS; markPublished(); if(typeof pcPubBanner==='function') pcPubBanner();
+        alert('Published \u2014 '+out.srs.length+' records written to the costing repo.\n\nEveryone sees it a minute or two from now (Ctrl+F5 if a page was already open). Nothing to upload.');
+      } else {
+        if(confirm('Could not publish straight to GitHub: '+err+'.\n\nDownload published-data.json to upload by hand instead?')){ download(); pcPublishDownloadNote(out); }
+      }
+    });
+    return;
+  }
+  download(); pcPublishDownloadNote(out);
+}
+function pcPublishDownloadNote(out){
+  alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\n(With a GitHub token on this PC \u2014 the \u2699 button beside Publish \u2014 Publish writes the file to the repo itself and this step goes away.)\n\nThe name does not matter \u2014 if your browser saved it as \u201cpublished-data (2).json\u201d, upload it as it is. The app always reads the newest one.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
 }
 pcIdbLoad(function(){ pcWoLoad(); pcPubLoad(); });
 /* on every load, pull the published snapshot in (viewers take it as truth; editors only gain records they do not have) */
