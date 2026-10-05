@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T10:47:14.456Z",
- "qSeq": 15,
+ "publishedTS": "2026-10-05T11:50:41.958Z",
+ "qSeq": 16,
  "srSeq": 10,
  "prodSeq": {
   "OHAPB": 2,
@@ -10,6 +10,123 @@
  },
  "chgSeq": 6,
  "srs": [
+  {
+   "quoteRef": "Q0016",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-10-05",
+   "due": "2026-10-05",
+   "customer": "Jalin Design",
+   "garment": "Apron",
+   "desc": "Olive Ladies Waist Apron with darts. Utility pocket - Wide pocket with stitch divides for slanted side pockets. Webbing ties cross box stitched down to secure.  Oliver Harvey Ladies Range ·",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC2083ECO",
+     "name": "OLIVE GREEN SUSTAINABLE 65/35 POLY/COTTON (X133 - AM298)",
+     "rating": "0.60",
+     "cost": "2.32",
+     "loc": "B4"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-05742-83",
+     "desc": "THREAD — COATS EPIC 80'S OLIVE 05742 — cost per metre",
+     "qty": "30",
+     "cost": "0.000714"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL 65% Recycle Polyester 35% Organic Cotton",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "",
+     "cost": "0.01678"
+    },
+    {
+     "code": "",
+     "desc": "ANTIQUE BRASS RIVETS- NIPPLE RIVETS X 4  NEW LACE - 011B/AB NIPPLE",
+     "qty": "4",
+     "cost": ""
+    },
+    {
+     "code": "",
+     "desc": "ANTIQUE BRASS RIVETS- NIPPLE RIVETS X 4  NEW LACE -   010B/7P PRONG",
+     "qty": "4",
+     "cost": ""
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.016",
+     "cost": "0.0129"
+    }
+   ],
+   "meas": [],
+   "mfg": "Set darts to top of apron stitching 1mm past steck hole and then stitch for 1cm on edge. back tack to secure.\nDouble turn and topstitch 12mm all round apron. (side seam, top and bottom) insert labels right side seam as worn 1cm below eyelet re-inforcement piece.\nSet wide pocket hem. Set facing to top edge of pocket RS as worn - 1cm seam allowance. Snip at corners. Fold over and edgestitch along top edge.\nFold under 1cm of facing and edgstitch down.  Stitching to finish at 1.8cm from edge.\nSet pocket to apron.  Set base of pocket 12cm up from finished hem and centrally within width of apron.  Edgestitch in position.\nSet centre stitch tack to pocket hem stitch line. Set side pocket stitch divides at  14.2cm from side seam.  (Use marker)\nSet second row of stitching to hem stitch line for rivets.  1 at each side of slant pocket opening.  Total 4 rivets.\nChange thread. Set webbing to top of apron at side seam.  Set webbing 3cm over onto apron and with top edge of webbing level with top edge of apron.\nBox and cross stitch into position to width of strap by 3cm.\nDouble turn ends to neaten of webbing",
+   "fin": "Set bartack vertical at side of pocket and horizontal at top of pocket. Total 1 bartacks per apron.\nSet eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nCheck,trim, press and fold.\nTissue in oliver harvey tissue .set description label bottom right hand corner.",
+   "machMins": "",
+   "finMins": "",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": "1",
+   "layQty": "",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "Ohapp0652 varient 0652ft",
+   "variant": "",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHAPP065283",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-10-05T11:48:41.925Z",
+   "threadOwn": false,
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": "",
+   "weightG": ""
+  },
   {
    "quoteRef": "Q0015",
    "ref": "",
