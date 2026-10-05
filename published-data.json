@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T13:47:14.029Z",
+ "publishedTS": "2026-10-05T14:15:56.952Z",
  "qSeq": 16,
  "srSeq": 11,
  "prodSeq": {
@@ -19,8 +19,8 @@
    "customer": "Jalin Design",
    "garment": "Apron",
    "desc": "Olive Ladies Waist Apron with darts. Utility pocket - Wide pocket with stitch divides for slanted side pockets. Webbing ties cross box stitched down to secure.  Oliver Harvey Ladies Range ·",
-   "brandType": "None",
-   "brandPlace": "",
+   "brandType": "EMB",
+   "brandPlace": "pocket",
    "fabrics": [
     {
      "code": "PC2083ECO",
@@ -123,7 +123,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-05T13:21:03.227Z",
+   "savedAt": "2026-10-05T14:13:56.914Z",
    "threadOwn": false,
    "chgRef": "",
    "logoImg": "",
