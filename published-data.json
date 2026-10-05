@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T13:25:20.274Z",
+ "publishedTS": "2026-10-05T13:33:03.663Z",
  "qSeq": 16,
  "srSeq": 11,
  "prodSeq": {
@@ -148,7 +148,7 @@
     {
      "code": "",
      "name": "TAN 100% SUSTAINABLE COTTON (X149 - col 21)",
-     "rating": "0.64",
+     "rating": "0.50",
      "cost": "4.4",
      "loc": "A4"
     }
@@ -222,7 +222,7 @@
    "sampleQty": 2,
    "markerMain": "1",
    "markerMesh": "",
-   "markerLen": "1",
+   "markerLen": "0.96",
    "layQty": "2",
    "hasMesh": false,
    "meshLen": "",
@@ -233,7 +233,7 @@
    "conLen": "",
    "conLay": "",
    "lectra": "SAMPLEWAISTAPRON",
-   "variant": "SR",
+   "variant": "SR0011",
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": true,
@@ -248,7 +248,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-05T13:23:20.082Z",
+   "savedAt": "2026-10-05T13:32:01.077Z",
    "threadOwn": false,
    "weightG": "",
    "chgRef": "",
