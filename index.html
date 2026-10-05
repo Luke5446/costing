@@ -913,7 +913,7 @@ function pcSetRole(v){
   PC.role=v; pcSaveData(); pcRender();
   alert(v==='follow'
     ? 'This PC now follows the published file.\n\nReload the page to pull in the latest published records.'
-    : 'This PC now creates records.\n\nIts own saves are kept, and reach everyone else when you publish.');
+    : 'This PC now creates records.\n\nIts own saves are kept, and reach everyone else when you publish'+(pcCanPush()?' — which happens by itself a couple of minutes after a save, or the instant you press the button.':'.'));
 }
 /* the PC that creates records keeps what it typed; the milestone the published
    copy reached (SR raised, product code, printed) is added to it */
@@ -1057,6 +1057,7 @@ function pcSaveData(){
   var json; try{ json=JSON.stringify(PC); }catch(e){ alert('Could not save — the records could not be serialised.'); return; }
   var localOK=false;
   try{ localStorage.setItem('pcData',json); localOK=true; }catch(e){ console.log('localStorage save failed:',e); }
+  if(typeof pcAutoSchedule==='function') pcAutoSchedule();   /* a token PC publishes this change by itself in a while */
   pcIdbSet('pcData', json, function(ok){
     if(ok || localOK) return;
     if(pcSaveTold) return; pcSaveTold=true;
@@ -1189,7 +1190,7 @@ function pcTokenSetup(){
   if(t===null) return;
   t=t.trim();
   try{ if(!t) localStorage.removeItem('tibard_costing_token'); else if(t!=='(kept)') localStorage.setItem('tibard_costing_token', t); }catch(e){ alert('Could not keep the token in this browser.'); }
-  pcTokenBtnRefresh(); pcPublishWarn();
+  pcTokenBtnRefresh(); if(typeof pcAutoSchedule==='function') pcAutoSchedule(); else pcPublishWarn();
 }
 function pcTokenBtnRefresh(){
   var b=document.getElementById('pcTokenBtn'); if(!b) return;
@@ -1233,14 +1234,22 @@ function pcTileToggle(which){ PC_TILE=(PC_TILE===which)?null:which; pcRender(); 
 function pcPublishWarn(){
   var b=document.getElementById('pcPublishBtn');
   if(!b || !PC_IS_EDITOR) return;
-  var how=pcCanPush()?' (straight to GitHub)':'';
-  if(pcHasUnpublished()){
-    b.style.background='#fee2e2'; b.style.color='#991b1b';
-    b.innerHTML='&#9888; Publish for teams'+how+'\u2026 \u2014 changes NOT saved to the repo';
-  } else {
-    b.style.background='#d1fae5'; b.style.color='#065f46';
-    b.textContent='Publish for teams'+how+'\u2026';
+  var unpub=pcHasUnpublished();
+  function set(bg,fg,html,title){ b.style.background=bg; b.style.color=fg; b.innerHTML=html; b.title=title||''; }
+  if(!pcCanPush()){
+    b.disabled=false;
+    if(unpub) set('#fee2e2','#991b1b','&#9888; Publish for teams\u2026 \u2014 changes NOT saved to the repo','Downloads published-data.json to upload to the costing repo.');
+    else set('#d1fae5','#065f46','Publish for teams\u2026','Downloads published-data.json to upload to the costing repo.');
+    return;
   }
+  if(typeof PC_PUBLISHING!=='undefined' && PC_PUBLISHING){ b.disabled=true; set('#e8ecf3','var(--navy)','Publishing to GitHub\u2026',''); return; }
+  b.disabled=false;
+  if(!unpub){ set('#d1fae5','#065f46','&#10003; All published'+(PC.pubAt?' \u2014 '+pcFmtD(PC.pubAt):'')+' \u00b7 publish now','Everything on this PC is in the published file. Press to publish again anyway.'); return; }
+  if(PC_AUTO_STATE==='failed'){ set('#fee2e2','#991b1b','&#9888; Publish failed \u2014 press to retry','GitHub refused the last publish: '+PC_AUTO_ERR); return; }
+  if(!pcAutoOn()){ set('#fee2e2','#991b1b','&#9888; Publish now \u2014 changes NOT published','This PC follows the published file, so it does not publish by itself. Press to publish.'); return; }
+  if(PC_AUTO_STATE==='needs-you'){ set('#fee2e2','#991b1b','&#9888; Publish now \u2014 needs your say-so','The published file has a record further on than this PC\u2019s copy. Press to see it and decide.'); return; }
+  var secs=PC_AUTO_AT?(PC_AUTO_AT-Date.now())/1000:0;
+  set('#fef3c7','#7a5b14','Publishing in '+pcMinSec(secs)+' \u2014 press to publish now','Changes publish themselves two minutes after the last save. Press to publish this instant, before shutting down say.');
 }
 window.addEventListener('beforeunload',function(e){
   if(PC_IS_EDITOR && pcHasUnpublished()){ e.preventDefault(); e.returnValue=''; }
@@ -2729,8 +2738,36 @@ function pcPublishRegressions(){
   });
   return out;
 }
-function pcPublish(){
-  if(!PC_IS_EDITOR) return;
+/* \u2500\u2500 automatic publishing \u2500\u2500
+   With a token on a PC that creates records, a change publishes itself: two minutes after the last save
+   (ten at the most if saves keep coming), and no oftener than once in five minutes, so a run of saves
+   becomes one commit and GitHub Pages - about ten builds an hour - keeps up. The button is still the way
+   to publish this instant, before shutting the PC down say, and it shows where things stand. The
+   automatic run never asks or alerts: when it would need a decision (this PC is behind on a published
+   record) it leaves the button red for a manual press. A PC set to follow never publishes by itself. */
+var PC_AUTO_DELAY=120000, PC_AUTO_GAP=300000, PC_AUTO_MAX=600000;
+var PC_AUTO_T=null, PC_AUTO_AT=0, PC_AUTO_LAST=0, PC_AUTO_FIRST=0, PC_AUTO_STATE='', PC_AUTO_ERR='', PC_PUBLISHING=false;
+function pcAutoOn(){ return PC_IS_EDITOR && pcCanPush() && (PC.role||'author')!=='follow'; }
+function pcAutoCancel(){ if(PC_AUTO_T) clearTimeout(PC_AUTO_T); PC_AUTO_T=null; PC_AUTO_AT=0; }
+function pcAutoSchedule(){
+  if(!pcAutoOn() || PC_PUBLISHING || !pcHasUnpublished()){ pcAutoCancel(); if(!PC_PUBLISHING){ PC_AUTO_FIRST=0; if(PC_AUTO_STATE==='needs-you') PC_AUTO_STATE=''; } pcPublishWarn(); return; }
+  var now=Date.now(); if(!PC_AUTO_FIRST) PC_AUTO_FIRST=now;
+  var at=Math.min(now+PC_AUTO_DELAY, PC_AUTO_FIRST+PC_AUTO_MAX);
+  at=Math.max(at, PC_AUTO_LAST+PC_AUTO_GAP, now+250);
+  pcAutoCancel(); PC_AUTO_AT=at; PC_AUTO_T=setTimeout(pcAutoFire, at-now);
+  if(PC_AUTO_STATE==='needs-you') PC_AUTO_STATE='';
+  pcPublishWarn();
+}
+function pcAutoFire(){
+  PC_AUTO_T=null; PC_AUTO_AT=0;
+  if(!pcAutoOn() || PC_PUBLISHING || !pcHasUnpublished()){ pcPublishWarn(); return; }
+  if(pcPublishRegressions().length){ PC_AUTO_STATE='needs-you'; pcPublishWarn(); return; }
+  pcPublishCore(true);
+}
+setInterval(function(){ if(PC_AUTO_T || PC_PUBLISHING) pcPublishWarn(); }, 10000);
+function pcMinSec(s){ s=Math.max(0,Math.round(s)); if(s<60) return s+' s'; var m=Math.floor(s/60), r=s%60; return m+' min'+(r?' '+r+' s':''); }
+function pcPublish(){   /* the button: publish this instant */
+  if(!PC_IS_EDITOR || PC_PUBLISHING) return;
   var regress=pcPublishRegressions();
   if(regress.length){
     var lines=regress.map(function(r){ return '\u2022 '+r.key+' \u2014 the published file has '+r.what+', this PC\u2019s copy does not'; }).join('\n');
@@ -2741,12 +2778,17 @@ function pcPublish(){
       pcSaveData(); pcRender();
     } else return;
   }
+  pcPublishCore(false);
+}
+function pcPublishCore(auto){
   var out={publishedAt:pcToday(), publishedTS:pcNow(), qSeq:PC.qSeq, srSeq:PC.srSeq, prodSeq:PC.prodSeq, chgSeq:PC.chgSeq||0,
            srs:PC.srs.filter(function(s){ return !s.draft; }),
            /* the pasted trim & fabric price lists travel too, so every PC and the Works Order Editor can pick from them */
            trimsList:PC.trimsList||[], fabricsList:PC.fabricsList||[]};
   var txt=JSON.stringify(out,null,1);
-  function markPublished(){ PC.pubHash=pcDataHash(); PC.pubAt=pcToday(); pcSaveData(); pcRender(); }
+  /* the hash of what is being published, taken now: a save made while the write is in flight stays unpublished */
+  var hashNow=pcDataHash();
+  function markPublished(){ PC.pubHash=hashNow; PC.pubAt=pcToday(); PC_AUTO_FIRST=0; pcSaveData(); pcRender(); }
   function download(){
     var a=document.createElement('a');
     a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);
@@ -2754,16 +2796,18 @@ function pcPublish(){
     markPublished();
   }
   if(pcCanPush()){
-    var b=document.getElementById('pcPublishBtn'), was=b?b.innerHTML:'';
-    if(b){ b.disabled=true; b.textContent='Publishing to GitHub\u2026'; }
+    PC_PUBLISHING=true; pcAutoCancel(); pcPublishWarn();
     var who=(PC.role==='follow')?'':' (creating PC)';
-    pcPushPublish(txt, 'Costing publish \u2014 '+out.srs.length+' records \u2014 '+pcToday()+who, function(ok, err){
-      if(b){ b.disabled=false; b.innerHTML=was; }
+    pcPushPublish(txt, 'Costing publish \u2014 '+out.srs.length+' records \u2014 '+pcToday()+who+(auto?' (automatic)':''), function(ok, err){
+      PC_PUBLISHING=false;
       if(ok){
+        PC_AUTO_LAST=Date.now(); PC_AUTO_STATE='ok'; PC_AUTO_ERR='';
         window.PC_PUB_LAST=out; window.PC_PUB_AT=out.publishedTS; markPublished(); if(typeof pcPubBanner==='function') pcPubBanner();
-        alert('Published \u2014 '+out.srs.length+' records written to the costing repo.\n\nEveryone sees it a minute or two from now (Ctrl+F5 if a page was already open). Nothing to upload.');
+        if(!auto) alert('Published \u2014 '+out.srs.length+' records written to the costing repo.\n\nEveryone sees it a minute or two from now (Ctrl+F5 if a page was already open). Nothing to upload.');
+        pcAutoSchedule();                     /* anything saved while the write was in flight goes next */
       } else {
-        if(confirm('Could not publish straight to GitHub: '+err+'.\n\nDownload published-data.json to upload by hand instead?')){ download(); pcPublishDownloadNote(out); }
+        PC_AUTO_STATE='failed'; PC_AUTO_ERR=err; pcPublishWarn();
+        if(!auto && confirm('Could not publish straight to GitHub: '+err+'.\n\nDownload published-data.json to upload by hand instead?')){ download(); pcPublishDownloadNote(out); }
       }
     });
     return;
