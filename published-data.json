@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T13:01:54.958Z",
+ "publishedTS": "2026-10-05T13:07:39.543Z",
  "qSeq": 16,
  "srSeq": 10,
  "prodSeq": {
@@ -52,20 +52,20 @@
     {
      "code": "TAXTABOH07/01",
      "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
-     "qty": "",
+     "qty": "1",
      "cost": "0.01678"
     },
     {
      "code": "",
      "desc": "ANTIQUE BRASS RIVETS- NIPPLE RIVETS X 4  NEW LACE - 011B/AB NIPPLE",
      "qty": "4",
-     "cost": ""
+     "cost": "0.01"
     },
     {
      "code": "",
      "desc": "ANTIQUE BRASS RIVETS- NIPPLE RIVETS X 4  NEW LACE -   010B/7P PRONG",
      "qty": "4",
-     "cost": ""
+     "cost": "0.015"
     },
     {
      "code": "PKG-OH-GPS-500X750-01",
@@ -90,8 +90,8 @@
    "sampleQty": 2,
    "markerMain": "1",
    "markerMesh": "",
-   "markerLen": "1",
-   "layQty": "",
+   "markerLen": "1.20",
+   "layQty": "2",
    "hasMesh": false,
    "meshLen": "",
    "meshLay": "",
@@ -104,8 +104,8 @@
    "variant": "",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-10-05",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -117,7 +117,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-05T13:00:00.216Z",
+   "savedAt": "2026-10-05T13:05:39.520Z",
    "threadOwn": false,
    "chgRef": "",
    "logoImg": "",
