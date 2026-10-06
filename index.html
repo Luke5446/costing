@@ -2574,6 +2574,8 @@ function pcCopyBuild(src, code){
     /* garment type from the code stem: OHCJ…, OHLCJ… (ladies), CICJ… (short sleeve) and plain CJ… are all chef jackets */
     var gm=/^(?:OH)?L?(?:CI)?([A-Z]{2})/.exec(code);
     PC_CATS.forEach(function(c){ if(gm&&gm[1]===c[0]) s.garment=c[1]; });
+    /* a costing-app product the buffer app has imported (COB000192) is still cut to its customer's sizes */
+    var own=pcOwnProduct(code); if(own){ s.mtc=!!own.mtc; if(own.garment) s.garment=own.garment; }
   } else {
     var o=src.st;
     ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
@@ -2597,23 +2599,47 @@ var PC_COLOURS=[['01','White'],['03','Black'],['04','Pink'],['05','Maroon'],['06
   ['24','Bottle green'],['45','Orange'],['55','Royal blue'],['56','Aqua'],['64','Storm grey'],['82','Brown'],['83','Olive'],['92','Eau de nil'],['93','Blade blue'],
   ['115','Lilac'],['120','Nasturtium'],['121','Lavender'],['131','Sand'],['153','Khaki'],['200','Dove grey'],['213','Hospital grey'],['248','Storm grey (248)'],['253','Surf blue'],
   ['267','Smoke grey'],['286','Silver grey'],['298','Orchid pink'],['315','Hot pink'],['362','Tibet yellow'],['384','Opal'],['397','Elephant grey'],['420','Zest green'],['682','Heather green'],['921','Rainbow']];
+/* the costing app's own record of a product code, if it made it */
+function pcOwnProduct(code){
+  var k=String(code||'').toUpperCase(), own=null;
+  PC.srs.forEach(function(x){ if(!own && x.productCode && String(x.productCode).toUpperCase()===k) own=x; });
+  return own;
+}
 function pcChgSrcInfo(src){
   var code=src.key, st=src.st||{};
   if(src.src==='wo'){
+    /* The picker lists the buffer app's copy first. For a product this app made (COB000192, an MTC special)
+       that copy does not know the customer, the special make base or that it is cut to MTC's sizes, so the
+       record here describes it; the works order content still comes from the live copy. */
+    var own=pcOwnProduct(code);
+    if(own) return pcChgSrcInfo({src:'pc', key:code, st:own});
     var gm=/^(?:OH)?L?(?:CI)?([A-Z]{2})/.exec(code), garment='';
     PC_CATS.forEach(function(c){ if(gm&&gm[1]===c[0]) garment=c[1]; });
-    return {code:code, family:'stock', garment:garment, isOH:/^OH/.test(code), ladies:/^OHL/.test(code), mtc:false, size:'', special:null};
+    return {code:code, family:'stock', garment:garment, isOH:/^OH/.test(code), ladies:/^OHL/.test(code), mtc:false, size:'', special:null, customer:''};
   }
   var fam=pcFamilyOf(st);
-  return {code:code, family:fam, garment:st.garment||'', isOH:!!st.isOH, ladies:!!st.ladies, mtc:!!st.mtc, size:st.size||'', special:fam==='special'?pcSpecialBase(st):null};
+  return {code:code, family:fam, garment:st.garment||'', isOH:!!st.isOH, ladies:!!st.ladies, mtc:!!st.mtc, size:st.size||'', special:fam==='special'?pcSpecialBase(st):null, customer:st.customer||'', own:true};
+}
+/* the sizes on offer for the change, each marked if its code already exists */
+function pcChgSizeOpts(info, code){
+  var special=info.family==='special', parts=special?null:pcStockParts(code);
+  var taken={}; PC.srs.forEach(function(x){ if(x.productCode) taken[String(x.productCode).toUpperCase()]=1; });
+  var opts='<option value="">— pick a size —</option>'; (pcSizeList(info)||[]).forEach(function(z){
+    var c=special?(info.special+pcSizeTok(z)).toUpperCase():(parts?(parts.base+pcSizeTok(z)+parts.colour+parts.len):''), ex=!!(c&&(taken[c]||pcSheetHas(c)));
+    opts+='<option value="'+pcE(z)+'"'+(ex?' disabled':'')+'>'+pcE(z)+(ex?' (already exists)':(z===info.size?' (current size)':''))+'</option>'; });
+  return opts;
+}
+/* MTC's own sizes, as on a quote: a Tibard coat cut for MTC runs 92 to 140 in 4 cm steps */
+function pcChgMtcToggle(inp){
+  if(!PC_CHG) return;
+  PC_CHG.info.mtc=!!inp.checked;
+  var sel=document.getElementById('pcChgSize'); if(sel) sel.innerHTML=pcChgSizeOpts(PC_CHG.info, PC_CHG.code);
 }
 function pcChgStep(src, code){
   var info=pcChgSrcInfo(src); PC_CHG={src:src, code:code, info:info};
   var special=info.family==='special', sized=!!pcSizeList(info), parts=special?null:pcStockParts(code);
-  var taken={}; PC.srs.forEach(function(x){ if(x.productCode) taken[String(x.productCode).toUpperCase()]=1; });
-  var opts=''; (pcSizeList(info)||[]).forEach(function(z){
-    var c=special?(info.special+pcSizeTok(z)).toUpperCase():(parts?(parts.base+pcSizeTok(z)+parts.colour+parts.len):''), ex=!!(c&&(taken[c]||pcSheetHas(c)));
-    opts+='<option value="'+pcE(z)+'"'+(ex?' disabled':'')+'>'+pcE(z)+(ex?' (already exists)':(z===info.size?' (current size)':''))+'</option>'; });
+  var opts=pcChgSizeOpts(info, code);
+  var mtcOK=(pcCatOf(info.garment)==='CO' && !info.isOH);
   var b=document.getElementById('pcMBody');
   b.innerHTML='<div class="pcsec"><h4>What is changing on '+pcE(code)+'?</h4><div class="in">'
     +'<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
@@ -2624,7 +2650,9 @@ function pcChgStep(src, code){
     +(special
       ? '<p class="pcnote" style="margin-top:8px">\u26a0 <strong>'+pcE(info.special)+'</strong> is a special make code. A different fabric would be a new special make \u2014 raise a quote for it instead. Only a size change is allowed here; the new code is '+pcE(info.special)+' plus the size.</p>'
       : '<p class="pcnote" style="margin-top:8px">'+pcE(code)+' is a stock style, so its fabric may change. The new code keeps the base <strong>'+pcE(pcProductBase(code))+'</strong>.</p>')
-    +'<div id="pcChgSizeWrap" style="display:none;margin-top:8px;max-width:260px"><div class="pclab">New size</div><select id="pcChgSize"><option value="">\u2014 pick a size \u2014</option>'+opts+'</select></div>'
+    +'<div id="pcChgSizeWrap" style="display:none;margin-top:8px;max-width:420px">'
+      +(mtcOK?'<label style="font-size:12px;font-weight:700;color:var(--mut);display:flex;gap:6px;align-items:flex-start;margin-bottom:6px"><input type="checkbox" id="pcChgMtc"'+(info.mtc?' checked':'')+' onchange="pcChgMtcToggle(this)"> MTC customer (their sizes 92 to 140 in 4 cm steps \u2014 e.g. CO000192, CO0001104)</label>':'')
+      +'<div class="pclab">New size</div><select id="pcChgSize" style="max-width:260px">'+opts+'</select></div>'
     +'<div id="pcChgColWrap" style="display:none;margin-top:8px;max-width:420px">'
       +'<div class="pclab">New main fabric (Sage code)</div><input id="pcChgFab" list="pcChgFabDL" placeholder="e.g. PC2015ECO" autocomplete="off" style="text-transform:uppercase" oninput="pcChgFabPick(this)">'
       +'<datalist id="pcChgFabDL">'+pcFabricOptions()+'</datalist><div id="pcChgFabName" class="pcnote"></div>'
@@ -2676,7 +2704,7 @@ function pcChgStart(){
   s.quoteRef=''; s.isProduct=true; s.status='production'; s.sampleQty='';
   s.family=info.family; s.editScope=scope; s.sourceCode=code; s.isOH=info.isOH; s.ladies=info.ladies; s.mtc=!!info.mtc;
   s.size=(scope==='fabric')?info.size:size;
-  if(src.src==='pc') s.customer=src.st.customer||'';
+  if(info.own) s.customer=info.customer||'';        /* a product this app made keeps its customer (MTC) */
   else if(!s.customer) s.customer='Stock';          /* a stock style is nobody's special */
   if(info.family==='special'){
     s.specialBase=info.special; s.baseCode=info.special; s.prodCodeDraft=info.special+tok;
