@@ -1686,6 +1686,7 @@ function pcOpen(i){
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
   if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Download for buffer app</button>';
+  if(PC_IS_EDITOR && s.sourceCode && !pcHasBrand(PC.srs[i]) && pcBrandSource(s.sourceCode).has) h+='<button class="btn" style="background:#fef3c7;color:#7a5b14" onclick="pcCarryBrand()" title="This was made from '+pcE(s.sourceCode)+', which carries branding and logos this record does not">Carry over logos from '+pcE(s.sourceCode)+'</button>';
   if(PC_IS_EDITOR && !s.isProduct && !s.draft) h+='<button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCopyQuote()" title="A new quote with everything copied, customer included - for the same customer in a different fabric. Both stay on file.">&#10697; Copy to new quote</button>';
   if(PC_IS_EDITOR && !s.isProduct && !s.productCode && !s.draft && !s.archived) h+='<button class="btn" style="background:#eef0f3;color:#44546A" onclick="pcArchive()" title="Never taken to an order: move it off the live tiles and keep it under Archived">&#128451; Archive</button>';
   if(PC_IS_EDITOR && s.draft) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
@@ -2644,6 +2645,30 @@ var PC_COLOURS=[['01','White'],['03','Black'],['04','Pink'],['05','Maroon'],['06
   ['24','Bottle green'],['45','Orange'],['55','Royal blue'],['56','Aqua'],['64','Storm grey'],['82','Brown'],['83','Olive'],['92','Eau de nil'],['93','Blade blue'],
   ['115','Lilac'],['120','Nasturtium'],['121','Lavender'],['131','Sand'],['153','Khaki'],['200','Dove grey'],['213','Hospital grey'],['248','Storm grey (248)'],['253','Surf blue'],
   ['267','Smoke grey'],['286','Silver grey'],['298','Orchid pink'],['315','Hot pink'],['362','Tibet yellow'],['384','Opal'],['397','Elephant grey'],['420','Zest green'],['682','Heather green'],['921','Rainbow']];
+/* the branding a product carries - type, placement and the three images - from the costing app's own record
+   first, the buffer app's published copy otherwise. Buffer copies say "EMB", "Embroidery" or nothing. */
+function pcHasBrand(s){ return !!s && ((s.brandType && s.brandType!=='None') || !!s.logoImg || !!s.logo2Img || !!s.placeImg); }
+function pcBrandSource(code){
+  var k=String(code||'').toUpperCase(), own=pcOwnProduct(k), wo=(typeof PC_WO!=='undefined'&&PC_WO.styles)?PC_WO.styles[k]:null;
+  var pick=function(f){ return (own&&own[f])||(wo&&wo[f])||''; };
+  var bt=(own&&own.brandType&&own.brandType!=='None')?own.brandType:String((wo&&wo.brandType)||'');
+  bt=/emb/i.test(bt)?'EMB':/dtf/i.test(bt)?'DTF':(bt&&bt!=='None'?bt:'None');
+  var b={brandType:bt, brandPlace:pick('brandPlace'), logoImg:pick('logoImg'), logo2Img:pick('logo2Img'), placeImg:pick('placeImg')};
+  b.has=pcHasBrand(b); b.n=(b.logoImg?1:0)+(b.logo2Img?1:0)+(b.placeImg?1:0);
+  return b;
+}
+function pcBrandText(b){ return (b.brandType!=='None'?b.brandType:'branding')+(b.brandPlace?' \u00b7 '+b.brandPlace.slice(0,60):'')+(b.n?' \u00b7 '+b.n+' image'+(b.n===1?'':'s'):''); }
+function pcApplyBrand(s,b){ if(b.brandType&&b.brandType!=='None') s.brandType=b.brandType; else if(b.n) s.brandType=s.brandType&&s.brandType!=='None'?s.brandType:'EMB';
+  s.brandPlace=b.brandPlace||s.brandPlace||''; s.logoImg=b.logoImg||''; s.logo2Img=b.logo2Img||''; s.placeImg=b.placeImg||''; }
+/* a product made by a size / fabric change before the branding was carried over (COB0001124 from COB000192):
+   its source's branding can still be copied onto it. The works order goes to the buffer app again after. */
+function pcCarryBrand(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s=PC.srs[PC_CUR]; if(!s.sourceCode) return;
+  var b=pcBrandSource(s.sourceCode); if(!b.has) return;
+  if(!confirm('Copy the branding and logos from '+s.sourceCode+' onto '+(s.productCode||pcRefLabel(s))+'?\n\n'+pcBrandText(b)+'\n\nAfterwards press "Download for buffer app" again so the buffer app\'s works order has them.')) return;
+  pcApplyBrand(s,b); s.savedAt=pcNow(); pcSaveData(); pcOpen(PC_CUR); pcRender();
+}
 /* the costing app's own record of a product code, if it made it */
 function pcOwnProduct(code){
   var k=String(code||'').toUpperCase(), own=null;
@@ -2685,6 +2710,7 @@ function pcChgStep(src, code){
   var special=info.family==='special', sized=!!pcSizeList(info), parts=special?null:pcStockParts(code);
   var opts=pcChgSizeOpts(info, code);
   var mtcOK=(pcCatOf(info.garment)==='CO' && !info.isOH);
+  var brand=pcBrandSource(code); PC_CHG.brand=brand;
   var b=document.getElementById('pcMBody');
   b.innerHTML='<div class="pcsec"><h4>What is changing on '+pcE(code)+'?</h4><div class="in">'
     +'<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
@@ -2706,6 +2732,7 @@ function pcChgStep(src, code){
       +'<datalist id="pcColDL">'+PC_COLOURS.map(function(c){ return '<option value="'+c[0]+'">'+pcE(c[1])+'</option>'; }).join('')+'</datalist>'
       +'<p class="pcnote">'+pcE(code)+' ends in <strong>'+pcE(pcColourOf(code)||'\u2014')+'</strong>. The colour code is usually the last two digits of the fabric code (PC2015ECO \u2192 15, CO5364ECO \u2192 64), so it is filled in from the fabric you pick \u2014 change it if the code differs. '
         +(parts?'The new code replaces the colour part: <strong>'+pcE(parts.base+parts.size)+'</strong> + colour'+(parts.len?' + '+pcE(parts.len):''):'The new code keeps the base and takes this colour')+'.</p></div>'
+    +(brand.has?'<label style="display:flex;gap:6px;align-items:flex-start;margin-top:12px;font-size:13px"><input type="checkbox" id="pcChgBrand" checked> <span><strong>Carry over the branding and logos</strong> from '+pcE(code)+' \u2014 '+pcE(pcBrandText(brand))+'</span></label>':'')
     +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" onclick="pcChgStart()">Start</button><button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCopyOpen(\'product\')">Back</button></div>'
     +'</div></div>';
 }
@@ -2764,6 +2791,9 @@ function pcChgStart(){
       s.prodCodeDraft=(scope==='size')?code+tok:((base===code)?code:base+'--'+col);
     }
   }
+  /* the source's branding and logos, when ticked */
+  var bt=document.getElementById('pcChgBrand');
+  if(PC_CHG.brand && PC_CHG.brand.has && bt && bt.checked) pcApplyBrand(s, PC_CHG.brand);
   /* the new main fabric picked up front replaces the first fabric line; the rating stays */
   if(fab){
     var lk=pcFabricLookup(fab), f0=s.fabrics[0]||{name:'',code:'',loc:'',rating:'',cost:''};
