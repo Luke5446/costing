@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T13:28:51.522Z",
- "qSeq": 17,
+ "publishedTS": "2026-10-06T13:42:03.798Z",
+ "qSeq": 18,
  "srSeq": 11,
  "prodSeq": {
   "OHAPB": 2,
@@ -9,7 +9,7 @@
   "CJB": 1,
   "COB": 1
  },
- "chgSeq": 7,
+ "chgSeq": 8,
  "srs": [
   {
    "quoteRef": "",
@@ -132,7 +132,12 @@
    "baseCode": "COB0001",
    "prodCodeDraft": "COB0001124",
    "chgRef": "C0007",
-   "weightG": ""
+   "weightG": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0016",
