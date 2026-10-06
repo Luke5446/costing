@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T13:51:36.516Z",
+ "publishedTS": "2026-10-06T13:57:11.312Z",
  "qSeq": 18,
  "srSeq": 11,
  "prodSeq": {
@@ -119,8 +119,8 @@
    "variant": "JH to set up",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-10-06",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -132,7 +132,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-06T13:49:19.506Z",
+   "savedAt": "2026-10-06T13:55:11.278Z",
    "threadOwn": false,
    "weightG": ""
   },
@@ -3592,7 +3592,7 @@
    "version": 1,
    "history": [],
    "isOH": true,
-   "savedAt": "2026-10-06T13:49:35.831Z",
+   "savedAt": "2026-10-06T13:54:15.835Z",
    "weightG": "",
    "logoImg": "",
    "placeImg": "",
