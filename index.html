@@ -761,6 +761,59 @@ var PC_SIZES={
   TB_JKT: ['XXS','XS','S','M','L','XL'].concat(pcRange(52,66)),
   TB_TR: ['XS','S','M','L','XL','XXL'].concat(pcRange(46,66))
 };
+/* DPD commodity codes, from Commodity_Codes.xlsx (Oct 2026). IT need one to set a product up for shipping. */
+var PC_COMMODITY=[["Poly Cotton Bib Aprons","6211 43 1000"],["Poly Cotton Waist Aprons","6211 43 1000"],["Cotton Bib Aprons","6211 42 1000"],["Cotton Waist Aprons","6211 42 1000"],
+  ["Poly Cotton Jackets","6203 33 1000"],["Cotton Jackets","6106 10 0000"],["Poly Cotton Trousers","6203 43 1100"],["T Shirts","6109 10 0010"],["Gingham Trousers","6203 43 1100"],
+  ["Body Warmer","6202 93 0000"],["Chinos","6203 42 3500"],["Cardigan","6101 90 2090"],["Blouse","6203 30 0090"],["Shirts","6205 20 0090"],["Belt","3926 20 0000"],
+  ["Jumpers","6110 30 9100"],["Scrub Tops/Trs","6211 32 1000"],["Shoes","6405 20 9100"],["Face Masks","6307 90 9000"],["Filter Packs","6307 90 9000"],["Skull Caps","6505 00 9000"],
+  ["Table Linen","6302 59 9090"],["Scrub top in polyester","6211 33 1000"],["OHTAB","5806 32 1000"],["OHTAB in leather","4203 4000 10"],["OHSTRAP in leather","4203 4000 00"],
+  ["OHSTRAP","6307 90 98 90"],["OHSTRANECKADJ/LC","4203 40 00 10"]];
+function pcCommNames(code){ var k=String(code||'').replace(/\s+/g,''); return PC_COMMODITY.filter(function(c){ return c[1].replace(/\s+/g,'')===k; }).map(function(c){ return c[0]; }); }
+/* the code the list gives for a record: its garment, its main fabric (PC… poly cotton, CO… cotton), bib or waist */
+function pcCommSuggest(s){
+  var code=String(s.productCode||s.prodCodeDraft||'').toUpperCase(), cat=pcCatOf(s.garment);
+  var f0=(s.fabrics||[])[0]||{}, fc=String(f0.code||'').toUpperCase(), fn=String(f0.name||'').toUpperCase();
+  var leather=/LEATHER|HIDE/.test(fn+' '+String(s.desc||'').toUpperCase());
+  var fibre=/^PC/.test(fc)||(/POLY/.test(fn)&&/COTTON/.test(fn))?'pc':(/^CO/.test(fc)||/COTTON/.test(fn))?'co':'';
+  var pick=function(name){ var c=PC_COMMODITY.filter(function(x){ return x[0]===name; })[0]; return c?{desc:c[0], code:c[1]}:null; };
+  if(/^OHSTRANECKADJ/.test(code)) return pick('OHSTRANECKADJ/LC');
+  if(/^OHSTRAP/.test(code)) return pick(leather?'OHSTRAP in leather':'OHSTRAP');
+  if(/^OHTAB/.test(code)) return pick(leather?'OHTAB in leather':'OHTAB');
+  var waist=/WAIST/.test(String(s.desc||'').toUpperCase()+' '+String(s.garment||'').toUpperCase());
+  if(cat==='AP') return fibre==='pc'?pick(waist?'Poly Cotton Waist Aprons':'Poly Cotton Bib Aprons'):fibre==='co'?pick(waist?'Cotton Waist Aprons':'Cotton Bib Aprons'):null;
+  if(cat==='CJ') return fibre==='pc'?pick('Poly Cotton Jackets'):fibre==='co'?pick('Cotton Jackets'):null;
+  if(cat==='CT') return fibre==='pc'||/GINGHAM/.test(fn)?pick(/GINGHAM/.test(fn)?'Gingham Trousers':'Poly Cotton Trousers'):null;
+  if(cat==='BL') return pick('Blouse');
+  if(cat==='SH') return pick('Shirts');
+  return null;
+}
+function pcCommNoteHTML(s){
+  var v=String(s.commodity||'').trim(), sug=pcCommSuggest(s);
+  if(v){ var n=pcCommNames(v); return n.length?pcE(n.join(' / ')):'<span style="color:#7a5b14">not on the DPD list \u2014 check it with IT</span>'; }
+  if(sug) return 'Suggested: <strong>'+pcE(sug.code)+'</strong> \u2014 '+pcE(sug.desc)+(PC_IS_EDITOR?' <button type="button" class="btn pcmini" style="background:#e8ecf3;color:var(--navy)" onclick="pcCommUse()">Use it</button>':'');
+  return 'Pick from the DPD list, or type the code IT give you.';
+}
+function pcCommSave(inp){
+  if(!PC_IS_EDITOR||PC_CUR<0) return;
+  var s=PC.srs[PC_CUR]; s.commodity=String(inp.value||'').replace(/\u00a0/g,' ').trim(); s.savedAt=pcNow(); pcSaveData();
+  var n=document.getElementById('pcCommNote'); if(n) n.innerHTML=pcCommNoteHTML(s);
+}
+function pcCommUse(){
+  if(!PC_IS_EDITOR||PC_CUR<0) return;
+  var s=PC.srs[PC_CUR]; if(!s.productCode) pcCollect(s);
+  var sug=pcCommSuggest(s), inp=document.getElementById('pcF_comm'); if(!sug||!inp) return;
+  inp.value=sug.code; pcCommSave(inp);
+}
+/* convert / create: a product needs a commodity code for IT; the suggestion is offered when there is none */
+function pcCommOK(s, verb){
+  if(String(s.commodity||'').trim()) return true;
+  var sug=pcCommSuggest(s);
+  if(sug){
+    if(!confirm('No commodity code has been entered \u2014 IT need one to set the product up for DPD shipping.\n\nSuggested from the garment and its main fabric:\n'+sug.code+' \u2014 '+sug.desc+'\n\nOK = use it and '+verb+'.   Cancel = go back and enter one.')) return false;
+    s.commodity=sug.code; var inp=document.getElementById('pcF_comm'); if(inp) inp.value=sug.code; return true;
+  }
+  return confirm('No commodity code has been entered, and nothing on the DPD list fits a '+(s.garment||'garment of this type')+'.\n\nIT need one to set the product up for shipping. '+verb.charAt(0).toUpperCase()+verb.slice(1)+' without it (it can be added afterwards, like the weight)?');
+}
 function pcCatOf(garment){ var g=String(garment||'').trim().toUpperCase(), c=null; PC_CATS.forEach(function(x){ if(x[1].toUpperCase()===g) c=x[0]; }); return c; }
 /* the size list for a record, or null when the garment is not sized (aprons). Garments other than
    trousers use the jacket range. */
@@ -1654,6 +1707,9 @@ function pcOpen(i){
     +'<div><div class="pclab">Lectra pattern (optional)</div><input id="pcF_lectra" value="'+pcE(s.lectra)+'"></div>'
     +'<div><div class="pclab">Variant (optional)</div><input id="pcF_variant" value="'+pcE(s.variant)+'"></div>'
     +'<div><div class="pclab">Garment weight in grams \u2014 after sample</div><input id="pcF_weightG" type="number" step="any" min="0" value="'+pcE(s.weightG)+'" placeholder="weigh the made sample" onchange="pcWeightSave(this)"></div>'
+    +'<div><div class="pclab">Commodity code (DPD \u2014 for IT)</div><input id="pcF_comm" list="pcCommDL" value="'+pcE(s.commodity||'')+'" placeholder="'+pcE((pcCommSuggest(s)||{}).code||'e.g. 6203 33 1000')+'" autocomplete="off" onchange="pcCommSave(this)">'
+      +'<datalist id="pcCommDL">'+PC_COMMODITY.map(function(c){ return '<option value="'+pcE(c[1])+'">'+pcE(c[0])+'</option>'; }).join('')+'</datalist>'
+      +'<div class="pcnote" id="pcCommNote" style="margin-top:4px">'+pcCommNoteHTML(s)+'</div></div>'
     +'</div>'+(layNote?'<p class="pcnote">'+layNote+'</p>':'')+'</div></div>';
 
   h+='<div class="pcsec"><h4>Measurements</h4><div class="in">'+pcRowsHTML('pcMeasT',PC_COLDEFS.pcMeasT,s.meas,'Add measurement')+'</div></div>';
@@ -1708,7 +1764,7 @@ function pcOpen(i){
   }
   if(ro){ b.querySelectorAll('input,select,textarea').forEach(function(el){ el.disabled=true; }); b.querySelectorAll('table button,.pctbl~button').forEach(function(el){ el.style.display='none'; }); b.querySelectorAll('td.pcdrag').forEach(function(el){ el.removeAttribute('draggable'); el.style.visibility='hidden'; });
     /* the weight arrives after the first production run, when the record is already locked - editors can still set it */
-    if(PC_IS_EDITOR && locked){ var wIn=document.getElementById('pcF_weightG'); if(wIn) wIn.disabled=false; }
+    if(PC_IS_EDITOR && locked){ var wIn=document.getElementById('pcF_weightG'); if(wIn) wIn.disabled=false; var cIn=document.getElementById('pcF_comm'); if(cIn) cIn.disabled=false; }
   }
 }
 
@@ -1756,6 +1812,7 @@ function pcCollect(s){
   s.lectra=document.getElementById('pcF_lectra').value.trim();
   s.variant=document.getElementById('pcF_variant').value.trim();
   s.weightG=document.getElementById('pcF_weightG').value.trim();
+  var cmI=document.getElementById('pcF_comm'); if(cmI) s.commodity=String(cmI.value||'').replace(/\u00a0/g,' ').trim();
   s.mfg=pcReadRows('pcMfgT').map(function(r){return (r.step||'').trim();}).filter(Boolean).join('\n');
   s.fin=pcReadRows('pcFinT').map(function(r){return (r.step||'').trim();}).filter(Boolean).join('\n');
   var qmk=document.getElementById('pcF_qmk').value;
@@ -1983,6 +2040,7 @@ function pcConvert(){
   if(missing.length){ alert('Cannot convert yet — '+missing.length+' trim line(s) have no Sage code:\n\n'+missing.map(function(t){return '• '+(t.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
   if(!pcTrimQtyOK(s,'convert')) return;
   if(!pcFabricCodesOK(s,'convert')) return;
+  if(!pcCommOK(s,'convert')) return;
   var tok=pcSizeTok(s.size);
   if(pcSizeList(s) && !s.size){ alert('Pick the size first \u2014 the product code carries it (e.g. CJ0002M), so one special make code can cover several sizes.'); return; }
   if(s.status!=='approved'){ if(!confirm(s.ref+' is not marked Approved. Convert anyway?')) return; }
@@ -2050,7 +2108,7 @@ function pcExport(){
     machMins:pcNum(s.machMins)||null, finMins:pcNum(s.finMins)||null,
     cutBatch:pcNum(s.cutBatch)||35, cutMins:pcNum(s.cutMins)||15,
     oneSize:!(pcSizeTok(s.size)||/--/.test(String(s.productCode||''))), size:s.size||'',
-    sr:s.ref, srVersion:s.version||1, customer:s.customer||'',
+    sr:s.ref, srVersion:s.version||1, customer:s.customer||'', commodity:String(s.commodity||'').trim(),
     threadOwn:!!s.threadOwn,   /* a thread figure that is this record's own, not the standard */
     /* the branding spec and artwork must reach the buffer works order */
     brandType:s.brandType||'None', brandPlace:s.brandPlace||'',
@@ -2134,6 +2192,7 @@ function pcPrint(prodQty){
     +(pm?'<tr><th>Works order last edited</th><td colspan="3">'+(s.woLive?e(pcFmtD(s.woEditedAt)||'\u2014')+' <span style="font-weight:400;font-size:12px">(Works Order Editor)</span>':e(pcFmtD(s.convertedAt||s.created))+' <span style="font-weight:400;font-size:12px">(as converted here)</span>')+'</td></tr>':'')
     +(s.quoteRef?'<tr><th>Quote ref</th><td colspan="3">'+e(s.quoteRef)+'</td></tr>':'')
     +(pm&&s.ref?'<tr><th>From sample</th><td colspan="3">'+e(s.ref)+((s.version||1)>1?' V'+s.version:'')+'</td></tr>':'')
+    +(pm?'<tr><th>Commodity code</th><td colspan="3">'+(String(s.commodity||'').trim()?'<strong>'+e(s.commodity)+'</strong>'+(pcCommNames(s.commodity).length?' <span style="font-weight:400;font-size:12px">('+e(pcCommNames(s.commodity).join(' / '))+')</span>':''):'<em style="color:#C00000">to be confirmed</em>')+'</td></tr>':'')
     +(pm?'<tr><th>Garment weight</th><td colspan="3">'+(pcPos(s.weightG)?'<strong>'+pcPos(s.weightG)+' g</strong>':'<em style="color:#C00000">to be confirmed \u2014 weigh after the first production run</em>')+'</td></tr>'
         :(pcPos(s.weightG)?'<tr><th>Garment weight</th><td colspan="3">'+pcPos(s.weightG)+' g</td></tr>':''))
     +'</table>'
@@ -2358,7 +2417,7 @@ function pcCopyQuote(){
   ['ref','srRaisedAt','convertedAt','sampleApprovedAt','printedAt','quotePrintedAt','due','chgRef','archived','archivedAt','archiveNote',
    'family','specialBase','editScope','sourceCode','baseCode','prodCodeDraft','woEditedAt','woLive'].forEach(function(k){ delete s[k]; });
   s.ref=''; s.productCode=null; s.isProduct=false; s.status='quote'; s.version=1; s.history=[];
-  s.printed=false; s.quotePrinted=false; s.weightG=''; s.due='';
+  s.printed=false; s.quotePrinted=false; s.weightG=''; s.due=''; delete s.commodity;   /* another fabric may be another code */
   s.quoteRef='Q'+String(PC.qSeq+1).padStart(4,'0'); PC.qSeq++;
   s.created=pcToday(); s.copiedFromQuote=from; s.draft=true; s.savedAt=pcNow();
   PC.srs.unshift(s); pcSaveData(); pcRender(); pcOpen(0);
@@ -2826,7 +2885,8 @@ function pcCreateProduct(){
   if(noCode.length){ alert('Cannot create yet \u2014 '+noCode.length+' trim line(s) have no Sage code:\n\n'+noCode.map(function(tr){return '\u2022 '+(tr.desc||'(no description)');}).join('\n')+'\n\nAdd proper trim codes first.'); return; }
   if(!pcTrimQtyOK(s,'create')) return;
   if(scope1!=='size' && !pcFabricCodesOK(s,'create')) return;
-  if(!confirm('Create product '+code+'?\n\nIt is then locked like a converted sample: printable for IT and downloadable for the buffer app. Only the garment weight stays editable.')) return;
+  if(!pcCommOK(s,'create')) return;
+  if(!confirm('Create product '+code+'?\n\nIt is then locked like a converted sample: printable for IT and downloadable for the buffer app. Only the garment weight and commodity code stay editable.')) return;
   delete s.draft;
   s.productCode=code; s.status='production'; s.convertedAt=pcToday(); s.savedAt=pcNow();
   pcSaveData(); pcOpen(PC_CUR); pcRender();
