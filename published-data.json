@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T14:14:48.526Z",
+ "publishedTS": "2026-10-06T14:23:27.523Z",
  "qSeq": 18,
  "srSeq": 11,
  "prodSeq": {
@@ -26,7 +26,7 @@
     {
      "code": "PC999K382",
      "name": "BROWN 67/33 POLY/COTTON 300GM (ART 2886 VT / 99K3)",
-     "rating": "0.70",
+     "rating": "0.75",
      "cost": "5.5345",
      "loc": ""
     }
@@ -132,7 +132,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-06T14:02:38.276Z",
+   "savedAt": "2026-10-06T14:17:56.730Z",
    "threadOwn": false,
    "weightG": "",
    "chgRef": "",
@@ -3500,7 +3500,7 @@
     {
      "code": "PC90682",
      "name": "Art 2860/97KS finish VT/SK heather green 300 gsm 55% cotton 45% polyester (Utexbel)",
-     "rating": "0.70",
+     "rating": "0.75",
      "cost": "5.3651",
      "loc": "B6"
     }
@@ -3598,7 +3598,7 @@
    "version": 1,
    "history": [],
    "isOH": true,
-   "savedAt": "2026-10-06T13:54:15.835Z",
+   "savedAt": "2026-10-06T14:17:16.462Z",
    "weightG": "",
    "logoImg": "",
    "placeImg": "",
