@@ -167,6 +167,7 @@ var VIEW_HASH='8d85b774c2817ee8a138f1b3f9d65429a827d2192e62bab7d85ffc99dad96242'
   <div class="pcnav"><button class="btn on" id="navCostBtn" onclick="pcShow('cost')">Costing</button><button class="btn" id="navOHBtn" onclick="pcShow('oh')">OH Costing</button><button class="btn" id="navPCBtn" onclick="pcShow('pc')">New costing</button><button class="btn" id="pcEditorBtn" onclick="pcToggleEditor()" style="background:rgba(201,162,75,.25)">View only — log in</button></div><button class="btn btn-ghost" id="setBtn">Settings</button>
   <div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">
     <button class="btn btn-ghost" id="pcRestoreBtn" style="display:none;font-size:11px;padding:4px 12px">Restore</button>
+    <button class="btn btn-ghost" id="pcReplacedBtn" onclick="pcReplacedOpen()" style="display:none;font-size:11px;padding:4px 12px" title="Copies of records this PC held that a published copy replaced — bring one back if the published copy was the older one">Replaced copies</button>
     <button class="btn" id="pcResetBtn" style="background:#fee2e2;color:#991b1b;display:none;font-size:11px;padding:4px 12px">Reset all</button>
   </div>
 </header>
@@ -948,8 +949,51 @@ function pcKeepReplaced(s){
     delete copy.logoImg; delete copy.logo2Img; delete copy.placeImg;      /* images can be hundreds of KB - not worth the storage */
     PC.replaced=PC.replaced||[];
     PC.replaced.unshift({at:pcNow(), rec:copy});
-    if(PC.replaced.length>10) PC.replaced.length=10;
+    if(PC.replaced.length>25) PC.replaced.length=25;
   }catch(e){}
+}
+/* The copies a published file replaced on this PC, newest first, with a way back: when the published
+   copy turns out to be the older one (a V1 over this PC's V2), the copy here is put back as the record
+   and the one it displaces is kept in its place on the list. Images are not kept with a replaced copy,
+   so the current record's images stay with it. */
+function pcReplacedOpen(){
+  if(!PC_IS_EDITOR) return;
+  var list=PC.replaced||[];
+  document.getElementById('pcMTitle').textContent='Replaced copies'; pcMDelShow(false);
+  var h='<div class="pcsec"><h4>Records a published file replaced on this PC</h4><div class="in">';
+  if(!list.length) h+='<p class="pcnote">Nothing has been replaced on this PC.</p>';
+  else {
+    h+='<p class="pcnote">Newest first. Each is the copy this PC held just before a published copy took its place. If the published copy was the older one, bring this one back.</p><table class="pctbl"><tr><th>Replaced</th><th>Record</th><th>Version</th><th>Status</th><th>Last saved</th><th></th></tr>';
+    list.forEach(function(r,i){
+      var s=r.rec||{}; var ix=-1; for(var j=0;j<PC.srs.length;j++){ if(pcKey(PC.srs[j])===pcKey(s)){ ix=j; break; } }
+      var cur=ix>=0?PC.srs[ix]:null;
+      h+='<tr><td>'+pcE(pcFmtTS(r.at))+'</td><td><strong>'+pcE(pcRefLabel(s))+'</strong>'+(s.productCode?' / '+pcE(s.productCode):'')+'<br><span style="color:var(--mut)">'+pcE(s.customer||'')+' · '+pcE(s.garment||'')+'</span></td>'
+        +'<td>V'+(s.version||1)+(cur?' <span style="color:var(--mut)">(now V'+(cur.version||1)+')</span>':' <span style="color:#c0392b">(no longer here)</span>')+'</td>'
+        +'<td>'+pcE(PC_STATUS[s.status]||s.status||'')+'</td><td>'+pcE(pcFmtTS(s.savedAt))+'</td>'
+        +'<td><button class="btn pcmini" style="background:#e8ecf3;color:var(--navy)" onclick="pcReplacedRestore('+i+')">Bring back</button></td></tr>';
+    });
+    h+='</table>';
+  }
+  h+='</div></div>';
+  document.getElementById('pcMBody').innerHTML=h;
+  document.getElementById('pcOv').classList.add('on'); PC_CUR=-1;
+}
+function pcReplacedRestore(i){
+  if(!PC_IS_EDITOR) return;
+  var r=(PC.replaced||[])[i]; if(!r||!r.rec) return;
+  var s=JSON.parse(JSON.stringify(r.rec)), key=pcKey(s);
+  var ix=-1; for(var j=0;j<PC.srs.length;j++){ if(pcKey(PC.srs[j])===key){ ix=j; break; } }
+  var cur=ix>=0?PC.srs[ix]:null;
+  if(!confirm('Bring back '+pcRefLabel(s)+' as it was on '+pcFmtTS(r.at)+' (V'+(s.version||1)+', '+(PC_STATUS[s.status]||s.status)+')?'
+    +(cur?'\n\nThe copy here now (V'+(cur.version||1)+', saved '+pcFmtTS(cur.savedAt)+') moves onto this list in its place.':'\n\nIt is not in the records at the moment, so it is added back.')
+    +'\n\nIt is then this PC’s copy and publishes like any other change.')) return;
+  if(cur){
+    ['logoImg','logo2Img','placeImg'].forEach(function(k){ if(!s[k] && cur[k]) s[k]=cur[k]; });
+    s.savedAt=pcNow();                                 /* a fresh stamp: it is the copy this PC stands by */
+    pcKeepReplaced(cur); PC.replaced.splice(PC.replaced.indexOf(r)>=0?PC.replaced.indexOf(r):i+1,1);
+    PC.srs[ix]=s;
+  } else { s.savedAt=pcNow(); PC.replaced.splice(i,1); PC.srs.unshift(s); ix=0; }
+  pcNormalize(PC); pcSaveData(); pcApplyMode(); pcRender(); pcOpen(ix);
 }
 /* key-order-independent serialisation, so two copies of the same record compare equal */
 function pcCanon(o){
@@ -1099,7 +1143,7 @@ function pcPubBanner(){
     el.textContent='Team data published '+pcFmtTS(window.PC_PUB_AT)
       +(r?'  \u00b7  '+r+' record'+(r===1?'':'s')+' updated from it':'')
       +(n?'  \u00b7  \u26a0 '+n+' record'+(n===1?'':'s')+' newer on this PC \u2014 publish to share':'')
-      +((window.PC_PUB_BEHIND||0)?'  \u00b7  \u26a0 the published file is behind this PC on '+window.PC_PUB_BEHIND+' record'+(window.PC_PUB_BEHIND===1?'':'s')+' (product code or SR missing there) \u2014 publish to restore':'');
+      +((window.PC_PUB_BEHIND||0)?'  \u00b7  \u26a0 the published file is behind this PC on '+window.PC_PUB_BEHIND+' record'+(window.PC_PUB_BEHIND===1?'':'s')+' (product code, SR or a later version missing there) \u2014 publish to restore':'');
     el.style.display='';
   }
   else el.style.display='none';
@@ -1163,9 +1207,10 @@ function pcToggleEditor(){
 function pcApplyMode(){
   var eb=document.getElementById('pcEditorBtn');
   if(eb) eb.textContent=PC_IS_EDITOR?'Editor \u2713 (log out)':'View only \u2014 log in';
-  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap','pcNewProdBtn','pcTokenBtn'].forEach(function(id){
+  ['pcNewBtn','pcCopyBtn','pcPublishBtn','pcRestoreBtn','pcListsBtn','pcResetBtn','pcRoleWrap','pcNewProdBtn','pcTokenBtn','pcReplacedBtn'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display=PC_IS_EDITOR?'':'none';
   });
+  var rb=document.getElementById('pcReplacedBtn'); if(rb){ var rn=(PC.replaced||[]).length; rb.textContent='Replaced copies'+(rn?' ('+rn+')':''); }
   var rs=document.getElementById('pcRoleSel'); if(rs) rs.value=PC.role||'author';
   pcTokenBtnRefresh();
 }
@@ -2735,6 +2780,7 @@ function pcPublishRegressions(){
     if(!l||l.draft) return;
     if(p.productCode && !l.productCode) out.push({key:k, what:'product code '+p.productCode, pub:p});
     else if(p.ref && !l.ref) out.push({key:k, what:'sample works order '+p.ref, pub:p});
+    else if((p.version||1)>(l.version||1)) out.push({key:k, what:'V'+p.version+' of '+(p.ref||k)+' (this PC has V'+(l.version||1)+')', pub:p});
   });
   return out;
 }
@@ -2889,8 +2935,13 @@ function pcPubLoad(){
            a milestone adopts the published copy even if its own is unstamped. */
         var lMile=(l.productCode?2:0)+(l.ref?1:0), pMile=(p.productCode?2:0)+(p.ref?1:0);
         if(lMile>pMile){ kept++; behind++; return; }
+        /* A revision is a milestone too: a V2 never yields to a V1, whatever the stamps say - that is
+           how SR0007's V2 was lost to a later-saved V1 from another PC. A PC behind on the version
+           takes the published copy. */
+        var lv=l.version||1, pv=p.version||1;
+        if(lv>pv && lMile===pMile){ kept++; behind++; return; }
         var lt=l.savedAt||'', pt=p.savedAt||'';
-        if(follows || (pt && lt && pt>lt)){
+        if(follows || pv>lv || (pt && lt && pt>lt)){
           pcKeepReplaced(l); PC.srs[ix]=p; changed=true; replaced++; return;
         }
         if(pMile>lMile){ pcMergeMilestones(l,p); changed=true; replaced++; return; }
