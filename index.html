@@ -769,7 +769,8 @@ var PC_COMMODITY=[["Poly Cotton Bib Aprons","6211 43 1000"],["Poly Cotton Waist 
   ["Table Linen","6302 59 9090"],["Scrub top in polyester","6211 33 1000"],["OHTAB","5806 32 1000"],["OHTAB in leather","4203 4000 10"],["OHSTRAP in leather","4203 4000 00"],
   ["OHSTRAP","6307 90 98 90"],["OHSTRANECKADJ/LC","4203 40 00 10"]];
 function pcCommNames(code){ var k=String(code||'').replace(/\s+/g,''); return PC_COMMODITY.filter(function(c){ return c[1].replace(/\s+/g,'')===k; }).map(function(c){ return c[0]; }); }
-/* the code the list gives for a record: its garment, its main fabric (PC… poly cotton, CO… cotton), bib or waist */
+/* the code the list gives for a record: its garment, its main fabric (PC… poly cotton, CO… cotton), bib or waist.
+   Tabards, coats and waistcoats take the chef jacket codes. */
 function pcCommSuggest(s){
   var code=String(s.productCode||s.prodCodeDraft||'').toUpperCase(), cat=pcCatOf(s.garment);
   var f0=(s.fabrics||[])[0]||{}, fc=String(f0.code||'').toUpperCase(), fn=String(f0.name||'').toUpperCase();
@@ -778,10 +779,10 @@ function pcCommSuggest(s){
   var pick=function(name){ var c=PC_COMMODITY.filter(function(x){ return x[0]===name; })[0]; return c?{desc:c[0], code:c[1]}:null; };
   if(/^OHSTRANECKADJ/.test(code)) return pick('OHSTRANECKADJ/LC');
   if(/^OHSTRAP/.test(code)) return pick(leather?'OHSTRAP in leather':'OHSTRAP');
-  if(/^OHTAB/.test(code)) return pick(leather?'OHTAB in leather':'OHTAB');
+  if(/^OHTAB/.test(code) && cat!=='TA') return pick(leather?'OHTAB in leather':'OHTAB');   // a branded OH tabard is OHTAB0001 too
   var waist=/WAIST/.test(String(s.desc||'').toUpperCase()+' '+String(s.garment||'').toUpperCase());
   if(cat==='AP') return fibre==='pc'?pick(waist?'Poly Cotton Waist Aprons':'Poly Cotton Bib Aprons'):fibre==='co'?pick(waist?'Cotton Waist Aprons':'Cotton Bib Aprons'):null;
-  if(cat==='CJ') return fibre==='pc'?pick('Poly Cotton Jackets'):fibre==='co'?pick('Cotton Jackets'):null;
+  if(cat==='CJ'||cat==='TA'||cat==='CO'||cat==='WA') return fibre==='pc'?pick('Poly Cotton Jackets'):fibre==='co'?pick('Cotton Jackets'):null;
   if(cat==='CT') return fibre==='pc'||/GINGHAM/.test(fn)?pick(/GINGHAM/.test(fn)?'Gingham Trousers':'Poly Cotton Trousers'):null;
   if(cat==='BL') return pick('Blouse');
   if(cat==='SH') return pick('Shirts');
