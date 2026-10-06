@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T10:59:30.542Z",
+ "publishedTS": "2026-10-06T11:05:37.836Z",
  "qSeq": 17,
  "srSeq": 11,
  "prodSeq": {
@@ -2848,7 +2848,7 @@
     {
      "code": "PC2064ECO",
      "name": "STORM GREY SUSTAINABLE 65/35 POLY/COTTON (X133 - AM299)",
-     "rating": "1.88",
+     "rating": "1.78",
      "cost": "2.32",
      "loc": "A5"
     }
@@ -2915,9 +2915,9 @@
    "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 2,
-   "markerMain": "MTCGCOAT",
+   "markerMain": "MTCGCOAT001",
    "markerMesh": "",
-   "markerLen": "1",
+   "markerLen": "1.75",
    "layQty": "1",
    "hasMesh": false,
    "meshLen": "",
@@ -3044,7 +3044,7 @@
    "ladies": false,
    "mtc": true,
    "size": "92",
-   "savedAt": "2026-10-06T10:56:15.983Z",
+   "savedAt": "2026-10-06T11:03:37.798Z",
    "weightG": "",
    "srRaisedAt": "2026-09-17",
    "sampleApprovedAt": "",
