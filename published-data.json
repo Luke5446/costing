@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T13:42:03.798Z",
+ "publishedTS": "2026-10-06T13:51:36.516Z",
  "qSeq": 18,
  "srSeq": 11,
  "prodSeq": {
@@ -11,6 +11,131 @@
  },
  "chgSeq": 8,
  "srs": [
+  {
+   "quoteRef": "Q0018",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-10-06",
+   "due": "2026-10-06",
+   "customer": "Egan Reid",
+   "garment": "Apron",
+   "desc": "Brown waist apron with kangaroo pocket, self fabric waist ties — Oliver Harvey · Waist apron with kangaroo pocket · Reverse fabric self fabric waist ties — box stitched to secure. Length 60cm",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC999K382",
+     "name": "BROWN 67/33 POLY/COTTON 300GM (ART 2886 VT / 99K3)",
+     "rating": "0.70",
+     "cost": "5.5345",
+     "loc": ""
+    }
+   ],
+   "trims": [
+    {
+     "code": "",
+     "desc": "Thread: Coats Epic 80's green 05925",
+     "qty": "30",
+     "cost": "0.000714"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "OH label: Set 4 cm down from right side seam as worn",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre 67% polyester 33% cotton /60 degree wash/do not bleach/2 dot iron/P dry clean/Low tumble dry",
+     "qty": "1",
+     "cost": "0.039067"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey tax tab: Set to side of left pocket as worn, level with top edge",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "",
+     "desc": "Rivets: Antique brass invert nipple rivet , 011B) — total 4",
+     "qty": "4",
+     "cost": "0.001"
+    },
+    {
+     "code": "",
+     "desc": "Rivets: Silver post 7mm (010B/7P) — total 4",
+     "qty": "4",
+     "cost": "0.002"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Width at top of waist in cm",
+     "value": "70",
+     "value2": ""
+    },
+    {
+     "label": "Length from top to hem in cm",
+     "value": "60",
+     "value2": ""
+    },
+    {
+     "label": "Pocket width in cm",
+     "value": "48",
+     "value2": ""
+    },
+    {
+     "label": "Pocket depth of full pocket in cm",
+     "value": "30",
+     "value2": ""
+    },
+    {
+     "label": "Length of full waist tie  - end to end",
+     "value": "98",
+     "value2": ""
+    }
+   ],
+   "mfg": "Double turn side seam, hem and top edge. Topstitching to finish 12 mm from edge.\nSet curved pocket hem. Double turn 1 cm.\nSet pocket hem of top pocket: 1 cm double turn.\nSet top pocket on top of lower pocket and tack together at sides and hem.\nSet pocket to apron. Set top of pocket 5 cm down from finished top edge and set centrally within width of apron. Twin needle in position.\nSet centre stitch divide.\nMake waist ties. Bag out both ends. Fold in half and enclose raw edges. Edge stitch long edge to close seam. USE REVERSE SIDE OF FABRIC AS RIGHT SIDE.\nSet waist tie to side seam. Set waist tie 3 cm over onto apron with top edge of waist tie level with top of apron. Box and cross stitch into position to width of strap by 3 cm.",
+   "fin": "Bartack vertical at top of centre stitch line.\nSet rivets to corners of curved pocket x 4.\nCheck, trim, press and fold. Tissue and set product label.",
+   "machMins": "11.7",
+   "finMins": "4",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": "1",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "OHAPP0631",
+   "variant": "JH to set up",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "Q0008",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-10-06T13:49:19.506Z",
+   "threadOwn": false,
+   "weightG": ""
+  },
   {
    "quoteRef": "",
    "ref": "",
@@ -3458,7 +3583,7 @@
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": true,
-   "quotePrintedAt": "2026-09-17",
+   "quotePrintedAt": "2026-10-06",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -3467,7 +3592,7 @@
    "version": 1,
    "history": [],
    "isOH": true,
-   "savedAt": "2026-09-17T10:43:09.542Z",
+   "savedAt": "2026-10-06T13:49:35.831Z",
    "weightG": "",
    "logoImg": "",
    "placeImg": "",
