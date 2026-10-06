@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-10-05",
- "publishedTS": "2026-10-05T15:26:37.856Z",
+ "publishedAt": "2026-10-06",
+ "publishedTS": "2026-10-06T08:40:01.014Z",
  "qSeq": 16,
  "srSeq": 11,
  "prodSeq": {
@@ -18,14 +18,14 @@
    "due": "2026-10-05",
    "customer": "Jalin Design",
    "garment": "Apron",
-   "desc": "Olive Ladies Waist Apron with darts. Utility pocket - Wide pocket with stitch divides for slanted side pockets. Webbing ties cross box stitched down to secure.  Oliver Harvey Ladies Range ·",
+   "desc": "Olive Ladies Waist Apron with darts. Utility pocket - Wide pocket with stitch divides for slanted side pockets. Self ties cross box stitched down to secure.  Rivets set to pocket mouth. Oliver Harvey Ladies Range ·",
    "brandType": "None",
    "brandPlace": "",
    "fabrics": [
     {
      "code": "PC2083ECO",
      "name": "OLIVE GREEN SUSTAINABLE 65/35 POLY/COTTON (X133 - AM298)",
-     "rating": "0.60",
+     "rating": "0.80",
      "cost": "2.32",
      "loc": "B4"
     }
@@ -39,7 +39,7 @@
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
-     "desc": "OLIVER HARVEY WASH CARE LABEL 65% Recycle Polyester 35% Organic Cotton",
+     "desc": "OLIVER HARVEY WASH CARE LABEL 65% Recycled Polyester 35% Organic Cotton",
      "qty": "1",
      "cost": "0.032"
     },
@@ -87,7 +87,7 @@
     }
    ],
    "meas": [],
-   "mfg": "Set darts to top of apron stitching 1mm past steck hole and then stitch for 1cm on edge. back tack to secure.\nDouble turn and topstitch 12mm all round apron. (side seam, top and bottom) insert labels right side seam as worn 1cm below eyelet re-inforcement piece.\nSet wide pocket hem. Set facing to top edge of pocket RS as worn - 1cm seam allowance. Snip at corners. Fold over and edgestitch along top edge.\nFold under 1cm of facing and edgstitch down.  Stitching to finish at 1.8cm from edge.\nSet pocket to apron.  Set base of pocket 12cm up from finished hem and centrally within width of apron.  Edgestitch in position.\nSet centre stitch tack to pocket hem stitch line. Set side pocket stitch divides at  14.2cm from side seam.  (Use marker)\nSet second row of stitching to hem stitch line for rivets.  1 at each side of slant pocket opening.  Total 4 rivets.\nChange thread. Set webbing to top of apron at side seam.  Set webbing 3cm over onto apron and with top edge of webbing level with top edge of apron.\nBox and cross stitch into position to width of strap by 3cm.\nDouble turn ends to neaten of webbing",
+   "mfg": "Make straps.  Bag out both ends, fold in half, enclose raw edges and edgestitch long edge.\nSet darts to top of apron stitching 1mm past steck hole and then stitch for 1cm on edge. back tack to secure.\nDouble turn and topstitch 12mm all round apron. (side seam, top and bottom) insert labels right side seam as worn 1cm below eyelet re-inforcement piece.\nSet wide pocket hem. Set facing to top edge of pocket RS as worn - 1cm seam allowance. Snip at corners. Fold over and edgestitch along top edge.\nFold under 1cm of facing and edgstitch down.  Stitching to finish at 1.8cm from edge.\nSet pocket to apron.  Set base of pocket 12cm up from finished hem and centrally within width of apron.  Edgestitch in position.\nSet centre stitch tack to pocket hem stitch line. Set side pocket stitch divides at  14.2cm from side seam.  (Use marker)\nSet second row of stitching to pocket hem stitch line for rivets.  1 at each side of slant pocket opening.  Total 4 rivets.\nSet waist ties. Set 3cm over onto apron and with top edge of waist tie level with top edge of apron.\nBox and cross stitch into position to width of waist tie by 3cm.",
    "fin": "Set bartack vertical at side of pocket and horizontal at top of pocket. Total 1 bartacks per apron.\nSet eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nCheck,trim, press and fold.\nTissue in oliver harvey tissue .set description label bottom right hand corner.",
    "machMins": "11.5",
    "finMins": "4",
@@ -96,7 +96,7 @@
    "sampleQty": 2,
    "markerMain": "1",
    "markerMesh": "",
-   "markerLen": "1.20",
+   "markerLen": "1",
    "layQty": "2",
    "hasMesh": false,
    "meshLen": "",
@@ -106,7 +106,7 @@
    "markerCon": "",
    "conLen": "",
    "conLay": "",
-   "lectra": "Ohapp0652 varient 0652ft",
+   "lectra": "Ohapp0652 varient tbc",
    "variant": "",
    "quoteMarkup": 60,
    "quoteShowSell": true,
@@ -123,7 +123,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-05T14:34:49.871Z",
+   "savedAt": "2026-10-06T08:38:00.984Z",
    "threadOwn": false,
    "chgRef": "",
    "logoImg": "",
