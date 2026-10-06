@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T11:35:32.556Z",
+ "publishedTS": "2026-10-06T13:28:51.522Z",
  "qSeq": 17,
  "srSeq": 11,
  "prodSeq": {
@@ -9,8 +9,131 @@
   "CJB": 1,
   "COB": 1
  },
- "chgSeq": 6,
+ "chgSeq": 7,
  "srs": [
+  {
+   "quoteRef": "",
+   "ref": "",
+   "status": "production",
+   "created": "2026-10-06",
+   "due": "2026-10-16",
+   "customer": "MTC",
+   "garment": "Coat",
+   "desc": "Coat — MTC — Storm Grey Gents Coat . Long sleeves. Two mitred pockets. One chest pocket left side as worn. Back neck buggy. Centre back vent.",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC2064ECO",
+     "name": "STORM GREY SUSTAINABLE 65/35 POLY/COTTON (X133 - AM299)",
+     "rating": "2.2",
+     "cost": "2.32",
+     "loc": "A5"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-STD-SOC-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/B — MALE FITTING",
+     "qty": "4",
+     "cost": "0.016632"
+    },
+    {
+     "code": "CMP-STD-DUO-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/C — FEMALE FITTING",
+     "qty": "4",
+     "cost": "0.01958"
+    },
+    {
+     "code": "CMP-STD-RING-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/AR — PRONG FITTING",
+     "qty": "8",
+     "cost": "0.010395"
+    },
+    {
+     "code": "LABELTIB4565",
+     "desc": "Tibard centre fold label: Tibard Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.02737"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "Additional label: WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.1",
+     "cost": "0.039067"
+    },
+    {
+     "code": "CMP-THR-EP80-09963-64",
+     "desc": "THREAD — STORM GREY 09963",
+     "qty": "150",
+     "cost": "0.000714"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Chest in cm",
+     "value": "132",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length",
+     "value": "64.5",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length",
+     "value": "100",
+     "value2": ""
+    }
+   ],
+   "mfg": "MAKE COLLAR. FOLD IN HALF WITH RIGHT SIDES TOGETHER. JOIN ENDS. TURN THROUGH AND STITCH ALONG CUT EDGE TO SECURE PIECES.\nSET LABELS TO BACK BUGGY AT CENTRE BACK.\nOVERLOCK FRONT EDGES AND FACING SHOULDER. BACK BUGGY LOWER EDGE. CENTRE BACK VENT EDGES.\nPRESS CENTRE FRONT FOLD\nSET POCKET HEM. 1.5CM + 1.5CM DOUBLE TURNED AND TOPSTITCH AT 1.5CM.\nSET LOWER POCKETS. SET 8CM IN FROM FRONT EDGE AND 24CM UP FROM CUT HEM EDGE.  EDGESTITCH IN POSITION.\nSET CHEST POCKET. SET 8CM IN FROM FINISHED FRONT EDGE AND 14CM DOWN FROM FRONT STEP CUT EDGE.EDGESTITCH IN POSITION.\nJOIN UP ON 5 THREAD - CENTRE BACK. SHOULDERS, COLLAR, SLEEVES, SIDE SEAM AND UNDERARM SEAM.\nBACK NECK SEAM 6MM TOPSTITCHED AND RUN ONTO FRONT FOR 6CM TO SECURE FACING DOWN.\nTACK FRONT FACING DOWN AT SHOULDER\nPRESS CENTRE BACK SEAM AND VENT.\nSTRAIGHTEN CENTRE BACK SEAM AT BASE OF BACK VENT.\nSET ANGLED STITCH LINE LENGTH 5.5CM AT TOP OF SPLIT AT CENTRE BACK SEAM. KICK PLEAT TO BE (12\" /30CM)\nBODY HEM DOUBLE TURNED AND TOPSTITCHED 1.5CM + 1.5CM\nSLEEVE HEM  DOUBLE TURNED 1.5 + 1.5CM AND TOPSTITCHED 1.5CM",
+   "fin": "SET TOP AND LOWER STUDS X 4  USE MARKER\nBARTACK VERTICAL TOP OF POCKETS X 6 BARTACKS\nBARTACK ALONG FRONT PANEL- LEFT SIDE AS WORN .VERTICAL  BARTACKS TO HOLD FRONT STUD PANEL DOWN  AND CONCEAL THE STUDS.  BARTACKS TO BE IN LINE WITH STUDS AND 3.6CM FROM FRONT FOLD EDGE. SET BARTACK ON TOP SIDE OF COAT TO GET GOOD SIDE OF BARTACK.\nCHECK TRIM AND FOLD",
+   "machMins": "17",
+   "finMins": "5",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 1,
+   "markerMain": "MTCGCOAT002",
+   "markerMesh": "",
+   "markerLen": "2.17",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "GC0198NEW",
+   "variant": "MTCGCOAT",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": "COB0001124",
+   "convertedAt": "2026-10-06",
+   "copiedFrom": "COB000192",
+   "version": 1,
+   "history": [],
+   "isOH": false,
+   "ladies": false,
+   "mtc": true,
+   "size": "124",
+   "savedAt": "2026-10-06T13:26:11.127Z",
+   "threadOwn": false,
+   "isProduct": true,
+   "family": "special",
+   "editScope": "size",
+   "sourceCode": "COB000192",
+   "specialBase": "COB0001",
+   "baseCode": "COB0001",
+   "prodCodeDraft": "COB0001124",
+   "chgRef": "C0007",
+   "weightG": ""
+  },
   {
    "quoteRef": "Q0016",
    "ref": "",
