@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T14:28:30.501Z",
+ "publishedTS": "2026-10-06T14:35:52.523Z",
  "qSeq": 18,
  "srSeq": 11,
  "prodSeq": {
@@ -26,7 +26,7 @@
     {
      "code": "PC999K382",
      "name": "BROWN 67/33 POLY/COTTON 300GM (ART 2886 VT / 99K3)",
-     "rating": "0.75",
+     "rating": "0.85",
      "cost": "5.5345",
      "loc": ""
     }
@@ -67,6 +67,18 @@
      "desc": "Rivets: Silver post 7mm (010B/7P) — total 4",
      "qty": "4",
      "cost": "0.002"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.016",
+     "cost": "0.0129"
     }
    ],
    "meas": [
@@ -132,7 +144,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-06T14:23:32.889Z",
+   "savedAt": "2026-10-06T14:31:48.119Z",
    "threadOwn": false,
    "weightG": "",
    "chgRef": "",
@@ -3500,7 +3512,7 @@
     {
      "code": "PC90682",
      "name": "Art 2860/97KS finish VT/SK heather green 300 gsm 55% cotton 45% polyester (Utexbel)",
-     "rating": "0.75",
+     "rating": "0.85",
      "cost": "5.3651",
      "loc": "B6"
     }
@@ -3541,6 +3553,18 @@
      "desc": "Rivets: Silver post 7mm (010B/7P) — total 4",
      "qty": "4",
      "cost": "0.002"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.016",
+     "cost": "0.0129"
     }
    ],
    "meas": [
@@ -3598,7 +3622,7 @@
    "version": 1,
    "history": [],
    "isOH": true,
-   "savedAt": "2026-10-06T14:17:16.462Z",
+   "savedAt": "2026-10-06T14:33:51.771Z",
    "weightG": "",
    "logoImg": "",
    "placeImg": "",
