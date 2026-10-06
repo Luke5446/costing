@@ -1276,6 +1276,9 @@ function pcIsLateSR(s){ return pcIsLiveSR(s) && s.due && s.due<pcToday(); }
 function pcIsApprovedQuote(s){ return !!s.ref; }
 function pcIsApprovedSample(s){ return s.status==='approved' || !!s.productCode; }
 function pcTileToggle(which){ PC_TILE=(PC_TILE===which)?null:which; pcRender(); }
+/* a quote or sample never taken to an order, put away: it leaves the live tiles and the default board */
+function pcIsArchived(s){ return !!s.archived; }
+function pcLive(fn){ return function(s){ return !s.archived && fn(s); }; }
 function pcPublishWarn(){
   var b=document.getElementById('pcPublishBtn');
   if(!b || !PC_IS_EDITOR) return;
@@ -1301,14 +1304,15 @@ window.addEventListener('beforeunload',function(e){
 });
 function pcRenderStats(){
   pcPublishWarn();
-  var q=PC.srs.filter(pcIsOpenQuote).length,
-      qlive=PC.srs.filter(pcIsLiveQuote).length,
-      live=PC.srs.filter(pcIsLiveSR).length,
-      late=PC.srs.filter(pcIsLateSR).length,
-      qappr=PC.srs.filter(pcIsApprovedQuote).length,
-      sappr=PC.srs.filter(pcIsApprovedSample).length,
+  var q=PC.srs.filter(pcLive(pcIsOpenQuote)).length,
+      qlive=PC.srs.filter(pcLive(pcIsLiveQuote)).length,
+      live=PC.srs.filter(pcLive(pcIsLiveSR)).length,
+      late=PC.srs.filter(pcLive(pcIsLateSR)).length,
+      qappr=PC.srs.filter(pcLive(pcIsApprovedQuote)).length,
+      sappr=PC.srs.filter(pcLive(pcIsApprovedSample)).length,
       prods=PC.srs.filter(pcIsProductRec).length,
-      pend=PC.srs.filter(pcIsPendingProduct).length;
+      pend=PC.srs.filter(pcLive(pcIsPendingProduct)).length,
+      arch=PC.srs.filter(pcIsArchived).length;
   document.getElementById('pcStats').innerHTML=
     '<div class="pcstat'+(PC_TILE==='qlive'?' on':'')+'" onclick="pcTileToggle(\'qlive\')"><div class="n">'+qlive+'</div><div class="l">Live quotes</div></div>'
     +'<div class="pcstat'+(PC_TILE==='quotes'?' on':'')+'" onclick="pcTileToggle(\'quotes\')"><div class="n">'+q+'</div><div class="l">Quotes not printed</div></div>'
@@ -1317,7 +1321,8 @@ function pcRenderStats(){
     +'<div class="pcstat'+(PC_TILE==='qappr'?' on':'')+'" onclick="pcTileToggle(\'qappr\')"><div class="n">'+qappr+'</div><div class="l">Approved quotes</div></div>'
     +'<div class="pcstat'+(PC_TILE==='sappr'?' on':'')+'" onclick="pcTileToggle(\'sappr\')"><div class="n">'+sappr+'</div><div class="l">Approved samples</div></div>'
     +'<div class="pcstat'+(PC_TILE==='prods'?' on':'')+'" onclick="pcTileToggle(\'prods\')"><div class="n">'+prods+'</div><div class="l">Products</div></div>'
-    +'<div class="pcstat'+(pend?' late':'')+(PC_TILE==='pend'?' on':'')+'" onclick="pcTileToggle(\'pend\')"><div class="n">'+pend+'</div><div class="l">Changes not yet created</div></div>';
+    +'<div class="pcstat'+(pend?' late':'')+(PC_TILE==='pend'?' on':'')+'" onclick="pcTileToggle(\'pend\')"><div class="n">'+pend+'</div><div class="l">Changes not yet created</div></div>'
+    +'<div class="pcstat'+(PC_TILE==='arch'?' on':'')+'" onclick="pcTileToggle(\'arch\')" style="opacity:.85"><div class="n">'+arch+'</div><div class="l">Archived</div></div>';
 }
 function pcRender(){
   var srch=(document.getElementById('pcSearch').value||'').trim().toUpperCase();
@@ -1328,7 +1333,7 @@ function pcRender(){
   var dflt=(!srch && !filt && !PC_TILE);
   document.getElementById('pcShowing').textContent = (window.PC_PUB_AT?'Team view last published '+pcFmtD(window.PC_PUB_AT)+' \u00b7 ':'') + (dflt
     ? 'Showing unprinted quotes and sample works orders \u2014 use search, the status filter or the tiles above to find everything else.'
-    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':PC_TILE==='qappr'?'Showing approved quotes \u2014 the customer approved and an SR was raised.':PC_TILE==='sappr'?'Showing approved samples \u2014 customer-approved, including those now converted to products.':PC_TILE==='prods'?'Showing every product \u2014 converted samples and new products from existing stock lines.':PC_TILE==='pend'?'Showing size / fabric changes saved but not yet created as products \u2014 open one, finish the code, trims or fabric, then press Create new product.':''));
+    : (PC_TILE==='qlive'?'Showing all live quotes (not yet raised as an SR).':PC_TILE==='quotes'?'Showing saved quotes that have not been printed.':PC_TILE==='live'?'Showing live SR works orders (raised, not yet converted to a product).':PC_TILE==='late'?'Showing late SR works orders \u2014 past their due date.':PC_TILE==='qappr'?'Showing approved quotes \u2014 the customer approved and an SR was raised.':PC_TILE==='sappr'?'Showing approved samples \u2014 customer-approved, including those now converted to products.':PC_TILE==='prods'?'Showing every product \u2014 converted samples and new products from existing stock lines.':PC_TILE==='arch'?'Showing archived quotes and samples \u2014 never taken to an order. Open one to unarchive it.':PC_TILE==='pend'?'Showing size / fabric changes saved but not yet created as products \u2014 open one, finish the code, trims or fabric, then press Create new product.':''));
   PC.srs.forEach(function(s,i){
     if(PC_TILE==='qlive' && !pcIsLiveQuote(s)) return;
     if(PC_TILE==='quotes' && !pcIsOpenQuote(s)) return;
@@ -1338,6 +1343,8 @@ function pcRender(){
     if(PC_TILE==='sappr' && !pcIsApprovedSample(s)) return;
     if(PC_TILE==='prods' && !pcIsProductRec(s)) return;
     if(PC_TILE==='pend' && !pcIsPendingProduct(s)) return;
+    if(PC_TILE==='arch' && !s.archived) return;
+    if(s.archived && PC_TILE!=='arch' && !srch) return;     /* a search still finds an archived record */
     if(dflt){
       var unprinted = s.isProduct ? !s.productCode : (s.ref ? !s.printed : !s.quotePrinted);
       if(!unprinted) return;
@@ -1353,6 +1360,7 @@ function pcRender(){
     shown++;
     var badge;
     if(s.draft) badge='<span class="pcbadge" style="background:#e5e7eb;color:#374151">DRAFT \u2014 never saved</span>';
+    else if(s.archived) badge='<span class="pcbadge" style="background:#eef0f3;color:#44546A">&#128451; ARCHIVED</span>';
     else if(s.isProduct) badge=s.productCode?'<span class="pcbadge pcb-green">PRODUCT</span>':'<span class="pcbadge pcb-red">NOT YET CREATED</span>';
     else if(!s.ref) badge=s.quotePrinted?'<span class="pcbadge pcb-green">&#128424; Quote printed</span>':'<span class="pcbadge pcb-red">QUOTE NOT PRINTED</span>';
     else badge=s.printed?'<span class="pcbadge pcb-green">&#128424; Printed</span>':'<span class="pcbadge pcb-red">NOT PRINTED</span>';
@@ -1528,6 +1536,8 @@ function pcOpen(i){
   var stOpts=stKeys.map(function(k){return '<option value="'+k+'"'+(s.status===k?' selected':'')+(k==='production'&&!s.productCode&&!s.isProduct?' disabled':'')+'>'+PC_STATUS[k]+'</option>';}).join('');
 
   var h=dl;
+  if(s.archived) h+='<div class="pcok" style="background:#eef0f3;color:#44546A;border-color:#cbd2dc">&#128451; <strong>Archived</strong> '+pcE(pcFmtD(s.archivedAt)||'')+(s.archiveNote?' \u2014 '+pcE(s.archiveNote):'')+'. Never taken to an order; kept on file under the Archived tile.'+(PC_IS_EDITOR?' <button type="button" class="btn pcmini" style="background:#e8ecf3;color:var(--navy);margin-left:6px" onclick="pcUnarchive()">Unarchive</button>':'')+'</div>';
+  if(s.copiedFromQuote && !s.ref) h+='<p class="pcnote" style="margin:0 0 8px">Copied from <strong>'+pcE(s.copiedFromQuote)+'</strong> \u2014 both quotes stay on file. Change the fabric (or anything else) and save.</p>';
   if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> — it is searchable and printable but no longer editable.'
     +(woLive?' <strong>Works order last edited '+pcE(pcFmtD(s.woEditedAt)||'—')+'</strong> in the Works Order Editor — that version is shown here and printed.':' Works order as converted on '+pcE(pcFmtD(s.convertedAt))+' — the buffer app has not published a newer version'+(PC_WO.live?'':' (or could not be reached)')+'.')+'</div>';
   var pubCopy=pcPublishedCopy(s);
@@ -1676,6 +1686,8 @@ function pcOpen(i){
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#fef3c7;color:#92400e" onclick="pcRevise()">&#10227; Revise SR &rarr; V'+((s.version||1)+1)+'</button>';
   if(PC_IS_EDITOR && s.ref && !locked) h+='<button class="btn" style="background:#d1fae5;color:#065f46" onclick="pcConvert()">Convert to product\u2026</button>';
   if(s.productCode) h+='<button class="btn" style="background:#7A5B14;color:#fff" onclick="pcExport()">Download for buffer app</button>';
+  if(PC_IS_EDITOR && !s.isProduct && !s.draft) h+='<button class="btn" style="background:#e8ecf3;color:var(--navy)" onclick="pcCopyQuote()" title="A new quote with everything copied, customer included - for the same customer in a different fabric. Both stay on file.">&#10697; Copy to new quote</button>';
+  if(PC_IS_EDITOR && !s.isProduct && !s.productCode && !s.draft && !s.archived) h+='<button class="btn" style="background:#eef0f3;color:#44546A" onclick="pcArchive()" title="Never taken to an order: move it off the live tiles and keep it under Archived">&#128451; Archive</button>';
   if(PC_IS_EDITOR && s.draft) h+='<button class="btn" style="background:#fee2e2;color:#991b1b;margin-left:auto" onclick="pcDelete()">Delete</button>';
   h+='<button class="btn" style="background:#e8ecf3;color:var(--navy);'+(PC_IS_EDITOR&&s.draft?'':'margin-left:auto')+'" onclick="pcCloseX()">Close</button>';
   h+='</div><div id="pcExportBox"></div>';
@@ -2333,6 +2345,39 @@ function pcLogo2Remove(){
 }
 
 /* ── revise an SR sample works order (V2, V3…) ── */
+/* ── copy a saved quote / sample into a new quote ──
+   The same customer often wants a second quote in another fabric. Everything is copied - customer,
+   branding and artwork included - into a fresh quote number; the original stays as it is. The copy is a
+   draft until saved, like any copy. */
+function pcCopyQuote(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s0=PC.srs[PC_CUR];
+  if(!s0.productCode) pcCollect(s0);
+  var s=JSON.parse(JSON.stringify(s0)), from=s0.quoteRef||s0.ref||'';
+  ['ref','srRaisedAt','convertedAt','sampleApprovedAt','printedAt','quotePrintedAt','due','chgRef','archived','archivedAt','archiveNote',
+   'family','specialBase','editScope','sourceCode','baseCode','prodCodeDraft','woEditedAt','woLive'].forEach(function(k){ delete s[k]; });
+  s.ref=''; s.productCode=null; s.isProduct=false; s.status='quote'; s.version=1; s.history=[];
+  s.printed=false; s.quotePrinted=false; s.weightG=''; s.due='';
+  s.quoteRef='Q'+String(PC.qSeq+1).padStart(4,'0'); PC.qSeq++;
+  s.created=pcToday(); s.copiedFromQuote=from; s.draft=true; s.savedAt=pcNow();
+  PC.srs.unshift(s); pcSaveData(); pcRender(); pcOpen(0);
+}
+/* ── archive a quote or sample that never became an order ── */
+function pcArchive(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s=PC.srs[PC_CUR]; if(s.productCode||s.isProduct) return;
+  var note=prompt('Archive '+pcRefLabel(s)+(s.customer?' ('+s.customer+')':'')+'?\n\nIt leaves the live tiles and is kept under the Archived tile. Search still finds it, and it can be unarchived.\n\nReason (optional - e.g. customer went elsewhere, price too high):','');
+  if(note===null) return;
+  pcCollect(s);
+  s.archived=true; s.archivedAt=pcToday(); s.archiveNote=String(note||'').trim(); s.savedAt=pcNow();
+  pcSaveData(); pcClose(); pcRender();
+}
+function pcUnarchive(){
+  if(PC_CUR<0||!PC_IS_EDITOR) return;
+  var s=PC.srs[PC_CUR]; if(!s.archived) return;
+  delete s.archived; delete s.archivedAt; delete s.archiveNote; s.savedAt=pcNow();
+  pcSaveData(); pcOpen(PC_CUR); pcRender();
+}
 function pcRevise(){
   if(PC_CUR<0||!PC_IS_EDITOR) return;
   var s=PC.srs[PC_CUR];
