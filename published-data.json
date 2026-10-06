@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T08:42:30.584Z",
+ "publishedTS": "2026-10-06T08:46:17.777Z",
  "qSeq": 16,
  "srSeq": 11,
  "prodSeq": {
@@ -78,12 +78,6 @@
      "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
      "qty": "0.016",
      "cost": "0.0129"
-    },
-    {
-     "code": "CMP-WEB-PU-25-131",
-     "desc": "SAND 25MM POLYURETHENE WEBBING — cost per metre",
-     "qty": "2",
-     "cost": "0.0931"
     }
    ],
    "meas": [],
@@ -123,7 +117,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-06T08:42:22.434Z",
+   "savedAt": "2026-10-06T08:46:14.042Z",
    "threadOwn": false,
    "chgRef": "",
    "logoImg": "",
