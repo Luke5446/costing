@@ -316,6 +316,7 @@ const ohF=()=>OH?1+(S.ohPct||0)/100:1;
 const ovh=()=>{ const v=parseFloat(S.ovh); return (isNaN(v)||v<0)?0:v; };      /* overhead £/hr */
 const combined=()=>S.lab+ovh();                                               /* the rate IT puts in Sage */
 window.costSetOH=function(on){ OH=!!on; render(); };
+window.costRender=function(){ render(); };   /* the Product creator redraws once its records are loaded and corrected */
 document.getElementById('labExp').textContent =
  'Default £18.00/hr — the production labour rate used for costing lines, specials and quotes. Overhead is on top, in the next field.';
 
@@ -942,7 +943,7 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.version===undefined) s.version=1;
     if(s.threadOwn===undefined) s.threadOwn=false;
     pcThreadApply(s);
-    pcSetsApply(s);
+    if(pcSetsApply(s)) PC_SETS_FIXED=true;
     if(!Array.isArray(s.history)) s.history=[];
   });
   return d;
@@ -1101,6 +1102,7 @@ function pcThreadApply(s){
    said "12 per jacket, £0.636 per 12". Such a line becomes 1 set at the list price; a line already in the
    set-of-12 wording is left as it is, so a later price or qty change sticks. */
 var PC_BTN_SETS={OHDETACHABLEBUTTON01:1, OHDETACHABLEBUTTON03:1};
+var PC_SETS_FIXED=false;                 /* this load corrected a line in this PC's own copy */
 function pcSetsLine(t){
   var k=String((t&&t.code)||'').trim().toUpperCase(); if(!PC_BTN_SETS[k]) return false;
   var c=pcNum(t.cost), q=pcNum(t.qty);
@@ -3046,7 +3048,7 @@ function pcPublishCore(auto){
 function pcPublishDownloadNote(out){
   alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\n(With a GitHub token on this PC \u2014 the \u2699 button beside Publish \u2014 Publish writes the file to the repo itself and this step goes away.)\n\nThe name does not matter \u2014 if your browser saved it as \u201cpublished-data (2).json\u201d, upload it as it is. The app always reads the newest one.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
 }
-pcIdbLoad(function(){ pcWoLoad(); pcPubLoad(); });
+pcIdbLoad(function(){ if(window.costRender) try{ window.costRender(); }catch(e){} pcWoLoad(); pcPubLoad(); });
 /* on every load, pull the published snapshot in (viewers take it as truth; editors only gain records they do not have) */
 function pcPubLoad(){
   if(typeof fetch!=='function') return;
@@ -3148,7 +3150,19 @@ function pcPubLoad(){
         pcSaveData();
         if(typeof pcPublishWarn==='function') pcPublishWarn();
       }
-      if(setsOld && !changed && typeof pcAutoSchedule==='function') pcAutoSchedule();   /* the file still has old button lines: a token PC writes them corrected */
+      /* The button-set correction changed this PC's copy, or the file's, and nothing else came in. A follower whose
+         records all match the file is in step with it again (it never publishes, so no "not published" warning);
+         every PC keeps the corrected lines; a token PC whose file still has the old lines publishes it corrected. */
+      if(!changed && (setsOld || PC_SETS_FIXED)){
+        PC_SETS_FIXED=false;
+        if(follows && !kept){
+          var pk={}; pub.srs.forEach(function(x){ var k=pcKey(x); if(k) pk[k]=1; });
+          if(!PC.srs.some(function(s){ return !s.draft && !pk[pcKey(s)]; })){ PC.pubHash=pcDataHash(); PC.pubAt=pub.publishedAt||PC.pubAt; }
+        }
+        pcSaveData();
+        if(typeof pcPublishWarn==='function') pcPublishWarn();
+      }
+      if(window.costRender) try{ window.costRender(); }catch(e){}
       var pm=document.getElementById('pcMain');
       if(pm && pm.style.display!=='none') pcRender();
     })
