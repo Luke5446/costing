@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-10-06",
- "publishedTS": "2026-10-06T15:47:34.484Z",
+ "publishedAt": "2026-10-07",
+ "publishedTS": "2026-10-07T08:43:39.388Z",
  "qSeq": 18,
  "srSeq": 11,
  "prodSeq": {
@@ -9,7 +9,7 @@
   "CJB": 1,
   "COB": 1
  },
- "chgSeq": 9,
+ "chgSeq": 10,
  "srs": [
   {
    "quoteRef": "",
@@ -809,9 +809,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "Buttons: BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
      "qty": "1",
-     "cost": "0.053"
+     "cost": "0.636"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
@@ -1173,9 +1173,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
      "qty": "1",
-     "cost": "0.053"
+     "cost": "0.636"
     },
     {
      "code": "LABELOH5771",
@@ -1331,9 +1331,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
      "qty": "1",
-     "cost": "0.053"
+     "cost": "0.636"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
@@ -1489,9 +1489,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
      "qty": "1",
-     "cost": "0.053"
+     "cost": "0.636"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
@@ -1647,9 +1647,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
-     "qty": "12",
-     "cost": "0.053"
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
+     "qty": "1",
+     "cost": "0.636"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
@@ -2481,9 +2481,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
-     "qty": "12",
-     "cost": "0.053"
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
+     "qty": "1",
+     "cost": "0.636"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
@@ -2639,9 +2639,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
-     "qty": "12",
-     "cost": "0.053"
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
+     "qty": "1",
+     "cost": "0.636"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
@@ -2966,9 +2966,9 @@
     },
     {
      "code": "OHDETACHABLEBUTTON03",
-     "desc": "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
-     "qty": "12",
-     "cost": "0.053"
+     "desc": "BLACK DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
+     "qty": "1",
+     "cost": "0.636"
     },
     {
      "code": "CMP-OH-PIP-TIB0011B-03",
