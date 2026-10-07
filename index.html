@@ -942,6 +942,7 @@ function pcNormalize(d){                 // shared by initial load and Restore �
     if(s.version===undefined) s.version=1;
     if(s.threadOwn===undefined) s.threadOwn=false;
     pcThreadApply(s);
+    pcSetsApply(s);
     if(!Array.isArray(s.history)) s.history=[];
   });
   return d;
@@ -1094,6 +1095,23 @@ function pcThreadApply(s){
   var row=s.trims.filter(pcIsThreadRow)[0]; if(!row) return false;
   if(pcNum(row.qty)===std) return false;
   row.qty=String(std); return true;
+}
+/* Detachable chef jacket buttons are a SET of 12 in Sage (OHDETACHABLEBUTTON01 white, 03 black): one set per
+   jacket at the set price, £0.636. Lines saved before 6 Oct 2026 priced one button (£0.053), some at qty 12, and
+   said "12 per jacket, £0.636 per 12". Such a line becomes 1 set at the list price; a line already in the
+   set-of-12 wording is left as it is, so a later price or qty change sticks. */
+var PC_BTN_SETS={OHDETACHABLEBUTTON01:1, OHDETACHABLEBUTTON03:1};
+function pcSetsLine(t){
+  var k=String((t&&t.code)||'').trim().toUpperCase(); if(!PC_BTN_SETS[k]) return false;
+  var c=pcNum(t.cost), q=pcNum(t.qty);
+  if(!(/12 per jacket/i.test(String(t.desc||'')) || Math.abs(c-0.053)<1e-9 || (!(c>0) && q===12))) return false;
+  var lk=null; for(var i=0;i<TRIMCOSTS.length;i++) if(String(TRIMCOSTS[i][0]).toUpperCase()===k){ lk=TRIMCOSTS[i]; break; }
+  t.code=k; t.qty='1'; t.cost=String(lk?lk[2]:0.636); if(lk) t.desc=lk[1];
+  return true;
+}
+function pcSetsApply(s){
+  if(!s || !Array.isArray(s.trims)) return false;
+  var ch=false; s.trims.forEach(function(t){ if(pcSetsLine(t)) ch=true; }); return ch;
 }
 var PC_SHEET=null;
 function pcSheetHas(code){
@@ -2540,6 +2558,7 @@ function pcWithLatestWO(s){
     return {name:f[0]||'', code:f[1]||'', loc:f[2]||'', rating:str(f[3]), cost:c}; });
   o.trims=(st.trims||[]).map(function(t){ var c=str(t[4]); if(!(pcNum(c)>0)&&t[3]){ var lk=pcTrimLookup(t[3]); if(lk&&lk.cost!=null) c=String(lk.cost); }
     return {code:t[3]||'', desc:(t[0]&&t[1])?t[0]+' — '+t[1]:(t[1]||t[0]||''), qty:str(t[2]), cost:c}; });
+  pcSetsApply(o);
   o.mfg=(st.mfg||[]).join('\n'); o.fin=(st.fin||[]).join('\n');
   o.machMins=str(st.machMins); o.finMins=str(st.finMins); o.cutBatch=str(st.cutBatch); o.cutMins=st.cutMins!=null?st.cutMins:o.cutMins;
   o.markerMain=st.markerMain||''; o.markerMesh=st.markerMesh||''; o.markerLen=str(st.markerLen); o.layQty=str(st.layQty);
@@ -2671,7 +2690,7 @@ function pcCopyBuild(src, code){
       var d=(tr[0]?tr[0]+': ':'')+(tr[1]||'');
       return {code:tc, desc:d||(lk&&lk.name)||'', qty:(tr.length>3&&tr[2]!=null&&tr[2]!=='')?String(tr[2]):'',
               cost:(lk&&lk.cost!=null)?String(lk.cost):((tr.length>4&&tr[4]!=null&&tr[4]!=='')?String(tr[4]):'')}; });
-    s.threadOwn=false; pcThreadApply(s);
+    s.threadOwn=false; pcThreadApply(s); pcSetsApply(s);
     s.mfg=(st.mfg||[]).join('\n'); s.fin=(st.fin||[]).join('\n');
     s.machMins=st.machMins!=null?String(st.machMins):''; s.finMins=st.finMins!=null?String(st.finMins):'';
     s.cutBatch=st.cutBatch!=null?String(st.cutBatch):''; s.cutMins=st.cutMins!=null?st.cutMins:15;
@@ -2688,7 +2707,7 @@ function pcCopyBuild(src, code){
      'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','hasCon','conFab','markerCon','conLen','conLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','mtc','size']
       .forEach(function(k){ if(o[k]!==undefined) s[k]=o[k]; });
     s.fabrics=JSON.parse(JSON.stringify(o.fabrics||[]));
-    s.trims=JSON.parse(JSON.stringify(o.trims||[])); s.threadOwn=!!o.threadOwn; pcThreadApply(s);
+    s.trims=JSON.parse(JSON.stringify(o.trims||[])); s.threadOwn=!!o.threadOwn; pcThreadApply(s); pcSetsApply(s);
     s.meas=JSON.parse(JSON.stringify(o.meas||[]));
   }
   return s;
@@ -3081,6 +3100,7 @@ function pcPubLoad(){
           if(idx[c]==null){ idx[c]=out.length; out.push(x); } else if(follows){ out[idx[c]]=x; } });
         if(JSON.stringify(out)!==JSON.stringify(loc)){ PC[k]=out; changed=true; }
       });
+      var setsOld=0; pub.srs.forEach(function(p){ if(pcSetsApply(p)) setsOld++; });
       pub.srs.forEach(function(p){
         if(!pcKey(p)) return;
         var ix=pcFindIx(p);
@@ -3128,6 +3148,7 @@ function pcPubLoad(){
         pcSaveData();
         if(typeof pcPublishWarn==='function') pcPublishWarn();
       }
+      if(setsOld && !changed && typeof pcAutoSchedule==='function') pcAutoSchedule();   /* the file still has old button lines: a token PC writes them corrected */
       var pm=document.getElementById('pcMain');
       if(pm && pm.style.display!=='none') pcRender();
     })
