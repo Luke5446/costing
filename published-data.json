@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-08",
- "publishedTS": "2026-10-08T14:36:45.256Z",
+ "publishedTS": "2026-10-08T14:43:46.513Z",
  "qSeq": 19,
  "srSeq": 11,
  "prodSeq": {
@@ -11,6 +11,112 @@
  },
  "chgSeq": 13,
  "srs": [
+  {
+   "quoteRef": "Q0019",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-10-08",
+   "due": "2026-10-08",
+   "customer": "Fava",
+   "garment": "Accessory (hats, ties…)",
+   "desc": "Revised skull cap — black white gingham  crown, · Velcro-fastened tab at centre back for adjustment · OH tax tab right side as worn",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC2028",
+     "name": "BLACK/WHITE CHECK GINGHAM P/C 190GSM 150CM",
+     "rating": "0.15",
+     "cost": "2.7",
+     "loc": "D2"
+    }
+   ],
+   "trims": [
+    {
+     "code": "",
+     "desc": "Velcro: Black — hook and loop 16 mm: 16 mm width cut at 6 cm loop / 16 mm width cut at 10 cm hook",
+     "qty": "0.2",
+     "cost": "0.09"
+    },
+    {
+     "code": "CMP-THR-EP80-09700-03",
+     "desc": "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     "qty": "20",
+     "cost": "0.000714"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.016",
+     "cost": "0.0129"
+    }
+   ],
+   "meas": [],
+   "mfg": "Make Velcro tab — set loop Velcro 12 mm from end of tab edge level with centre fold of tab; edgestitch loop Velcro to tab; bag out both ends; edgestitch lower edge of tab to close\nJoin centre back seam panel and notch into end of seam — bag out slits\nStitch along top edge to secure plies together and set care label / batch label\n5-thread join crown to panel\nSet Velcro tab to back of hat, right side as worn — 3.5 cm gap between end of loop Velcro and base of hat split (for adjustment); edgestitch all round tab; insert OH tax tab to top edge of tab, end in line with end of Velcro tab\nEdgestitch back split\nSet hook Velcro to back of hat — end level with back split; edgestitch all round",
+   "fin": "Bartack horizontal top of split\nCheck, trim, fold and tissue — set product sticker to tissue",
+   "machMins": "6.5",
+   "finMins": "2",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": "1",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "HT0160, variant NEW016",
+   "variant": "NEW0160",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-10-08",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHHTM016003",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "One size",
+   "savedAt": "2026-10-08T14:41:26.131Z",
+   "threadOwn": false,
+   "weightG": "",
+   "commodity": ""
+  },
   {
    "quoteRef": "",
    "ref": "",
