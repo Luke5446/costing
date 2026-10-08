@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-08",
- "publishedTS": "2026-10-08T14:43:46.513Z",
+ "publishedTS": "2026-10-08T14:44:42.674Z",
  "qSeq": 19,
  "srSeq": 11,
  "prodSeq": {
@@ -115,7 +115,13 @@
    "savedAt": "2026-10-08T14:41:26.131Z",
    "threadOwn": false,
    "weightG": "",
-   "commodity": ""
+   "commodity": "",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "",
