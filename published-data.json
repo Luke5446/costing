@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-12",
- "publishedTS": "2026-10-12T08:40:03.832Z",
+ "publishedTS": "2026-10-12T08:44:10.376Z",
  "qSeq": 19,
  "srSeq": 11,
  "prodSeq": {
@@ -33,10 +33,10 @@
    ],
    "trims": [
     {
-     "code": "",
-     "desc": "Velcro: Black — hook and loop 16 mm: 16 mm width cut at 6 cm loop / 16 mm width cut at 10 cm hook",
-     "qty": "0.2",
-     "cost": "0.09"
+     "code": "CMP-VEL-HOOK-16-03",
+     "desc": "BLACK 16MM VELCRO HOOK — cost per metre",
+     "qty": "0.10",
+     "cost": "0.0832"
     },
     {
      "code": "CMP-THR-EP80-09700-03",
@@ -45,16 +45,16 @@
      "cost": "0.000714"
     },
     {
-     "code": "PKG-OH-GPS-500X750-01",
-     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
-     "qty": "1",
-     "cost": "0.07544"
-    },
-    {
      "code": "TAXTABTIB01",
      "desc": "TIBARD SIDE SEAM TAX TAB (BRITISH TAGS)",
      "qty": "1",
      "cost": "0.01891"
+    },
+    {
+     "code": "black velcro loop",
+     "desc": "BLACK 16MM VELCRO LOOP",
+     "qty": "0.06",
+     "cost": "0.0832"
     }
    ],
    "meas": [],
@@ -90,11 +90,11 @@
    "copiedFrom": "OHHTM016003",
    "version": 1,
    "history": [],
-   "isOH": true,
+   "isOH": false,
    "ladies": false,
    "mtc": false,
    "size": "One size",
-   "savedAt": "2026-10-12T08:38:03.765Z",
+   "savedAt": "2026-10-12T08:44:08.264Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "",
