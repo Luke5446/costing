@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-10-08",
- "publishedTS": "2026-10-08T14:44:42.674Z",
+ "publishedAt": "2026-10-12",
+ "publishedTS": "2026-10-12T08:40:03.832Z",
  "qSeq": 19,
  "srSeq": 11,
  "prodSeq": {
@@ -45,39 +45,21 @@
      "cost": "0.000714"
     },
     {
-     "code": "TAXTABOH07/01",
-     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
-     "qty": "1",
-     "cost": "0.01678"
-    },
-    {
-     "code": "LABELOH5771",
-     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
-     "qty": "1",
-     "cost": "0.04335"
-    },
-    {
      "code": "PKG-OH-GPS-500X750-01",
      "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
      "qty": "1",
      "cost": "0.07544"
     },
     {
-     "code": "CMP-LBL-NYL-25-01",
-     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
-     "qty": "0.03",
-     "cost": "0.039067"
-    },
-    {
-     "code": "PKG-TAPE-MSK-25x50-01",
-     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
-     "qty": "0.016",
-     "cost": "0.0129"
+     "code": "TAXTABTIB01",
+     "desc": "TIBARD SIDE SEAM TAX TAB (BRITISH TAGS)",
+     "qty": "1",
+     "cost": "0.01891"
     }
    ],
    "meas": [],
    "mfg": "Make Velcro tab — set loop Velcro 12 mm from end of tab edge level with centre fold of tab; edgestitch loop Velcro to tab; bag out both ends; edgestitch lower edge of tab to close\nJoin centre back seam panel and notch into end of seam — bag out slits\nStitch along top edge to secure plies together and set care label / batch label\n5-thread join crown to panel\nSet Velcro tab to back of hat, right side as worn — 3.5 cm gap between end of loop Velcro and base of hat split (for adjustment); edgestitch all round tab; insert OH tax tab to top edge of tab, end in line with end of Velcro tab\nEdgestitch back split\nSet hook Velcro to back of hat — end level with back split; edgestitch all round",
-   "fin": "Bartack horizontal top of split\nCheck, trim, fold and tissue — set product sticker to tissue",
+   "fin": "Bartack horizontal top of split\nCheck, trim and fold",
    "machMins": "6.5",
    "finMins": "2",
    "cutBatch": "25",
@@ -100,7 +82,7 @@
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": true,
-   "quotePrintedAt": "2026-10-08",
+   "quotePrintedAt": "2026-10-12",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -112,7 +94,7 @@
    "ladies": false,
    "mtc": false,
    "size": "One size",
-   "savedAt": "2026-10-08T14:41:26.131Z",
+   "savedAt": "2026-10-12T08:38:03.765Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "",
