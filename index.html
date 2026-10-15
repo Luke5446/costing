@@ -755,7 +755,7 @@ var PC_NUMW=4;                                // digits in generated product num
 function pcRange(a,b){ var o=[]; for(var n=a;n<=b;n+=2) o.push(String(n).padStart(2,'0')); return o; }
 var PC_SIZES={
   MTC: (function(){ var o=[]; for(var n=92;n<=140;n+=4) o.push(String(n)); return o; })(),   /* MTC's own 4 cm steps, Tibard coats */
-  OH_JKT: pcRange(28,60),
+  OH_JKT: ['XXS','XS','S','M','L','XL','XXL'].concat(pcRange(28,60)),   /* letter sizes first (asked for by the GT), then chest sizes */
   OH_LJKT: pcRange(6,26).concat(pcRange(30,60)),   /* dress sizes, then the chest sizes some ladies styles are cut to */
   OH_TR: ['XXS','XS','S','M','L','XL','XXL','3XL'].concat(pcRange(26,46)),
   OH_LTR: pcRange(6,20),
