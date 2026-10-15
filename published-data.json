@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-15",
- "publishedTS": "2026-10-15T14:51:31.240Z",
+ "publishedTS": "2026-10-15T14:58:47.985Z",
  "qSeq": 20,
  "srSeq": 11,
  "prodSeq": {
@@ -58,10 +58,10 @@
      "cost": "0.04335"
     },
     {
-     "code": "CMP-BTN-P3536-36-07",
-     "desc": "",
-     "qty": "",
-     "cost": "0.15"
+     "code": "CMP-BTN-P151-36-66",
+     "desc": "CREAM 36L 4 HOLE ROUND HORN LOOK BUTTON",
+     "qty": "7",
+     "cost": "0.19"
     },
     {
      "code": "PKG-OH-GPS-500X750-01",
@@ -80,6 +80,12 @@
      "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
      "qty": "0.03",
      "cost": "0.039067"
+    },
+    {
+     "code": "CMP-BTN-P151-24-66",
+     "desc": "CREAM 24L 4 HOLE ROUND HORN LOOK BUTTON",
+     "qty": "5",
+     "cost": "0.095"
     }
    ],
    "meas": [
@@ -134,7 +140,7 @@
    "ladies": false,
    "mtc": false,
    "size": "XS",
-   "savedAt": "2026-10-15T14:51:27.736Z",
+   "savedAt": "2026-10-15T14:58:19.809Z",
    "weightG": "",
    "commodity": "6106 10 0000",
    "chgRef": "",
