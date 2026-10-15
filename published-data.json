@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-15",
- "publishedTS": "2026-10-15T12:44:59.844Z",
+ "publishedTS": "2026-10-15T13:13:55.153Z",
  "qSeq": 20,
  "srSeq": 11,
  "prodSeq": {
@@ -31,19 +31,62 @@
      "loc": "A3"
     }
    ],
-   "trims": [],
+   "trims": [
+    {
+     "code": "CMP-THR-PC075-32109-01",
+     "desc": "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     "qty": "220",
+     "cost": "0.0005055"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL - 100% ORGANIC COTTON",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-BTN-P3536-36-07",
+     "desc": "",
+     "qty": "",
+     "cost": "0.15"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.016",
+     "cost": "0.0129"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
+    }
+   ],
    "meas": [],
    "mfg": "",
    "fin": "",
-   "machMins": "",
-   "finMins": "",
-   "cutBatch": "",
+   "machMins": "50",
+   "finMins": "8",
+   "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 2,
-   "markerMain": "",
+   "markerMain": "1",
    "markerMesh": "",
-   "markerLen": "",
-   "layQty": "",
+   "markerLen": "1",
+   "layQty": "1",
    "hasMesh": false,
    "meshLen": "",
    "meshLay": "",
@@ -52,8 +95,8 @@
    "markerCon": "",
    "conLen": "",
    "conLay": "",
-   "lectra": "",
-   "variant": "",
+   "lectra": "OHCJ3098",
+   "variant": "SR1355",
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": false,
@@ -65,12 +108,19 @@
    "version": 1,
    "history": [],
    "isOH": true,
-   "ladies": true,
+   "ladies": false,
    "mtc": false,
-   "size": "",
-   "savedAt": "2026-10-15T12:44:53.781Z",
+   "size": "XS",
+   "savedAt": "2026-10-15T13:11:55.098Z",
    "weightG": "",
-   "commodity": ""
+   "commodity": "6106 10 0000",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": "",
+   "threadOwn": false
   },
   {
    "quoteRef": "Q0019",
