@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-19",
- "publishedTS": "2026-10-19T09:50:03.610Z",
+ "publishedTS": "2026-10-19T10:02:46.990Z",
  "qSeq": 21,
  "srSeq": 12,
  "prodSeq": {
@@ -2103,9 +2103,9 @@
    "fabrics": [
     {
      "code": "",
-     "name": "TAN 100% SUSTAINABLE COTTON (X149 - col 21)",
-     "rating": "0.50",
-     "cost": "4.4",
+     "name": "X133 200GSM COL 132",
+     "rating": "0.99",
+     "cost": "1.91",
      "loc": "A4"
     }
    ],
@@ -2315,7 +2315,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-19T09:48:03.531Z",
+   "savedAt": "2026-10-19T10:00:46.931Z",
    "threadOwn": false,
    "weightG": "",
    "chgRef": "",
