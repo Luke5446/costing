@@ -1,7 +1,7 @@
 {
- "publishedAt": "2026-10-15",
- "publishedTS": "2026-10-15T15:41:51.498Z",
- "qSeq": 20,
+ "publishedAt": "2026-10-19",
+ "publishedTS": "2026-10-19T08:49:20.686Z",
+ "qSeq": 21,
  "srSeq": 12,
  "prodSeq": {
   "OHAPB": 2,
@@ -153,7 +153,12 @@
    "prodCodeDraft": "OHCJ0001XXL",
    "chgRef": "C0018",
    "weightG": "",
-   "commodity": "6106 10 0000"
+   "commodity": "6106 10 0000",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "",
@@ -296,7 +301,12 @@
    "prodCodeDraft": "OHCJ0001XL",
    "chgRef": "C0017",
    "weightG": "",
-   "commodity": "6106 10 0000"
+   "commodity": "6106 10 0000",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "",
@@ -439,7 +449,12 @@
    "prodCodeDraft": "OHCJ0001L",
    "chgRef": "C0016",
    "weightG": "",
-   "commodity": "6106 10 0000"
+   "commodity": "6106 10 0000",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "",
@@ -582,7 +597,12 @@
    "prodCodeDraft": "OHCJ0001M",
    "chgRef": "C0015",
    "weightG": "",
-   "commodity": "6106 10 0000"
+   "commodity": "6106 10 0000",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "",
@@ -725,7 +745,12 @@
    "prodCodeDraft": "OHCJ0001S",
    "chgRef": "C0014",
    "weightG": "",
-   "commodity": "6106 10 0000"
+   "commodity": "6106 10 0000",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0020",
