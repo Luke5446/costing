@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-19",
- "publishedTS": "2026-10-19T08:57:53.780Z",
+ "publishedTS": "2026-10-19T09:03:28.967Z",
  "qSeq": 21,
  "srSeq": 12,
  "prodSeq": {
@@ -33,12 +33,12 @@
     }
    ],
    "meas": [],
-   "mfg": "To cut out care label\nInsert new care label to side seam.",
+   "mfg": "To cut out original care label\nCut new label to size and Insert into side seam.",
    "fin": "Re-fold",
    "machMins": "1.5",
    "finMins": "1",
    "cutBatch": "25",
-   "cutMins": 15,
+   "cutMins": 1,
    "sampleQty": 2,
    "markerMain": "1",
    "markerMesh": "",
@@ -68,7 +68,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-19T08:57:51.277Z",
+   "savedAt": "2026-10-19T09:01:28.917Z",
    "weightG": "",
    "commodity": ""
   },
