@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-19",
- "publishedTS": "2026-10-19T09:03:28.967Z",
+ "publishedTS": "2026-10-19T09:09:06.044Z",
  "qSeq": 21,
  "srSeq": 12,
  "prodSeq": {
@@ -56,8 +56,8 @@
    "variant": "",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-10-19",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -68,7 +68,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-19T09:01:28.917Z",
+   "savedAt": "2026-10-19T09:07:05.630Z",
    "weightG": "",
    "commodity": ""
   },
