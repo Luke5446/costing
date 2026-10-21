@@ -1,7 +1,7 @@
 {
- "publishedAt": "2026-10-19",
- "publishedTS": "2026-10-19T10:07:50.012Z",
- "qSeq": 21,
+ "publishedAt": "2026-10-21",
+ "publishedTS": "2026-10-21T15:35:40.704Z",
+ "qSeq": 22,
  "srSeq": 12,
  "prodSeq": {
   "OHAPB": 2,
@@ -12,6 +12,141 @@
  },
  "chgSeq": 18,
  "srs": [
+  {
+   "quoteRef": "Q0022",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-10-21",
+   "due": "2026-10-21",
+   "customer": "",
+   "garment": "Chef jacket",
+   "desc": "Tibard White chef jacket 4inch longer length  -  short sleeve, mesh back - mandarin collar -  Concealed stud fastening · Panelled back · Pen pocket on left sleeve as worn.",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC2001ECO",
+     "name": "White 65% polyester / 35% cotton 195 gsm (P and R)",
+     "rating": "1.21",
+     "cost": "2.14",
+     "loc": "B2"
+    },
+    {
+     "code": "MESHPW31401",
+     "name": "White 100% polyester mesh 160 cm, 150 g (PW314, Q2102) — back panel",
+     "rating": "0.30",
+     "cost": "2.25",
+     "loc": "B5"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-PC075-32109-01",
+     "desc": "Thread: THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     "qty": "220",
+     "cost": "0.0005055"
+    },
+    {
+     "code": "CMP-STD-SOC-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/B — MALE FITTING",
+     "qty": "12",
+     "cost": "0.016632"
+    },
+    {
+     "code": "TAXTABTIB01",
+     "desc": "TIBARD SIDE SEAM TAX TAB (BRITISH TAGS)",
+     "qty": "1",
+     "cost": "0.01891"
+    },
+    {
+     "code": "LABELTIB1900",
+     "desc": "Tibard woven label: Set centrally to back panel, 4 cm down from finished neck seam. Edgestitch in position in same colour as garment.",
+     "qty": "1",
+     "cost": "0.02542"
+    },
+    {
+     "code": "LABELTIB4565",
+     "desc": "Tibard centre fold label: Set to centre back neck into neck seam, on top of care label.",
+     "qty": "1",
+     "cost": "0.02737"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.10",
+     "cost": "0.039067"
+    },
+    {
+     "code": "CMP-STD-DUO-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/C — FEMALE FITTING",
+     "qty": "12",
+     "cost": "0.01958"
+    },
+    {
+     "code": "CMP-STD-RING-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/AR — PRONG FITTING",
+     "qty": "24",
+     "cost": "0.010395"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Chest in cm",
+     "value": "123",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length in cm",
+     "value": "86",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length in cm",
+     "value": "28.4",
+     "value2": ""
+    }
+   ],
+   "mfg": "Cutting: cut the standard pen pocket from waste. Set the female studs (x 12) pre-make-up — concealed, left front as worn. Add additional 2 studs for extra length.\nMake collar and edgestitch.\nSet pen pocket hem. Double turn and topstitch 1.5 cm.\nEdgestitch pen pocket to left sleeve as worn. Set top of pocket 10cm down from cut edge of sleeve. Back side of pocket to be in line with centre of sleeve.\nSet Tibard label to back of jacket. Edgestitch all round.\nJoin up on 5 thread. Neaten front facing edge. Join back panels, join shoulders, set collar, set sleeves, join underarm / side seam. Insert labels. Neaten body hem.\nSet front facing. Stitch at width 13 cm from hem up and run up to neck, 6 mm topstitch back neck and then back down front. Ensure fronts lie flat.\nSet body hem. Turn up 1.7 cm. Topstitch 1.5 cm.\nSet short sleeve hem: double turn (1 cm + 1.6 cm) and topstitch 1.5 cm.",
+   "fin": "Mark and set male studs.\nCheck, trim and fold.",
+   "machMins": "7.75",
+   "finMins": "3",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "CJ0193571",
+   "markerMesh": "0193685F",
+   "markerLen": "1.18",
+   "layQty": "1",
+   "hasMesh": true,
+   "meshLen": "1.16",
+   "meshLay": "4",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "0193NEW",
+   "variant": "0193SS4",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "CICJM0193--01",
+   "version": 1,
+   "history": [],
+   "isOH": false,
+   "ladies": false,
+   "mtc": false,
+   "size": "L",
+   "savedAt": "2026-10-21T15:35:36.345Z",
+   "threadOwn": false,
+   "weightG": "",
+   "commodity": "6203 33 1000"
+  },
   {
    "quoteRef": "Q0021",
    "ref": "",
