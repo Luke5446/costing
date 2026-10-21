@@ -1,21 +1,22 @@
 {
  "publishedAt": "2026-10-21",
- "publishedTS": "2026-10-21T15:35:40.704Z",
+ "publishedTS": "2026-10-21T15:40:43.554Z",
  "qSeq": 22,
- "srSeq": 12,
+ "srSeq": 13,
  "prodSeq": {
   "OHAPB": 2,
   "CT": 1,
   "CJB": 1,
   "COB": 1,
-  "OHCJ": 1
+  "OHCJ": 1,
+  "CJ": 1
  },
  "chgSeq": 18,
  "srs": [
   {
    "quoteRef": "Q0022",
-   "ref": "",
-   "status": "quote",
+   "ref": "SR0013",
+   "status": "production",
    "created": "2026-10-21",
    "due": "2026-10-21",
    "customer": "",
@@ -133,8 +134,8 @@
    "quotePrintedAt": "",
    "printed": false,
    "printedAt": "",
-   "productCode": null,
-   "convertedAt": "",
+   "productCode": "CJ0001L",
+   "convertedAt": "2026-10-21",
    "copiedFrom": "CICJM0193--01",
    "version": 1,
    "history": [],
@@ -142,10 +143,14 @@
    "ladies": false,
    "mtc": false,
    "size": "L",
-   "savedAt": "2026-10-21T15:35:36.345Z",
+   "savedAt": "2026-10-21T15:36:30.880Z",
    "threadOwn": false,
    "weightG": "",
-   "commodity": "6203 33 1000"
+   "commodity": "6203 33 1000",
+   "srRaisedAt": "2026-10-21",
+   "sampleApprovedAt": "2026-10-21",
+   "specialBase": "CJ0001",
+   "family": "special"
   },
   {
    "quoteRef": "Q0021",
