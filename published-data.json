@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-10-22",
- "publishedTS": "2026-10-22T10:52:58.208Z",
- "qSeq": 23,
+ "publishedTS": "2026-10-22T10:58:00.962Z",
+ "qSeq": 24,
  "srSeq": 13,
  "prodSeq": {
   "OHAPB": 2,
@@ -117,7 +117,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-22T10:46:14.751Z",
+   "savedAt": "2026-10-22T10:55:11.619Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6211 42 1000"
