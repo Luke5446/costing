@@ -1,7 +1,7 @@
 {
- "publishedAt": "2026-10-21",
- "publishedTS": "2026-10-21T15:40:43.554Z",
- "qSeq": 22,
+ "publishedAt": "2026-10-22",
+ "publishedTS": "2026-10-22T10:13:06.739Z",
+ "qSeq": 23,
  "srSeq": 13,
  "prodSeq": {
   "OHAPB": 2,
@@ -132,8 +132,8 @@
    "quoteShowSell": true,
    "quotePrinted": false,
    "quotePrintedAt": "",
-   "printed": false,
-   "printedAt": "",
+   "printed": true,
+   "printedAt": "2026-10-21",
    "productCode": "CJ0001L",
    "convertedAt": "2026-10-21",
    "copiedFrom": "CICJM0193--01",
@@ -143,14 +143,18 @@
    "ladies": false,
    "mtc": false,
    "size": "L",
-   "savedAt": "2026-10-21T15:36:30.880Z",
+   "savedAt": "2026-10-21T15:45:51.914Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
    "srRaisedAt": "2026-10-21",
    "sampleApprovedAt": "2026-10-21",
    "specialBase": "CJ0001",
-   "family": "special"
+   "family": "special",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": ""
   },
   {
    "quoteRef": "Q0021",
