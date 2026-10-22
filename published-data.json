@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-22",
- "publishedTS": "2026-10-22T10:13:06.739Z",
+ "publishedTS": "2026-10-22T10:30:28.282Z",
  "qSeq": 23,
  "srSeq": 13,
  "prodSeq": {
@@ -13,6 +13,127 @@
  },
  "chgSeq": 18,
  "srs": [
+  {
+   "quoteRef": "Q0023",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-10-22",
+   "due": "2026-10-22",
+   "customer": "",
+   "garment": "Apron",
+   "desc": "White ladies bib apron with shaped bib facing and darts- Long cross over straps set through eyelets - Wide pocket with centre stitch divide",
+   "brandType": "EMB",
+   "brandPlace": "Set below bib top seam.  Left hand corner as worn.",
+   "fabrics": [
+    {
+     "code": "CO5001ECO",
+     "name": "WHITE 100% SUSTAINABLE COTTON (X149 - AM 5)",
+     "rating": "0.85",
+     "cost": "2.58",
+     "loc": "A3"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-PC075-32109-01",
+     "desc": "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     "qty": "70",
+     "cost": "0.0005055"
+    },
+    {
+     "code": "CMP-OH-PIP-TIB009B-01",
+     "desc": "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "qty": "",
+     "cost": "0.87"
+    },
+    {
+     "code": "CMP-30ED-28-931",
+     "desc": "ANTIQUE BRASS EYELET 30MM — pair with CMP-30RD-28-931 ring",
+     "qty": "",
+     "cost": "0.14985"
+    },
+    {
+     "code": "CMP-30RD-28-931",
+     "desc": "ANTIQUE BRASS RING FOR 30MM EYELET",
+     "qty": "",
+     "cost": "0.1321308"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL",
+     "qty": "",
+     "cost": "0.032"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "",
+     "cost": "0.04335"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Apron length from top of bib to hem in cm",
+     "value": "76",
+     "value2": ""
+    },
+    {
+     "label": "Width at top of bib in cm",
+     "value": "21",
+     "value2": ""
+    },
+    {
+     "label": "Pocket width x depth",
+     "value": "30",
+     "value2": "20"
+    },
+    {
+     "label": "Neck strap width x length",
+     "value": "2.5",
+     "value2": "190"
+    }
+   ],
+   "mfg": "Set \"Made in Great Britian\" trim to lower edge of lower BIB TOP. (smaller bib top and without notches) Set tape 2mm up from bottom of facing)\nMake neck strap. Box off one end. Fold in half and enclose raw edges.\nSet darts. Stitch to nothing 1cm past the steck hole. Backtack stitching to secure.\nSet neck straps to top of BIB TOP and set BIB TOPS together at top edge.\nEdgestitch top of bib.\nStitch down bib tops at lower edge to form edgestitch of yoke.\nSet eyelet re-inforcement pieces.\nDouble turn armholes and topstitch 6mm.\nHem - double turned and topstitching to finish 12mm from edge\nSides - double turned and topstitching to finish 12mm from edge - INSERT LABELS RIGHT SIDE AS WORN BELOW EYELET RE-ENFORCEMENT PIECE.\nSet pocket hem 1cm double turn.\nSet pocket to front. Set bottom of pocket 21cm up from finished hem. Ensure pocket set equally between darts. NO CENTRE STITCH LINE.",
+   "fin": "Set eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nSet bartacks to top of pocket mouth\nTrim, check, press and fold.\nTissue and set label",
+   "machMins": "",
+   "finMins": "",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": "1",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "Ohapp0651 varient 0651ft",
+   "variant": "0651FT",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHAPP065103",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-10-22T10:28:28.221Z",
+   "threadOwn": false,
+   "weightG": "",
+   "commodity": ""
+  },
   {
    "quoteRef": "Q0022",
    "ref": "SR0013",
