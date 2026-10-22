@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-22",
- "publishedTS": "2026-10-22T10:44:54.809Z",
+ "publishedTS": "2026-10-22T10:52:58.208Z",
  "qSeq": 23,
  "srSeq": 13,
  "prodSeq": {
@@ -19,7 +19,7 @@
    "status": "quote",
    "created": "2026-10-22",
    "due": "2026-10-22",
-   "customer": "",
+   "customer": "Betty's",
    "garment": "Apron",
    "desc": "White ladies bib apron with shaped bib facing and darts- Long cross over straps set into bib top and fastened through eyelets - Wide pocket with centre stitch divide -",
    "brandType": "EMB",
@@ -104,8 +104,8 @@
    "variant": "JH to do",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-10-22",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -117,7 +117,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-22T10:44:51.918Z",
+   "savedAt": "2026-10-22T10:46:14.751Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6211 42 1000"
