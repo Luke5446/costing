@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-10-24",
- "publishedTS": "2026-10-24T10:00:00.000Z",
+ "publishedAt": "2026-10-26",
+ "publishedTS": "2026-10-26T10:56:34.697Z",
  "qSeq": 24,
  "srSeq": 13,
  "prodSeq": {
@@ -121,7 +121,13 @@
    "savedAt": "2026-10-22T11:17:15.859Z",
    "threadOwn": true,
    "weightG": "",
-   "commodity": "6211 43 1000"
+   "commodity": "6211 43 1000",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0023",
@@ -230,7 +236,13 @@
    "savedAt": "2026-10-22T10:55:11.619Z",
    "threadOwn": false,
    "weightG": "",
-   "commodity": "6211 42 1000"
+   "commodity": "6211 42 1000",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0022",
