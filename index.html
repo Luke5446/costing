@@ -1294,7 +1294,8 @@ function pcApplyMode(){
    the Production plan app, a fine-grained GitHub token that can write this one repo, kept in the browser
    of the PC that publishes (the GT's, and Luke's when he covers), lets Publish put the file in the repo
    itself through the contents API. Every publish is a commit; GitHub Pages serves it a minute or two later.
-   A PC without a token still gets the download. */
+   A PC without a token cannot publish: Publish shows a red warning asking for one (26 Oct 2026; before that
+   it downloaded the file to upload by hand). */
 var PC_REPO='Luke5446/costing', PC_PUB_FILE='published-data.json';
 var PC_PUB_API='https://api.github.com/repos/'+PC_REPO+'/contents/'+PC_PUB_FILE;
 function pcToken(){ try{ return localStorage.getItem('tibard_costing_token')||''; }catch(e){ return ''; } }
@@ -1303,7 +1304,7 @@ function pcTokenSetup(){
   if(!PC_IS_EDITOR) return;
   var cur=pcToken();
   var t=prompt((cur
-    ? 'This PC publishes straight to GitHub. Paste a new token to replace it, or clear the box to go back to downloading the file.'
+    ? 'This PC publishes straight to GitHub. Paste a new token to replace it, or clear the box to remove it (Publish then stops until a token is added).'
     : 'Paste the GitHub token for publishing (a fine-grained token that can write the '+PC_REPO+' repo and nothing else).\n\nGitHub → Settings → Developer settings → Fine-grained tokens → Generate: repository access "Only select repositories" → costing; Repository permissions → Contents: Read and write. Set an expiry and a reminder to renew it.\n\nWhoever covers for the Garment Technologist pastes it on their own PC too, and sets "This PC" to "Creates records here".'),
     cur?'(kept)':'');
   if(t===null) return;
@@ -1312,9 +1313,19 @@ function pcTokenSetup(){
   pcTokenBtnRefresh(); if(typeof pcAutoSchedule==='function') pcAutoSchedule(); else pcPublishWarn();
 }
 function pcTokenBtnRefresh(){
+  var w=document.getElementById('pcPubWarn'); if(w && pcCanPush()) w.style.display='none';
   var b=document.getElementById('pcTokenBtn'); if(!b) return;
   b.innerHTML=pcCanPush()?'&#9881; Token':'&#9881; Set up this PC to publish';
 }
+/* 26 Oct 2026: with no token on this PC, Publish no longer downloads published-data.json (a download looked
+   like a publish to anyone not expecting it). It shows a red warning beside the button instead, until a token is set. */
+function pcNoToken(){
+  var w=document.getElementById('pcPubWarn');
+  if(!w){ w=document.createElement('span'); w.id='pcPubWarn'; w.style.cssText='color:#fff;background:#dc2626;font-weight:700;font-size:12px;padding:3px 8px;border-radius:6px;cursor:pointer;white-space:nowrap'; w.title='Click Set up this PC to publish and paste the publishing token'; w.onclick=pcTokenSetup;
+    var pb=document.getElementById('pcPublishBtn'); if(pb && pb.parentNode) pb.parentNode.insertBefore(w, pb.nextSibling); else document.body.appendChild(w); }
+  w.innerHTML='&#9888; Please add a token to publish'; w.style.display='';
+}
+
 function pcB64Enc(s){ return btoa(unescape(encodeURIComponent(s))); }
 /* Read the file's current sha, put the new copy with it. Another PC publishing in between makes GitHub
    refuse the sha; then read it again and put once more. The file is read for its sha only (the object media
@@ -1360,8 +1371,8 @@ function pcPublishWarn(){
   function set(bg,fg,html,title){ b.style.background=bg; b.style.color=fg; b.innerHTML=html; b.title=title||''; }
   if(!pcCanPush()){
     b.disabled=false;
-    if(unpub) set('#fee2e2','#991b1b','&#9888; Publish for teams\u2026 \u2014 changes NOT saved to the repo','Downloads published-data.json to upload to the costing repo.');
-    else set('#d1fae5','#065f46','Publish for teams\u2026','Downloads published-data.json to upload to the costing repo.');
+    if(unpub) set('#fee2e2','#991b1b','&#9888; Publish for teams\u2026 \u2014 changes NOT saved to the repo','Needs a token: click Set up this PC to publish and paste the publishing token.');
+    else set('#d1fae5','#065f46','Publish for teams\u2026','Needs a token: click Set up this PC to publish and paste the publishing token.');
     return;
   }
   if(typeof PC_PUBLISHING!=='undefined' && PC_PUBLISHING){ b.disabled=true; set('#e8ecf3','var(--navy)','Publishing to GitHub\u2026',''); return; }
@@ -3043,7 +3054,7 @@ function pcPublishCore(auto){
     });
     return;
   }
-  download(); pcPublishDownloadNote(out);
+  pcNoToken();
 }
 function pcPublishDownloadNote(out){
   alert('published-data.json has been downloaded ('+out.srs.length+' records).\n\nNow upload it to the costing GitHub repo:\nGitHub \u2192 costing \u2192 Add file \u2192 Upload files \u2192 drag the file in \u2192 Commit changes.\n\n(With a GitHub token on this PC \u2014 the \u2699 button beside Publish \u2014 Publish writes the file to the repo itself and this step goes away.)\n\nThe name does not matter \u2014 if your browser saved it as \u201cpublished-data (2).json\u201d, upload it as it is. The app always reads the newest one.\n\nA few minutes later, everyone opening the app sees this data \u2014 view-only unless they have the editor password. Do this once a day (or whenever you want the teams to see the latest).');
