@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-10-27",
- "publishedTS": "2026-10-27T14:15:41.056Z",
- "qSeq": 25,
+ "publishedTS": "2026-10-27T15:51:25.164Z",
+ "qSeq": 26,
  "srSeq": 14,
  "prodSeq": {
   "OHAPB": 2,
@@ -13,6 +13,141 @@
  },
  "chgSeq": 18,
  "srs": [
+  {
+   "quoteRef": "Q0026",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-10-27",
+   "due": "2026-10-27",
+   "customer": "Eagle and Childs",
+   "garment": "Apron",
+   "desc": "Ladies green denim short waist apron full width split pocket and zip pocket— Reversed self fabric waist ties- Full width pocket split into 3 with twin needle stitching with leather tab across narrow pocket. Zip fastened top pocket left side as worn.",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "CO5TEXAS912",
+     "name": "TEXAS GREEN DENIM 100% COTTON TWILL 330GSM (GE62)",
+     "rating": "0.48",
+     "cost": "3.22",
+     "loc": ""
+    },
+    {
+     "code": "LEATHERHIDE",
+     "name": "FULL LEATHER HIDE MAHOGONY AGED OLD",
+     "rating": "0.0025",
+     "cost": "222.75",
+     "loc": "C1"
+    }
+   ],
+   "trims": [
+    {
+     "code": "",
+     "desc": "THREAD — COATS EPIC 80'S GREEN 05925— cost per metre",
+     "qty": "30",
+     "cost": "0.000714"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "",
+     "desc": "Antique brass zip: 18cm (7\") black zip with antique brass metal teeth mgkbc56c/7/18",
+     "qty": "1",
+     "cost": "0.80"
+    },
+    {
+     "code": "",
+     "desc": "Antique brass STUD MALE PART — pair with post",
+     "qty": "1",
+     "cost": "0.05124"
+    },
+    {
+     "code": "",
+     "desc": "Antique brass Cap  - pair with female part",
+     "qty": "1",
+     "cost": "0.03553"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.016",
+     "cost": "0.0129"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Length from top to hem in cm",
+     "value": "33",
+     "value2": ""
+    },
+    {
+     "label": "Width at hem",
+     "value": "61.5",
+     "value2": ""
+    },
+    {
+     "label": "Length of waist tie",
+     "value": "102",
+     "value2": ""
+    }
+   ],
+   "mfg": "Set pocket hem. double turn 1cm and twin needle stitch. to reduce bulk at ends start double turn 1.5cm from each end\nFold up pocket at notch and tack sides together\nDouble turn side seam 1cm and twin needle topstitch. Set labels right side seam as worn set 4cm down from finished top edge.\nTwin needle pocket stitch lines. from left side as worn. first pocket stitched at 16cm (measured from side seam stitch line to first row of twin needle stitching) second stitch line to be 6cm gap between stitch lines.\nMake zip pocket. set pocket bag to apron set with right sides of fabric together. Set pocket bag cut edge level with inside row of twin needle stitching of side seam. stitch box opening for zip. use steck holes for centre of box and stitch 6mm past steck hole and 3 stitch wide (1cm)box. (note opening to be 4cm down from cut edge and centrally within width of pocket bag). cut opening for zip. press opening before topstitching zip or edgestitch on inside long edges to help rolling of seams. set zip (when zip closed puller to left side seam as worn). edgesttich all round. set second row of twin needle stitching to bottom of pocket. close pocket bags - pocket bag edges to be enclosed on inside. . twin needle stitch zip opening sides and top.\nWith reverse side of fabric of band uppermost centralise band to waist apron and set band to reverse side of apron.\nWith reverse side of fabric uppermost. bag out one end on each waist tie and join other side of waist tie to waistband. align waist band seam so it is in line with side seam of apron. close off waist ties and turn under 1cm and edgestitch along lower edge of waistband to close off.",
+   "fin": "Set 2 x studs to top of pocket stitch lines\nBartack vertical to top of pocket following inside row of side seam topstitching. bartack horizontal across waist tie join. total 4 bartacks per apron.\nCheck , trim , press,fold and tissue. set product sticker.",
+   "machMins": "15",
+   "finMins": "4",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "AP0618",
+   "markerMesh": "",
+   "markerLen": "0.92",
+   "layQty": "2",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": true,
+   "conFab": "LEATHERHIDE",
+   "markerCon": "1",
+   "conLen": "1",
+   "conLay": "1",
+   "lectra": "APP0618",
+   "variant": "0618",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-10-27",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHAPP061803DEN",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-10-27T15:51:13.411Z",
+   "threadOwn": false,
+   "weightG": "",
+   "commodity": "6211 42 1000"
+  },
   {
    "quoteRef": "Q0025",
    "ref": "SR0014",
