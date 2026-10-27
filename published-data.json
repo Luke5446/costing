@@ -1,8 +1,8 @@
 {
  "publishedAt": "2026-10-27",
- "publishedTS": "2026-10-27T15:58:41.077Z",
+ "publishedTS": "2026-10-27T16:03:43.774Z",
  "qSeq": 26,
- "srSeq": 14,
+ "srSeq": 15,
  "prodSeq": {
   "OHAPB": 2,
   "CT": 1,
@@ -143,7 +143,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-27T15:58:39.172Z",
+   "savedAt": "2026-10-27T16:00:43.277Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6211 42 1000"
@@ -274,8 +274,8 @@
   },
   {
    "quoteRef": "Q0024",
-   "ref": "",
-   "status": "quote",
+   "ref": "SR0015",
+   "status": "sampling",
    "created": "2026-10-22",
    "due": "2026-10-22",
    "customer": "Johnsons",
@@ -377,7 +377,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-22T11:17:15.859Z",
+   "savedAt": "2026-10-27T16:01:12.845Z",
    "threadOwn": true,
    "weightG": "",
    "commodity": "6211 43 1000",
@@ -385,7 +385,7 @@
    "logoImg": "",
    "placeImg": "",
    "logo2Img": "",
-   "srRaisedAt": "",
+   "srRaisedAt": "2026-10-27",
    "sampleApprovedAt": ""
   },
   {
