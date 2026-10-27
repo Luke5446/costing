@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-27",
- "publishedTS": "2026-10-27T16:30:08.929Z",
+ "publishedTS": "2026-10-27T16:35:09.544Z",
  "qSeq": 27,
  "srSeq": 15,
  "prodSeq": {
@@ -128,7 +128,7 @@
    "variant": "0619",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
+   "quotePrinted": true,
    "printed": false,
    "productCode": null,
    "copiedFrom": "OHAPP061803DEN",
@@ -138,14 +138,15 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-27T16:30:02.496Z",
+   "savedAt": "2026-10-27T16:31:06.632Z",
    "threadOwn": false,
    "weightG": "",
    "ref": "",
    "isProduct": false,
    "due": "2026-10-27",
    "copiedFromQuote": "Q0026",
-   "commodity": ""
+   "commodity": "",
+   "quotePrintedAt": "2026-10-27"
   },
   {
    "quoteRef": "Q0026",
