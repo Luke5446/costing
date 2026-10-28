@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-28",
- "publishedTS": "2026-10-28T11:32:14.956Z",
+ "publishedTS": "2026-10-28T11:37:23.673Z",
  "qSeq": 30,
  "srSeq": 15,
  "prodSeq": {
@@ -451,7 +451,7 @@
   {
    "quoteRef": "Q0026",
    "ref": "",
-   "status": "quote",
+   "status": "rejected",
    "created": "2026-10-27",
    "due": "2026-10-27",
    "customer": "Eagle and Childs",
@@ -578,7 +578,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-27T16:05:29.821Z",
+   "savedAt": "2026-10-28T11:33:30.499Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6211 42 1000",
@@ -3868,7 +3868,7 @@
    "ladies": false,
    "mtc": false,
    "size": "S",
-   "savedAt": "2026-09-28T14:29:33.227Z",
+   "savedAt": "2026-10-28T11:34:26.878Z",
    "weightG": "",
    "chgRef": "",
    "logoImg": "",
@@ -3881,7 +3881,8 @@
    "markerCon": "",
    "conLen": "",
    "conLay": "",
-   "threadOwn": false
+   "threadOwn": false,
+   "commodity": ""
   },
   {
    "quoteRef": "",
