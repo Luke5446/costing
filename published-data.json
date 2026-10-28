@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-28",
- "publishedTS": "2026-10-28T10:54:19.230Z",
+ "publishedTS": "2026-10-28T11:02:18.680Z",
  "qSeq": 30,
  "srSeq": 15,
  "prodSeq": {
@@ -26,7 +26,7 @@
     {
      "code": "PC14001",
      "name": "White Cooltex 1 poly-cotton 50% / 50%",
-     "rating": "1.81",
+     "rating": "1.86",
      "cost": "3.09",
      "loc": "A3"
     },
@@ -150,7 +150,7 @@
    "ladies": false,
    "mtc": false,
    "size": "52",
-   "savedAt": "2026-10-28T10:52:36.608Z",
+   "savedAt": "2026-10-28T10:59:22.911Z",
    "threadOwn": false,
    "weightG": "",
    "ref": "",
@@ -175,7 +175,7 @@
     {
      "code": "PC14001",
      "name": "White Cooltex 1 poly-cotton 50% / 50%",
-     "rating": "1.59",
+     "rating": "1.64",
      "cost": "3.09",
      "loc": "A3"
     },
@@ -302,7 +302,7 @@
    "ladies": false,
    "mtc": false,
    "size": "52",
-   "savedAt": "2026-10-28T10:53:26.966Z",
+   "savedAt": "2026-10-28T11:00:18.109Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": ""
