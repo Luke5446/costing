@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-28",
- "publishedTS": "2026-10-28T10:28:15.689Z",
+ "publishedTS": "2026-10-28T10:29:26.036Z",
  "qSeq": 29,
  "srSeq": 15,
  "prodSeq": {
@@ -268,7 +268,7 @@
    ],
    "mfg": "5 cm deep stand collar — edge stitched\nHigher quality French cuffs — flat sewn\nPanelled back\nAll seams to go to the back — right side of overlocking to be visible\nBottom hem double turned — twin-needle detail hem\nPen pocket left hand sleeve as worn — with centre divide\nRed tax tab in pen pocket towards back of sleeve — no red to show through pocket\nFront facing edge stitched\n\"Oliver Harvey\" British button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nButtonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner\nDetachable button fasten — unisex, using squashed detachable buttons\n2 bartacks on cuffs\nSemi-circle of mesh under the arm/sleeve",
    "fin": "Pressed and trimmed\nIndividually wrapped in OH tissue paper — fold in tissue with description label bottom right front",
-   "machMins": "32",
+   "machMins": "36",
    "finMins": "5",
    "cutBatch": "25",
    "cutMins": 15,
@@ -302,7 +302,7 @@
    "ladies": false,
    "mtc": false,
    "size": "52",
-   "savedAt": "2026-10-28T10:26:15.158Z",
+   "savedAt": "2026-10-28T10:29:24.118Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000"
