@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-28",
- "publishedTS": "2026-10-28T10:29:26.036Z",
+ "publishedTS": "2026-10-28T10:34:28.818Z",
  "qSeq": 29,
  "srSeq": 15,
  "prodSeq": {
@@ -142,8 +142,8 @@
    "variant": "JH TO DO",
    "quoteMarkup": 60,
    "quoteShowSell": true,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-10-28",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -155,7 +155,7 @@
    "ladies": false,
    "mtc": false,
    "size": "52",
-   "savedAt": "2026-10-28T10:25:11.730Z",
+   "savedAt": "2026-10-28T10:30:42.202Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": ""
