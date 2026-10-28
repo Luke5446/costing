@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-10-28",
- "publishedTS": "2026-10-28T10:34:28.818Z",
- "qSeq": 29,
+ "publishedTS": "2026-10-28T10:48:13.864Z",
+ "qSeq": 30,
  "srSeq": 15,
  "prodSeq": {
   "OHAPB": 2,
@@ -13,6 +13,153 @@
  },
  "chgSeq": 18,
  "srs": [
+  {
+   "quoteRef": "Q0030",
+   "status": "quote",
+   "created": "2026-10-28",
+   "customer": "Dan Wells",
+   "garment": "Chef jacket",
+   "desc": "Oxford chef jacket white long sleeve Longer length at 34\"— Stand collar · Panelled back · Curved French cuff with wide 'V' opening · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC14001",
+     "name": "White Cooltex 1 poly-cotton 50% / 50%",
+     "rating": "1.81",
+     "cost": "3.09",
+     "loc": "A3"
+    },
+    {
+     "code": "MESH2290901",
+     "name": "Coolmax mesh fabric, qual 22909, white",
+     "rating": "0.035",
+     "cost": "1.1854",
+     "loc": "B8"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-PC075-32109-01",
+     "desc": "Thread: THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     "qty": "220",
+     "cost": "0.0005055"
+    },
+    {
+     "code": "OHDETACHABLEBUTTON01",
+     "desc": "Buttons: WHITE DETACHABLE CHEF JACKET BUTTONS (SET OF 12) — 1 set per jacket",
+     "qty": "1",
+     "cost": "0.636"
+    },
+    {
+     "code": "CMP-OH-PIP-TIB009B-01",
+     "desc": "Back-neck ribbon: OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "qty": "0.7",
+     "cost": "0.87"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Tax tab: Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "OH woven label: Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OH wash label: OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "Additional label: WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "qty": "0.2",
+     "cost": "0.039067"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "Packaging — tissue wrap: OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25X50-01",
+     "desc": "Packaging — masking tape: WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.9",
+     "cost": "0.0129"
+    },
+    {
+     "code": "OHSWINGTAG",
+     "desc": "POS swing tag: Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "qty": "1",
+     "cost": "0.0646"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Width at chest in cm",
+     "value": "139",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length in cm",
+     "value": "63",
+     "value2": ""
+    },
+    {
+     "label": "Centre back Length in cm",
+     "value": "86.5",
+     "value2": ""
+    }
+   ],
+   "mfg": "5 cm deep stand collar — edge stitched\nHigher quality French cuffs — flat sewn\nPanelled back\nAll seams to go to the back — right side of overlocking to be visible\nBottom hem double turned — twin-needle detail hem\nPen pocket left hand sleeve as worn — with centre divide\nRed tax tab in pen pocket towards back of sleeve — no red to show through pocket\nFront facing edge stitched\n\"Oliver Harvey\" British button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nButtonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner\nDetachable button fasten — unisex, using squashed detachable buttons\n2 bartacks on cuffs\nSemi-circle of mesh under the arm/sleeve",
+   "fin": "Pressed and trimmed\nIndividually wrapped in OH tissue paper — fold in tissue with description label bottom right front",
+   "machMins": "36",
+   "finMins": "6",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "1",
+   "markerMesh": "1",
+   "markerLen": "1",
+   "layQty": "1",
+   "hasMesh": true,
+   "meshLen": "1",
+   "meshLay": "1",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "OH5 — Oxford — long sleeved, variant LNGOH5LSL with pen pocket · with mesh fabric curved underarm panels · cut pen pockets",
+   "variant": "JH TO DO",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": true,
+   "printed": false,
+   "productCode": null,
+   "copiedFrom": "OHCJMOXFORD--01L",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "52",
+   "savedAt": "2026-10-28T10:46:13.801Z",
+   "threadOwn": false,
+   "weightG": "",
+   "ref": "",
+   "isProduct": false,
+   "due": "",
+   "copiedFromQuote": "Q0028",
+   "commodity": "",
+   "quotePrintedAt": "2026-10-28"
+  },
   {
    "quoteRef": "Q0029",
    "ref": "",
@@ -122,7 +269,7 @@
    "mfg": "5 cm deep stand collar — edge stitched\nShort sleeved with twin-needle hem\nPanelled back\nAll seams to go to the back — right side of overlocking to be visible\nBottom hem double turned — twin-needle detail hem\nPen pocket left hand sleeve as worn — with centre divide\nRed tax tab in pen pocket towards back of sleeve — no red to show through pocket\nFront facing edge stitched\n\"Oliver Harvey\" British button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nButtonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner\nSquashed detachable buttons — unisex fasten\nSemi-circle of mesh under the arm/sleeve",
    "fin": "Pressed and trimmed\nIndividually wrapped in OH tissue paper — fold in tissue with description label bottom right front",
    "machMins": "32",
-   "finMins": "5",
+   "finMins": "6",
    "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 2,
@@ -155,7 +302,7 @@
    "ladies": false,
    "mtc": false,
    "size": "52",
-   "savedAt": "2026-10-28T10:30:42.202Z",
+   "savedAt": "2026-10-28T10:45:57.933Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": ""
@@ -257,7 +404,7 @@
     },
     {
      "label": "Sleeve length in cm",
-     "value": "66.5",
+     "value": "63",
      "value2": ""
     },
     {
@@ -269,7 +416,7 @@
    "mfg": "5 cm deep stand collar — edge stitched\nHigher quality French cuffs — flat sewn\nPanelled back\nAll seams to go to the back — right side of overlocking to be visible\nBottom hem double turned — twin-needle detail hem\nPen pocket left hand sleeve as worn — with centre divide\nRed tax tab in pen pocket towards back of sleeve — no red to show through pocket\nFront facing edge stitched\n\"Oliver Harvey\" British button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nButtonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner\nDetachable button fasten — unisex, using squashed detachable buttons\n2 bartacks on cuffs\nSemi-circle of mesh under the arm/sleeve",
    "fin": "Pressed and trimmed\nIndividually wrapped in OH tissue paper — fold in tissue with description label bottom right front",
    "machMins": "36",
-   "finMins": "5",
+   "finMins": "6",
    "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 2,
@@ -302,7 +449,7 @@
    "ladies": false,
    "mtc": false,
    "size": "52",
-   "savedAt": "2026-10-28T10:29:24.118Z",
+   "savedAt": "2026-10-28T10:46:12.157Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000"
