@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-10-29",
- "publishedTS": "2026-10-29T10:04:46.147Z",
+ "publishedTS": "2026-10-29T10:09:49.900Z",
  "qSeq": 30,
  "srSeq": 15,
  "prodSeq": {
@@ -728,7 +728,7 @@
    "ref": "SR0015",
    "status": "sampling",
    "created": "2026-10-22",
-   "due": "2026-11-10",
+   "due": "2026-11-09",
    "customer": "Johnsons",
    "garment": "Apron",
    "desc": "Navy ladies bib apron with shaped bib facing and darts —  Self fabric waist ties - Fixed neck strap",
@@ -817,8 +817,8 @@
    "quoteShowSell": true,
    "quotePrinted": true,
    "quotePrintedAt": "2026-10-22",
-   "printed": false,
-   "printedAt": "",
+   "printed": true,
+   "printedAt": "2026-10-29",
    "productCode": null,
    "convertedAt": "",
    "copiedFrom": "OHAPP065115",
@@ -828,7 +828,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-27T16:05:09.693Z",
+   "savedAt": "2026-10-29T10:06:35.137Z",
    "threadOwn": true,
    "weightG": "",
    "commodity": "6211 43 1000",
@@ -837,7 +837,8 @@
    "placeImg": "",
    "logo2Img": "",
    "srRaisedAt": "2026-10-27",
-   "sampleApprovedAt": ""
+   "sampleApprovedAt": "",
+   "salePrice": ""
   },
   {
    "quoteRef": "Q0023",
