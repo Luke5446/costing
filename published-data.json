@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-02",
- "publishedTS": "2026-11-02T16:28:17.868Z",
+ "publishedTS": "2026-11-02T16:47:13.547Z",
  "qSeq": 33,
  "srSeq": 15,
  "prodSeq": {
@@ -13,6 +13,131 @@
  },
  "chgSeq": 18,
  "srs": [
+  {
+   "quoteRef": "Q0033",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-11-02",
+   "due": "2026-11-02",
+   "customer": "Monachyle Mhor 84",
+   "garment": "Apron",
+   "desc": "Navy Denim Retail bib apron with pocket right leg as worn — Retail bib apron · Adjustable self fabric neck tie with dungaree buckle fastening · Mitred hip pocket set to right leg as worn. · OH non tangle waist ties · Rivets at top of pocket mouth. · OH towel loop",
+   "brandType": "EMB",
+   "brandPlace": "EAT MHOR FOOD logo set centrally to bib",
+   "fabrics": [
+    {
+     "code": "CO5224DEN",
+     "name": "MURRAY INDIGO DENIM 100% COTTON 315GM",
+     "rating": "",
+     "cost": "6.71",
+     "loc": "C5"
+    }
+   ],
+   "trims": [
+    {
+     "code": "THEAD 9971",
+     "desc": "THREAD: Coats 9971 80's",
+     "qty": "30",
+     "cost": ""
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL- 100% COTTON 50 degree wash do not tumble dry",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-OH-NTT-25-03",
+     "desc": "BLACK OH NON TANGLE TAPE TIE 25MM",
+     "qty": "2",
+     "cost": "0.25171"
+    },
+    {
+     "code": "CMP-OH-NTT-25-03",
+     "desc": "BLACK OH NON TANGLE TAPE TIE 25MM",
+     "qty": "0.38",
+     "cost": "0.25171"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "OHBRASSBUTTON",
+     "desc": "OLIVER HARVEY BRASS 4 HOLE BUTTON",
+     "qty": "1",
+     "cost": "0.036"
+    },
+    {
+     "code": "CMP-RIV-010B-677",
+     "desc": "SILVER RIVET PRONG (NEW LACE)",
+     "qty": "2",
+     "cost": "0.016723"
+    },
+    {
+     "code": "CMP-RIV-011B-931",
+     "desc": "ANTIQUE BRASS NIPPLE RIVET (NEW LACE)",
+     "qty": "2",
+     "cost": "0.00962"
+    },
+    {
+     "code": "OHBRASSBUCKLE",
+     "desc": "ANTIQUE BRASS BUCKLE",
+     "qty": "1",
+     "cost": "0.06448"
+    }
+   ],
+   "meas": [],
+   "mfg": "Make neck strap. bag out one end.\nSet neck strap to right hand side as worn of bib. set bib facing.\n6mm topstitch top of bib.\nStitch down bib facing to form 5cm topstitch of front bib.\nSet towel loop 7.5cm from cut edge side seam. double turn armholes and topstitch 6mm. stitch down towel loop.\nDouble turn ends of oliver harvey non tangle ties\nSet ties to finish to top of side seam. ensure oliver harvey writing reads correct way up.\nDouble turn side seams and topstich 12mm.\nDouble stitch waist tie to secure at side seam\nSet pocket hem. double turn and topstich 2cm\nSet pocket to right side as worn. set bottom of pocket 24cm up from finished edge and 5cm in from side seam finished edge. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position.\nBox stitch across top of pocket mouth 3 stitches and down to pocket hem. backtack to secure. box to finish width 9/10mm. box to fit rivet within stitch lines.\nSet button to left side of bib as worn. set 2cm from armhole edge of bib and centrally within depth of bib facing stitching.",
+   "fin": "Set buckle and rivets to top of pocket. check,trim, press and fold.\nTissue in oliver harvey tissue - set description label bottom right hand corner",
+   "machMins": "",
+   "finMins": "",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "",
+   "markerMesh": "",
+   "markerLen": "",
+   "layQty": "",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "Ohapp0534 varient 0569",
+   "variant": "0569",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHAPP0569GD",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-11-02T16:45:13.481Z",
+   "threadOwn": true,
+   "weightG": "",
+   "commodity": "",
+   "salePrice": ""
+  },
   {
    "quoteRef": "Q0032",
    "ref": "",
