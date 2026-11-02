@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-11-02",
- "publishedTS": "2026-11-02T11:42:58.420Z",
- "qSeq": 32,
+ "publishedTS": "2026-11-02T16:28:17.868Z",
+ "qSeq": 33,
  "srSeq": 15,
  "prodSeq": {
   "OHAPB": 2,
@@ -134,7 +134,13 @@
    "threadOwn": true,
    "weightG": "",
    "commodity": "6211 43 1000",
-   "salePrice": ""
+   "salePrice": "",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0031",
