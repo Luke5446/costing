@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-02",
- "publishedTS": "2026-11-02T16:47:13.547Z",
+ "publishedTS": "2026-11-02T16:57:50.338Z",
  "qSeq": 33,
  "srSeq": 15,
  "prodSeq": {
@@ -93,12 +93,30 @@
      "desc": "ANTIQUE BRASS BUCKLE",
      "qty": "1",
      "cost": "0.06448"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.9",
+     "cost": "0.0129"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
     }
    ],
    "meas": [],
    "mfg": "Make neck strap. bag out one end.\nSet neck strap to right hand side as worn of bib. set bib facing.\n6mm topstitch top of bib.\nStitch down bib facing to form 5cm topstitch of front bib.\nSet towel loop 7.5cm from cut edge side seam. double turn armholes and topstitch 6mm. stitch down towel loop.\nDouble turn ends of oliver harvey non tangle ties\nSet ties to finish to top of side seam. ensure oliver harvey writing reads correct way up.\nDouble turn side seams and topstich 12mm.\nDouble stitch waist tie to secure at side seam\nSet pocket hem. double turn and topstich 2cm\nSet pocket to right side as worn. set bottom of pocket 24cm up from finished edge and 5cm in from side seam finished edge. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position.\nBox stitch across top of pocket mouth 3 stitches and down to pocket hem. backtack to secure. box to finish width 9/10mm. box to fit rivet within stitch lines.\nSet button to left side of bib as worn. set 2cm from armhole edge of bib and centrally within depth of bib facing stitching.",
    "fin": "Set buckle and rivets to top of pocket. check,trim, press and fold.\nTissue in oliver harvey tissue - set description label bottom right hand corner",
-   "machMins": "",
+   "machMins": "8.75",
    "finMins": "",
    "cutBatch": "25",
    "cutMins": 15,
@@ -132,7 +150,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-11-02T16:45:13.481Z",
+   "savedAt": "2026-11-02T16:57:27.115Z",
    "threadOwn": true,
    "weightG": "",
    "commodity": "",
