@@ -1,7 +1,7 @@
 {
- "publishedAt": "2026-10-29",
- "publishedTS": "2026-10-29T16:15:16.402Z",
- "qSeq": 31,
+ "publishedAt": "2026-11-02",
+ "publishedTS": "2026-11-02T11:22:11.433Z",
+ "qSeq": 32,
  "srSeq": 15,
  "prodSeq": {
   "OHAPB": 2,
@@ -13,6 +13,129 @@
  },
  "chgSeq": 18,
  "srs": [
+  {
+   "quoteRef": "Q0032",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-11-02",
+   "due": "2026-11-02",
+   "customer": "Soho Farmhouse",
+   "garment": "Apron",
+   "desc": "Storm grey bib apron in poly cotton with self fabric waist ties and a black OH towel loop — Soho Farmhouse logo embroidered to the top left-hand corner of the bib as worn",
+   "brandType": "EMB",
+   "brandPlace": "Soho Farmhouse logo set to top left hand corner of bib",
+   "fabrics": [
+    {
+     "code": "PC2064ECO",
+     "name": "Storm grey 65% recycled polyester / 35% organic cotton 200 gsm X133ECO-AM299 (Tiajo) — rating 1.00 m with the self fabric ties and neck strap, the same as All Costings; the sheet gives the location as A3, Sage holds the cloth at A5",
+     "rating": "0.84",
+     "cost": "2.32",
+     "loc": "A5"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-09963-64",
+     "desc": "Thread — main: THREAD — COATS EPIC 80'S STORM GREY 09963 — cost per metre",
+     "qty": "30",
+     "cost": "0.000714"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "OH woven label: Oliver Harvey British button woven label, set into the right side seam as worn, 4 cm down from the top edge.",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OH care label: Oliver Harvey wash instructions set under the OH woven label in the right side seam as worn: 65% recycled polyester / 35% organic cotton · 60° wash · tumble dry · 2 dot iron · do not bleach · P dry clean.",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "CMP-OH-NTT-25-03",
+     "desc": "BLACK OH NON TANGLE TAPE TIE 25MM",
+     "qty": "0.38",
+     "cost": "0.25171"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.9",
+     "cost": "0.0129"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Width of apron in cm",
+     "value": "91.5",
+     "value2": ""
+    },
+    {
+     "label": "Across bib at top in cm",
+     "value": "27",
+     "value2": ""
+    },
+    {
+     "label": "Neck strap length",
+     "value": "53",
+     "value2": ""
+    }
+   ],
+   "mfg": "Make neck strap. Fold in half and enclose raw edges. Edge stitch long edge to close seam.\nMake waist ties. Bag out one end, fold in half and enclose raw edges. Edgestitch long edge to close.\nSet bib facing and insert neck strap. Edge of neck strap to finish in line with side of bib (no step). Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.\nTop of bib 6 mm topstitched.\nBib facing: fold in 10 mm to neaten lower edge. Edge stitch lower edge of facing, which forms 5.5 cm topstitching to front.\nArmhole double turned and topstitching to finish 6 mm from edge. Cut the towel loop 15\", \"Oliver Harvey\" to read from top to bottom. Position the towel loop 17 cm from the left-hand side of the side seam, folded in half and inserted inside the back waistband, stitched down on the front following the armhole stitching.\nHem double turned and topstitching to finish 12 mm from edge.\nSides double turned and topstitching to finish 12 mm from edge. Neaten the armholes before the side seam is neatened.\nInsert the waist tie neatly into the top of the side seam turning. Do NOT roll the tie above the apron seam.\nFold the waist tie back on itself to fall away from the garment and edge stitch down to the width of the strap to secure.",
+   "fin": "Check, trim, press and fold. Tissue, set the product label to the bottom right-hand corner.",
+   "machMins": "15",
+   "finMins": "3",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "OH300535",
+   "markerMesh": "",
+   "markerLen": "1.65",
+   "layQty": "2",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "AP3005B — butchers width",
+   "variant": "3005TIES",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHAP3005248ST",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-11-02T11:20:10.373Z",
+   "threadOwn": true,
+   "weightG": "",
+   "commodity": "6211 43 1000",
+   "salePrice": ""
+  },
   {
    "quoteRef": "Q0031",
    "ref": "",
@@ -193,7 +316,13 @@
    "threadOwn": false,
    "commodity": "6211 43 1000",
    "weightG": "",
-   "salePrice": ""
+   "salePrice": "",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0030",
