@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-11-02",
- "publishedTS": "2026-11-02T16:57:50.338Z",
+ "publishedAt": "2026-11-03",
+ "publishedTS": "2026-11-03T12:47:59.945Z",
  "qSeq": 33,
  "srSeq": 15,
  "prodSeq": {
@@ -35,10 +35,10 @@
    ],
    "trims": [
     {
-     "code": "THEAD 9971",
-     "desc": "THREAD: Coats 9971 80's",
-     "qty": "30",
-     "cost": ""
+     "code": "CMP-THR-EP80-07935-15",
+     "desc": "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     "qty": "15",
+     "cost": "0.000714"
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
@@ -111,20 +111,26 @@
      "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
      "qty": "0.03",
      "cost": "0.039067"
+    },
+    {
+     "code": "CMP-THR-EP80-02362-79",
+     "desc": "THREAD — COATS EPIC 40'S GOLD 02362 — cost per metre",
+     "qty": "15",
+     "cost": "0.001018"
     }
    ],
    "meas": [],
    "mfg": "Make neck strap. bag out one end.\nSet neck strap to right hand side as worn of bib. set bib facing.\n6mm topstitch top of bib.\nStitch down bib facing to form 5cm topstitch of front bib.\nSet towel loop 7.5cm from cut edge side seam. double turn armholes and topstitch 6mm. stitch down towel loop.\nDouble turn ends of oliver harvey non tangle ties\nSet ties to finish to top of side seam. ensure oliver harvey writing reads correct way up.\nDouble turn side seams and topstich 12mm.\nDouble stitch waist tie to secure at side seam\nSet pocket hem. double turn and topstich 2cm\nSet pocket to right side as worn. set bottom of pocket 24cm up from finished edge and 5cm in from side seam finished edge. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position.\nBox stitch across top of pocket mouth 3 stitches and down to pocket hem. backtack to secure. box to finish width 9/10mm. box to fit rivet within stitch lines.\nSet button to left side of bib as worn. set 2cm from armhole edge of bib and centrally within depth of bib facing stitching.",
    "fin": "Set buckle and rivets to top of pocket. check,trim, press and fold.\nTissue in oliver harvey tissue - set description label bottom right hand corner",
    "machMins": "8.75",
-   "finMins": "",
+   "finMins": "5",
    "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 2,
-   "markerMain": "",
+   "markerMain": "AP0534061",
    "markerMesh": "",
-   "markerLen": "",
-   "layQty": "",
+   "markerLen": "2.17",
+   "layQty": "4",
    "hasMesh": false,
    "meshLen": "",
    "meshLay": "",
@@ -150,11 +156,17 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-11-02T16:57:27.115Z",
+   "savedAt": "2026-11-03T12:45:59.884Z",
    "threadOwn": true,
    "weightG": "",
-   "commodity": "",
-   "salePrice": ""
+   "commodity": "6211 42 1000",
+   "salePrice": "",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0032",
