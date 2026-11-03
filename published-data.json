@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-03",
- "publishedTS": "2026-11-03T12:47:59.945Z",
+ "publishedTS": "2026-11-03T12:54:16.996Z",
  "qSeq": 33,
  "srSeq": 15,
  "prodSeq": {
@@ -21,14 +21,14 @@
    "due": "2026-11-02",
    "customer": "Monachyle Mhor 84",
    "garment": "Apron",
-   "desc": "Navy Denim Retail bib apron with pocket right leg as worn — Retail bib apron · Adjustable self fabric neck tie with dungaree buckle fastening · Mitred hip pocket set to right leg as worn. · OH non tangle waist ties · Rivets at top of pocket mouth. · OH towel loop",
+   "desc": "Navy Denim Retail bib apron with mitred hip pocket right side as worn. Adjustable self fabric neck tie with dungaree buckle fastening · OH non tangle waist ties · Rivets at top of pocket mouth. · OH towel loop",
    "brandType": "EMB",
    "brandPlace": "EAT MHOR FOOD logo set centrally to bib",
    "fabrics": [
     {
      "code": "CO5224DEN",
      "name": "MURRAY INDIGO DENIM 100% COTTON 315GM",
-     "rating": "",
+     "rating": "0.55",
      "cost": "6.71",
      "loc": "C5"
     }
@@ -119,9 +119,35 @@
      "cost": "0.001018"
     }
    ],
-   "meas": [],
-   "mfg": "Make neck strap. bag out one end.\nSet neck strap to right hand side as worn of bib. set bib facing.\n6mm topstitch top of bib.\nStitch down bib facing to form 5cm topstitch of front bib.\nSet towel loop 7.5cm from cut edge side seam. double turn armholes and topstitch 6mm. stitch down towel loop.\nDouble turn ends of oliver harvey non tangle ties\nSet ties to finish to top of side seam. ensure oliver harvey writing reads correct way up.\nDouble turn side seams and topstich 12mm.\nDouble stitch waist tie to secure at side seam\nSet pocket hem. double turn and topstich 2cm\nSet pocket to right side as worn. set bottom of pocket 24cm up from finished edge and 5cm in from side seam finished edge. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position.\nBox stitch across top of pocket mouth 3 stitches and down to pocket hem. backtack to secure. box to finish width 9/10mm. box to fit rivet within stitch lines.\nSet button to left side of bib as worn. set 2cm from armhole edge of bib and centrally within depth of bib facing stitching.",
-   "fin": "Set buckle and rivets to top of pocket. check,trim, press and fold.\nTissue in oliver harvey tissue - set description label bottom right hand corner",
+   "meas": [
+    {
+     "label": "Width of skirt in cm",
+     "value": "63",
+     "value2": ""
+    },
+    {
+     "label": "Across bib width in cm",
+     "value": "28",
+     "value2": ""
+    },
+    {
+     "label": "Length from bib to hem in cm",
+     "value": "93",
+     "value2": ""
+    },
+    {
+     "label": "Neck strap length",
+     "value": "76",
+     "value2": "4"
+    },
+    {
+     "label": "Pocket width by depth",
+     "value": "18.5",
+     "value2": "19.5"
+    }
+   ],
+   "mfg": "Make neck strap. bag out one end.\nSet neck strap to right hand side as worn of bib. set bib facing.\n6mm topstitch top of bib.\nStitch down bib facing to form 5cm topstitch of front bib.\nSet towel loop 7.5cm from cut edge side seam. double turn armholes and topstitch 6mm. stitch down towel loop.\nSet ties to finish to top of side seam. ensure oliver harvey writing reads correct way up.\nDouble turn side seams and topstich 12mm.\nDouble stitch waist tie to secure at side seam\nSet pocket hem. double turn 1 + 2cm and topstitch at 2cm\nSet pocket to right side as worn. Set bottom of pocket 24cm up from finished edge and 5cm in from side seam finished edge. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position.\nBox stitch across top of pocket mouth 3 stitches and down to pocket hem. backtack to secure. box to finish width 9/10mm. box to fit rivet within stitch lines.\nSet button to left side of bib as worn. Set 2cm from armhole edge of bib and centrally within depth of bib facing stitching.",
+   "fin": "Set button to bib top left side as worn\nSet buckle and rivets to top of pocket. check,trim, press and fold.\nTissue in oliver harvey tissue - set description label bottom right hand corner",
    "machMins": "8.75",
    "finMins": "5",
    "cutBatch": "25",
@@ -156,7 +182,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-11-03T12:45:59.884Z",
+   "savedAt": "2026-11-03T12:52:16.939Z",
    "threadOwn": true,
    "weightG": "",
    "commodity": "6211 42 1000",
