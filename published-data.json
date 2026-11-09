@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-09",
- "publishedTS": "2026-11-09T11:19:04.828Z",
+ "publishedTS": "2026-11-09T11:25:33.190Z",
  "qSeq": 35,
  "srSeq": 18,
  "prodSeq": {
@@ -1488,7 +1488,7 @@
   {
    "quoteRef": "Q0024",
    "ref": "SR0015",
-   "status": "sampling",
+   "status": "feedback",
    "created": "2026-10-22",
    "due": "2026-11-09",
    "customer": "Johnsons",
@@ -1500,7 +1500,7 @@
     {
      "code": "PC2015ECO",
      "name": "Navy 65% recycled polyester 35% organic cotton 200gsm x133eco-am297 — rating 0.70M",
-     "rating": "0.70",
+     "rating": "0.67",
      "cost": "2.32",
      "loc": "B13"
     }
@@ -1554,17 +1554,17 @@
      "value2": ""
     }
    ],
-   "mfg": "Set \"Made in Great Britian\" trim to lower edge of lower BIB TOP. (smaller bib top and without notches) Set tape 2mm up from bottom of facing)\nMake neck strap. Fold in half and enclose raw edges. Set to top of bib.\nSet darts. Stitch to nothing 1cm past the steck hole. Backtack stitching to secure.\nSet neck straps to top of BIB TOP and set BIB TOPS together at top edge.\nEDGESTITCH top of bib.\nStitch down bib tops at lower edge to form edgestitch of yoke.\nDouble turn armholes and topstitch 6mm.\nHem - double turned and topstitching to finish 12mm from edge\nSides - double turned and topstitching to finish 12mm from edge -Insert waist ties at top. Insert wash label right side as worn 4cm down from top of side seam.",
+   "mfg": "Make neck strap. Fold in half and enclose raw edges. Set to top of bib.\nSet darts. Stitch to nothing 1cm past the steck hole. Backtack stitching to secure.\nSet neck straps to top of BIB TOP and set BIB TOPS together at top edge.\nEDGESTITCH top of bib.\nStitch down bib tops at lower edge to form edgestitch of yoke.\nDouble turn armholes and topstitch 6mm.\nHem - double turned and topstitching to finish 12mm from edge\nSides - double turned and topstitching to finish 12mm from edge -Insert waist ties at top. Insert wash label right side as worn 4cm down from top of side seam.",
    "fin": "Trim, check, press and fold.\nTissue and set label.",
    "machMins": "10",
    "finMins": "3",
-   "cutBatch": "25",
+   "cutBatch": "24",
    "cutMins": 15,
    "sampleQty": 2,
-   "markerMain": "1",
+   "markerMain": "SR00015SAM",
    "markerMesh": "",
-   "markerLen": "1",
-   "layQty": "25",
+   "markerLen": "1.30",
+   "layQty": "2",
    "hasMesh": false,
    "meshLen": "",
    "meshLay": "",
@@ -1574,7 +1574,7 @@
    "conLen": "",
    "conLay": "",
    "lectra": "OHAPP0651",
-   "variant": "JH to do",
+   "variant": "SR0015",
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": true,
@@ -1590,7 +1590,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-29T10:06:35.137Z",
+   "savedAt": "2026-11-09T11:23:33.147Z",
    "threadOwn": true,
    "weightG": "",
    "commodity": "6211 43 1000",
