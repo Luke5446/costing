@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-11-09",
- "publishedTS": "2026-11-09T11:30:35.953Z",
+ "publishedAt": "2026-11-11",
+ "publishedTS": "2026-11-11T10:51:33.774Z",
  "qSeq": 35,
  "srSeq": 18,
  "prodSeq": {
@@ -11,8 +11,136 @@
   "OHCJ": 1,
   "CJ": 1
  },
- "chgSeq": 18,
+ "chgSeq": 19,
  "srs": [
+  {
+   "quoteRef": "",
+   "ref": "",
+   "status": "production",
+   "created": "2026-11-11",
+   "due": "2026-11-11",
+   "customer": "MTC",
+   "garment": "Coat",
+   "desc": "MTC — Black Gents Coat. Long sleeves. Two mitred pockets. One chest pocket left side as worn. Back neck buggy. Centre back vent.",
+   "brandType": "EMB",
+   "brandPlace": "MTC 7cm logo set to left chest as worn.",
+   "fabrics": [
+    {
+     "code": "PC2003ECO",
+     "name": "BLACK SUSTAINABLE 65/35 POLY/COTTON (X133 - AM125)",
+     "rating": "2.10",
+     "cost": "2.32",
+     "loc": "B1"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-STD-SOC-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/B — MALE FITTING",
+     "qty": "4",
+     "cost": "0.016632"
+    },
+    {
+     "code": "CMP-STD-DUO-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/C — FEMALE FITTING",
+     "qty": "4",
+     "cost": "0.01958"
+    },
+    {
+     "code": "CMP-STD-RING-032B-677",
+     "desc": "NICKEL RING PRESS STUD 032B/AR — PRONG FITTING",
+     "qty": "8",
+     "cost": "0.010395"
+    },
+    {
+     "code": "LABELTIB4565",
+     "desc": "Tibard centre fold label: Tibard centre fold label: Tibard Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.02737"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "Additional label: Additional label: WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — 65% Recycled Polyester 35% Organic cotton 60 degree wash",
+     "qty": "0.1",
+     "cost": "0.039067"
+    },
+    {
+     "code": "CMP-THR-EP80-09700-03",
+     "desc": "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     "qty": "150",
+     "cost": "0.000714"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Chest in cm",
+     "value": "112",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length",
+     "value": "64.5",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length",
+     "value": "100",
+     "value2": ""
+    }
+   ],
+   "mfg": "MAKE COLLAR. FOLD IN HALF WITH RIGHT SIDES TOGETHER. JOIN ENDS. TURN THROUGH AND STITCH ALONG CUT EDGE TO SECURE PIECES.\nSET LABELS TO BACK BUGGY AT CENTRE BACK.\nOVERLOCK FRONT EDGES AND FACING SHOULDER. BACK BUGGY LOWER EDGE. CENTRE BACK VENT EDGES.\nPRESS CENTRE FRONT FOLD\nSET POCKET HEM. 1.5CM + 1.5CM DOUBLE TURNED AND TOPSTITCH AT 1.5CM.\nSET LOWER POCKETS. SET 9CM IN FROM FRONT EDGE AND 24CM UP FROM CUT HEM EDGE.  EDGESTITCH IN POSITION.\nSET CHEST POCKET. SET 9CM IN FROM FINISHED FRONT EDGE AND 14CM DOWN FROM FRONT STEP CUT EDGE.EDGESTITCH IN POSITION.\nJOIN UP ON 5 THREAD - CENTRE BACK. SHOULDERS, COLLAR, SLEEVES, SIDE SEAM AND UNDERARM SEAM.\nBACK NECK SEAM 6MM TOPSTITCHED AND RUN ONTO FRONT FOR 6CM TO SECURE FACING DOWN.\nTACK FRONT FACING DOWN AT SHOULDER\nPRESS CENTRE BACK SEAM AND VENT.\nSTRAIGHTEN CENTRE BACK SEAM AT BASE OF BACK VENT.\nSET ANGLED STITCH LINE LENGTH 5.5CM AT TOP OF SPLIT AT CENTRE BACK SEAM. KICK PLEAT TO BE (12\" /30CM)\nBODY HEM DOUBLE TURNED AND TOPSTITCHED 1.5CM + 1.5CM\nSLEEVE HEM  DOUBLE TURNED 1.5CM + 1.5CM AND TOPSTITCHED 1.5CM",
+   "fin": "SET TOP AND LOWER STUDS X 4  USE MARKER\nBARTACK VERTICAL TOP OF POCKETS X 6 BARTACKS\nBARTACK ALONG FRONT PANEL- LEFT SIDE AS WORN .VERTICAL  BARTACKS TO HOLD FRONT STUD PANEL DOWN  AND CONCEAL THE STUDS.  BARTACKS TO BE IN LINE WITH STUDS AND 3.6CM FROM FRONT FOLD EDGE. SET BARTACK ON TOP SIDE OF COAT TO GET GOOD SIDE OF BARTACK.\nCHECK TRIM AND FOLD",
+   "machMins": "27",
+   "finMins": "6",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 1,
+   "markerMain": "MTCGCOAT009",
+   "markerMesh": "",
+   "markerLen": "2.07",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "GC0198NEW",
+   "variant": "MTCGCOAT",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": "COB0002112",
+   "convertedAt": "2026-11-11",
+   "copiedFrom": "COB0002104",
+   "version": 1,
+   "history": [],
+   "isOH": false,
+   "ladies": false,
+   "mtc": true,
+   "size": "112",
+   "savedAt": "2026-11-11T10:49:33.148Z",
+   "threadOwn": false,
+   "isProduct": true,
+   "family": "special",
+   "editScope": "size",
+   "sourceCode": "COB0002104",
+   "specialBase": "COB0002",
+   "baseCode": "COB0002",
+   "prodCodeDraft": "COB0002112",
+   "logoImg": "",
+   "logo2Img": "",
+   "placeImg": "",
+   "chgRef": "C0019",
+   "weightG": "",
+   "commodity": "6203 33 1000",
+   "salePrice": "35.80"
+  },
   {
    "quoteRef": "Q0035",
    "ref": "SR0018",
