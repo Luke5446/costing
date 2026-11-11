@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tibard Costing Calculator</title>
 <!-- Changelog: 2026-10-28 — 12 trim codes added to the built-in Sage trim list (TRIMCOSTS) from Trim Master List 11: rivets, capped studs, Texas Green thread, two zips. -->
+<!-- Changelog: 2026-11-11 — a size / fabric change now copies the customer logo, second logo and placement photo with the branding text (COB0002104 and COB0002112 were made without the MTC logo). Published copy backfills a missing main logo too. -->
 <!-- Changelog: 2026-10-28 — sales price (ex VAT) required on the product WO sent to IT, so IT can set the selling price in Sage. Stored as salePrice; not shown on the sample WO. -->
 <style>
 :root{
@@ -2737,7 +2738,8 @@ function pcCopyBuild(src, code){
   } else {
     var o=src.st;
     ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
-     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','hasCon','conFab','markerCon','conLen','conLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','mtc','size']
+     'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','hasCon','conFab','markerCon','conLen','conLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','mtc','size',
+     'logoImg','logo2Img','placeImg']   /* the customer logo and placement photo go with the branding text, else a new size prints without its embroidery */
       .forEach(function(k){ if(o[k]!==undefined) s[k]=o[k]; });
     s.fabrics=JSON.parse(JSON.stringify(o.fabrics||[]));
     s.trims=JSON.parse(JSON.stringify(o.trims||[])); s.threadOwn=!!o.threadOwn; pcThreadApply(s); pcSetsApply(s);
@@ -3164,6 +3166,7 @@ function pcPubLoad(){
         if(pMile>lMile){ pcMergeMilestones(l,p); changed=true; replaced++; return; }
         kept++;
         if(p.brandPlace && !l.brandPlace){ l.brandPlace=p.brandPlace; if(p.brandType&&(!l.brandType||l.brandType==='None')) l.brandType=p.brandType; changed=true; }
+        if(p.logoImg && !l.logoImg){ l.logoImg=p.logoImg; changed=true; }
         if(p.placeImg && !l.placeImg){ l.placeImg=p.placeImg; changed=true; }
         if(p.logo2Img && !l.logo2Img){ l.logo2Img=p.logo2Img; changed=true; }
       });
