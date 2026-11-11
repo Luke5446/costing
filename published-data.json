@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-11",
- "publishedTS": "2026-11-11T17:24:12.000Z",
+ "publishedTS": "2026-11-11T17:25:37.000Z",
  "qSeq": 35,
  "srSeq": 18,
  "prodSeq": {
@@ -124,7 +124,7 @@
    "ladies": false,
    "mtc": true,
    "size": "112",
-   "savedAt": "2026-11-11T17:24:12.000Z",
+   "savedAt": "2026-11-11T17:25:37.000Z",
    "threadOwn": false,
    "isProduct": true,
    "family": "special",
@@ -254,7 +254,7 @@
    "ladies": false,
    "mtc": true,
    "size": "104",
-   "savedAt": "2026-11-11T17:24:12.000Z",
+   "savedAt": "2026-11-11T17:25:37.000Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
@@ -4107,10 +4107,10 @@
      "cost": "0.032"
     },
     {
-     "code": "",
-     "desc": "BLACK NON TANGLE TAPE 20MM - CUT AT 1.0M",
+     "code": "CMP-OH-NTT-25-03",
+     "desc": "BLACK OH NON TANGLE TAPE TIE 25MM",
      "qty": "2",
-     "cost": "0.11"
+     "cost": "0.25171"
     },
     {
      "code": "CMP-30ED-28-931",
@@ -4178,8 +4178,8 @@
    "quoteShowSell": true,
    "quotePrinted": true,
    "quotePrintedAt": "2026-10-05",
-   "printed": false,
-   "printedAt": "",
+   "printed": true,
+   "printedAt": "2026-11-11",
    "productCode": null,
    "convertedAt": "",
    "version": 2,
@@ -4299,7 +4299,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-10-19T10:04:52.235Z",
+   "savedAt": "2026-11-11T13:20:16.993Z",
    "threadOwn": false,
    "weightG": "",
    "chgRef": "",
@@ -4308,7 +4308,8 @@
    "logo2Img": "",
    "srRaisedAt": "2026-10-05",
    "sampleApprovedAt": "",
-   "commodity": ""
+   "commodity": "",
+   "salePrice": ""
   },
   {
    "quoteRef": "Q0014",
