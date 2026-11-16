@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-11-16",
- "publishedTS": "2026-11-16T15:19:32.435Z",
- "qSeq": 35,
+ "publishedTS": "2026-11-16T16:22:36.393Z",
+ "qSeq": 36,
  "srSeq": 18,
  "prodSeq": {
   "OHAPB": 2,
@@ -13,6 +13,148 @@
  },
  "chgSeq": 19,
  "srs": [
+  {
+   "quoteRef": "Q0036",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-11-16",
+   "due": "2026-11-30",
+   "customer": "Tom Hill",
+   "garment": "Chef jacket",
+   "desc": "Special Devon chef jacket with double breasted front fastened with button and buttonholes — short sleeve, white -  Panelled back with mesh fabric back panel - pen pocket LHSAW",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "PC14001",
+     "name": "White cooltex 1 poly cotton 50% 50%",
+     "rating": "1.19",
+     "cost": "3.09",
+     "loc": "B8"
+    },
+    {
+     "code": "MESH2290901",
+     "name": "Coolmax mesh fabric qual 22909 white",
+     "rating": "0.29",
+     "cost": "1.1854",
+     "loc": "B8"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-PC075-32109-01",
+     "desc": "Thread: THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     "qty": "220",
+     "cost": "0.0005055"
+    },
+    {
+     "code": "CMP-OH-PIP-TIB009B-01",
+     "desc": "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "qty": ".70",
+     "cost": "0.87"
+    },
+    {
+     "code": "OHSWINGTAG",
+     "desc": "POS swing tag: Oliver Harvey kraft swing tag 50x75mm — fix through the garment label. Removed by customer.",
+     "qty": "1",
+     "cost": "0.0646"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "button",
+     "desc": "4 hole button Jones white",
+     "qty": "10",
+     "cost": ""
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL 50% Polyester 50% Cotton  Mesh 100% polyester  65 degre wash",
+     "qty": "1",
+     "cost": "0.032"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Total chest in cm",
+     "value": "117",
+     "value2": ""
+    },
+    {
+     "label": "Sleeve length in cm",
+     "value": "33.5",
+     "value2": ""
+    },
+    {
+     "label": "Centre back length",
+     "value": "74.5",
+     "value2": ""
+    }
+   ],
+   "mfg": "Short sleeves with twin needle hem\nNot edge stitched down the front panel\nPanelled back - mesh back\nTwo piece collar edge stitched around the top\n\"Oliver Harvey\" ribbon inserted in the back neck\n\"Oliver Harvey\" british button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nStandard pen pocket on LHSAW - with centre seam - bartacked\nRed tax tab in pen pocket\n3cm twin needle hem",
+   "fin": "Trimmed and pressed\nTo be individually wrapped in OH tissue paper - OH description label bottom right hand corner of tissue",
+   "machMins": "",
+   "finMins": "",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "OH1054",
+   "markerMesh": "OH1307A",
+   "markerLen": "1.16",
+   "layQty": "1",
+   "hasMesh": true,
+   "meshLen": "0.84",
+   "meshLay": "3",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "Oh1 - devon - short sleeve / With mesh fabric back",
+   "variant": "OH1SSLV",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": false,
+   "quotePrintedAt": "",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHCJSMDEVON--01",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "44",
+   "savedAt": "2026-11-16T16:20:36.305Z",
+   "threadOwn": false,
+   "weightG": "",
+   "commodity": "6203 33 1000",
+   "salePrice": "",
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
+  },
   {
    "quoteRef": "",
    "ref": "",
