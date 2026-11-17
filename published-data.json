@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-11-16",
- "publishedTS": "2026-11-16T16:32:44.462Z",
+ "publishedAt": "2026-11-17",
+ "publishedTS": "2026-11-17T12:29:53.311Z",
  "qSeq": 36,
  "srSeq": 18,
  "prodSeq": {
@@ -143,7 +143,7 @@
    "ladies": false,
    "mtc": false,
    "size": "44",
-   "savedAt": "2026-11-16T16:28:37.360Z",
+   "savedAt": "2026-11-17T12:29:49.822Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
