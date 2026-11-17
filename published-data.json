@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-17",
- "publishedTS": "2026-11-17T12:29:53.311Z",
+ "publishedTS": "2026-11-17T12:33:08.583Z",
  "qSeq": 36,
  "srSeq": 18,
  "prodSeq": {
@@ -81,13 +81,19 @@
      "code": "button",
      "desc": "4 hole button Jones white",
      "qty": "10",
-     "cost": ""
+     "cost": "0.15"
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
      "desc": "OLIVER HARVEY WASH CARE LABEL 50% Polyester 50% Cotton  Mesh 100% polyester  65 degre wash",
      "qty": "1",
      "cost": "0.032"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
     }
    ],
    "meas": [
@@ -108,9 +114,9 @@
     }
    ],
    "mfg": "Short sleeves with twin needle hem\nNot edge stitched down the front panel\nPanelled back - mesh back\nTwo piece collar edge stitched around the top\n\"Oliver Harvey\" ribbon inserted in the back neck\n\"Oliver Harvey\" british button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nStandard pen pocket on LHSAW - with centre seam - bartacked\nRed tax tab in pen pocket\n3cm twin needle hem",
-   "fin": "Mark and set buttonholes. 1\" blade x 10\nMark and set buttons - 36L button x 10\nTrimmed and pressed\nTo be individually wrapped in OH tissue paper - OH description label bottom right hand corner of tissue",
+   "fin": "Mark and set buttonholes. 1\" blade x 10 - USE MARKER\nMark and set buttons - 36L button x 10\nTrimmed and pressed\nTo be individually wrapped in OH tissue paper - OH description label bottom right hand corner of tissue",
    "machMins": "31.9",
-   "finMins": "8",
+   "finMins": "10",
    "cutBatch": "25",
    "cutMins": 15,
    "sampleQty": 2,
@@ -143,7 +149,7 @@
    "ladies": false,
    "mtc": false,
    "size": "44",
-   "savedAt": "2026-11-17T12:29:49.822Z",
+   "savedAt": "2026-11-17T12:32:43.792Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
