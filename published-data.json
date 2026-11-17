@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-17",
- "publishedTS": "2026-11-17T12:33:08.583Z",
+ "publishedTS": "2026-11-17T14:43:33.155Z",
  "qSeq": 36,
  "srSeq": 18,
  "prodSeq": {
@@ -78,7 +78,7 @@
      "cost": "0.07544"
     },
     {
-     "code": "button",
+     "code": "cmp-btn",
      "desc": "4 hole button Jones white",
      "qty": "10",
      "cost": "0.15"
@@ -149,7 +149,7 @@
    "ladies": false,
    "mtc": false,
    "size": "44",
-   "savedAt": "2026-11-17T12:32:43.792Z",
+   "savedAt": "2026-11-17T14:41:33.083Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
