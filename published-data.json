@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-17",
- "publishedTS": "2026-11-17T14:43:33.155Z",
+ "publishedTS": "2026-11-17T14:50:59.552Z",
  "qSeq": 36,
  "srSeq": 18,
  "prodSeq": {
@@ -78,8 +78,8 @@
      "cost": "0.07544"
     },
     {
-     "code": "cmp-btn",
-     "desc": "4 hole button Jones white",
+     "code": "CMP-BTN-P3536-36-01",
+     "desc": "",
      "qty": "10",
      "cost": "0.15"
     },
@@ -149,7 +149,7 @@
    "ladies": false,
    "mtc": false,
    "size": "44",
-   "savedAt": "2026-11-17T14:41:33.083Z",
+   "savedAt": "2026-11-17T14:48:59.476Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
