@@ -1,8 +1,8 @@
 {
  "publishedAt": "2026-11-17",
- "publishedTS": "2026-11-17T14:50:59.552Z",
- "qSeq": 36,
- "srSeq": 18,
+ "publishedTS": "2026-11-17T15:33:45.982Z",
+ "qSeq": 37,
+ "srSeq": 19,
  "prodSeq": {
   "OHAPB": 2,
   "CT": 1,
@@ -13,6 +13,164 @@
  },
  "chgSeq": 19,
  "srs": [
+  {
+   "quoteRef": "Q0037",
+   "ref": "SR0019",
+   "status": "sampling",
+   "created": "2026-11-17",
+   "due": "2026-11-24",
+   "customer": "Malverleys",
+   "garment": "Apron",
+   "desc": "Printed stripe Retail Bib apron with eyelet detail for detachable cross over straps - Two hip mitred pockets · Eyelets at waist for neck strap/waist tie. · Lower studs at top of bib. To have detachable neck/waist tie set with studs at neck and set through eyelets at waist. - Hanger loop at lower edge of bib facing.",
+   "brandType": "None",
+   "brandPlace": "",
+   "fabrics": [
+    {
+     "code": "",
+     "name": "yellow printed stripestripe printed fabric",
+     "rating": "1.0",
+     "cost": "20.00",
+     "loc": "A4"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-07935-15",
+     "desc": "THREAD — COATS EPIC 80'S yellow — cost per metre",
+     "qty": "30",
+     "cost": "0.000714"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "CMP-OH-NTT-25-03",
+     "desc": "BLACK OH NON TANGLE TAPE TIE 25MM cut length 0.39m",
+     "qty": "0.39",
+     "cost": "0.25171"
+    },
+    {
+     "code": "CMP-STD-PST-9B-287",
+     "desc": "LARGE BRONZE STUD MALE PART — apron stud, pair with CMP-STD-SOC-9B-287",
+     "qty": "4",
+     "cost": "0.05124"
+    },
+    {
+     "code": "CMP-30ED-28-931",
+     "desc": "ANTIQUE BRASS EYELET 30MM — pair with CMP-30RD-28-931 ring",
+     "qty": "2",
+     "cost": "0.14985"
+    },
+    {
+     "code": "CMP-PIP-08-03",
+     "desc": "BLACK HANGER TAPE — cost per metre",
+     "qty": "0.10",
+     "cost": "0.15863"
+    },
+    {
+     "code": "CMP-30RD-28-931",
+     "desc": "ANTIQUE BRASS RING FOR 30MM EYELET",
+     "qty": "2",
+     "cost": "0.1321308"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.9",
+     "cost": "0.0129"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL",
+     "qty": "1",
+     "cost": "0.032"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Width of skirt in cm",
+     "value": "63",
+     "value2": ""
+    },
+    {
+     "label": "Across bib width in cm",
+     "value": "28",
+     "value2": ""
+    },
+    {
+     "label": "Length from bib to hem",
+     "value": "93",
+     "value2": ""
+    },
+    {
+     "label": "Detachable strap length x width",
+     "value": "193",
+     "value2": "2.5"
+    }
+   ],
+   "mfg": "Cut hanger tape at 8cm. set centrally to bib facing into lower edge. tack in position taking 1.5cm seam of tape at each end . hanger loop to measure 5cm from end to end. see diagram.\nSet bib facing.\nStitch down bib facing to form 5.5cm topstitch of front bib. note ensure this topstitching is an even width from top of bib and equal at each side as if it is unlevel it will show when the straps are set.\n6mm topstitch top of bib.\nSet eyelet re-inforcement pieces.\nSet towel loop. cut at 39cm and fold in half. set to armhole curve at 10cm from side seam cut edge left side as worn. oliver harvey to read down. stitch down towel loop to follow armhole stitching.\nDouble turn armholes and topstitch 6mm.\nDouble turn side seams and hem topstitch 12mm.\nSet pocket hem. double turn and topstich 2cm\nSet hip pockets. set bottom of pocket 24cm up from finished hem and 5cm in from finished side seam. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position. set left pocket fold over and mark for right pocket. ensure pocket set parallel to side seam.\nTriangle stitch at top of pocket mouth to secure\nMake detachable strap - bag out both ends. Fold in raw wedges and edgestitch long edge.",
+   "fin": "Set eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nCheck and ensure bib 5.5cm top stitching is equal at both sides of bib. set lower studs to bib. use marker. set centre of top stud 1.8cm from side of bib and 1.4cm down from top edge. set second stud 3cm spacing vertically down\nSet socket (male part) to top of bib.  Use marker\nSet cap (female part) to detachable strap\nCheck, press and fold apron.\nSet strap to apron at bib.\nSet into tissue and add product label",
+   "machMins": "12",
+   "finMins": "9",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": "1",
+   "layQty": "1",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "OHAP0534 - VARIENT 0535/DS. Retail bib apron , Two hip pockets, bib facing and eyelet re-inforcement pieces. NECK STRAP CUT SEPARATELY ON OWN ROUTING CARD",
+   "variant": "0535/DS",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-11-17",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHAPP053515DS",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-11-17T15:31:41.256Z",
+   "threadOwn": true,
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "2026-11-17",
+   "sampleApprovedAt": "",
+   "weightG": "",
+   "commodity": "",
+   "salePrice": ""
+  },
   {
    "quoteRef": "Q0036",
    "ref": "",
