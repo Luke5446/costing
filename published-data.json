@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-18",
- "publishedTS": "2026-11-18T12:01:37.959Z",
+ "publishedTS": "2026-11-18T15:45:32.468Z",
  "qSeq": 37,
  "srSeq": 20,
  "prodSeq": {
@@ -96,9 +96,15 @@
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
-     "desc": "OLIVER HARVEY WASH CARE LABEL",
+     "desc": "OLIVER HARVEY WASH CARE LABEL 100% COTTON",
      "qty": "1",
      "cost": "0.032"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
     }
    ],
    "meas": [
@@ -159,7 +165,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-11-17T15:46:48.321Z",
+   "savedAt": "2026-11-18T15:43:32.403Z",
    "threadOwn": true,
    "chgRef": "",
    "logoImg": "",
