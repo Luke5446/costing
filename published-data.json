@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-18",
- "publishedTS": "2026-11-18T11:56:35.315Z",
+ "publishedTS": "2026-11-18T12:01:37.959Z",
  "qSeq": 37,
  "srSeq": 20,
  "prodSeq": {
@@ -8,7 +8,7 @@
   "CT": 1,
   "CJB": 1,
   "COB": 1,
-  "OHCJ": 1,
+  "OHCJ": 2,
   "CJ": 1
  },
  "chgSeq": 19,
@@ -174,7 +174,7 @@
   {
    "quoteRef": "Q0036",
    "ref": "SR0020",
-   "status": "approved",
+   "status": "production",
    "created": "2026-11-16",
    "due": "2026-11-30",
    "customer": "Tom Hill",
@@ -272,7 +272,7 @@
     }
    ],
    "mfg": "Short sleeves with twin needle hem\nNot edge stitched down the front panel\nPanelled back - mesh back\nTwo piece collar edge stitched around the top\n\"Oliver Harvey\" ribbon inserted in the back neck\n\"Oliver Harvey\" british button woven label centre back neck\nOliver Harvey wash label in side seam RHSAW\nStandard pen pocket on LHSAW - with centre seam - bartacked\nRed tax tab in pen pocket\n3cm twin needle hem",
-   "fin": "Mark and set buttonholes. 1\" blade x 10 - USE MARKER\nMark and set buttons - 36L button x 10\nTrimmed and pressed\nTo be individually wrapped in OH tissue paper - OH description label bottom right hand corner of tissue",
+   "fin": "Mark and set buttonholes. 1\" blade x 10 - USE MARKER\nMark and set buttons - 36L button x 10\nCheck, trim and press.\nTo be individually wrapped in OH tissue paper - OH description label bottom right hand corner of tissue",
    "machMins": "31.9",
    "finMins": "10",
    "cutBatch": "25",
@@ -298,8 +298,8 @@
    "quotePrintedAt": "2026-11-18",
    "printed": false,
    "printedAt": "",
-   "productCode": null,
-   "convertedAt": "",
+   "productCode": "OHCJ000244",
+   "convertedAt": "2026-11-18",
    "copiedFrom": "OHCJSMDEVON--01",
    "version": 1,
    "history": [],
@@ -307,7 +307,7 @@
    "ladies": false,
    "mtc": false,
    "size": "44",
-   "savedAt": "2026-11-18T11:54:35.229Z",
+   "savedAt": "2026-11-18T11:59:17.767Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
@@ -317,7 +317,9 @@
    "placeImg": "",
    "logo2Img": "",
    "srRaisedAt": "2026-11-18",
-   "sampleApprovedAt": "2026-11-18"
+   "sampleApprovedAt": "2026-11-18",
+   "specialBase": "OHCJ0002",
+   "family": "special"
   },
   {
    "quoteRef": "",
