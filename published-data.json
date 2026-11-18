@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-11-17",
- "publishedTS": "2026-11-17T15:33:45.982Z",
+ "publishedAt": "2026-11-18",
+ "publishedTS": "2026-11-18T10:29:26.160Z",
  "qSeq": 37,
  "srSeq": 19,
  "prodSeq": {
@@ -124,7 +124,7 @@
     }
    ],
    "mfg": "Cut hanger tape at 8cm. set centrally to bib facing into lower edge. tack in position taking 1.5cm seam of tape at each end . hanger loop to measure 5cm from end to end. see diagram.\nSet bib facing.\nStitch down bib facing to form 5.5cm topstitch of front bib. note ensure this topstitching is an even width from top of bib and equal at each side as if it is unlevel it will show when the straps are set.\n6mm topstitch top of bib.\nSet eyelet re-inforcement pieces.\nSet towel loop. cut at 39cm and fold in half. set to armhole curve at 10cm from side seam cut edge left side as worn. oliver harvey to read down. stitch down towel loop to follow armhole stitching.\nDouble turn armholes and topstitch 6mm.\nDouble turn side seams and hem topstitch 12mm.\nSet pocket hem. double turn and topstich 2cm\nSet hip pockets. set bottom of pocket 24cm up from finished hem and 5cm in from finished side seam. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position. set left pocket fold over and mark for right pocket. ensure pocket set parallel to side seam.\nTriangle stitch at top of pocket mouth to secure\nMake detachable strap - bag out both ends. Fold in raw wedges and edgestitch long edge.",
-   "fin": "Set eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nCheck and ensure bib 5.5cm top stitching is equal at both sides of bib. set lower studs to bib. use marker. set centre of top stud 1.8cm from side of bib and 1.4cm down from top edge. set second stud 3cm spacing vertically down\nSet socket (male part) to top of bib.  Use marker\nSet cap (female part) to detachable strap\nCheck, press and fold apron.\nSet strap to apron at bib.\nSet into tissue and add product label",
+   "fin": "Set eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nCheck and ensure bib 5.5cm top stitching is equal at both sides of bib. set lower studs to bib. use marker. set centre of top stud 1.8cm from side of bib and 1.4cm down from top edge. set second stud 3cm spacing vertically down\nSet socket (male part) to top of bib.  Use marker\nSet cap (female part) to detachable strap\nCheck, press and fold apron.\nSet strap to apron at top of bib.\nSet into tissue and add product label",
    "machMins": "12",
    "finMins": "9",
    "cutBatch": "25",
@@ -159,7 +159,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-11-17T15:31:41.256Z",
+   "savedAt": "2026-11-17T15:46:48.321Z",
    "threadOwn": true,
    "chgRef": "",
    "logoImg": "",
@@ -236,10 +236,10 @@
      "cost": "0.07544"
     },
     {
-     "code": "CMP-BTN-P3536-36-01",
-     "desc": "",
+     "code": "CMP-BTN-P151-36-66",
+     "desc": "white button",
      "qty": "10",
-     "cost": "0.15"
+     "cost": "0.19"
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
@@ -307,7 +307,7 @@
    "ladies": false,
    "mtc": false,
    "size": "44",
-   "savedAt": "2026-11-17T14:48:59.476Z",
+   "savedAt": "2026-11-17T16:00:48.738Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
@@ -8522,6 +8522,21 @@
    "threadOwn": false
   }
  ],
- "trimsList": [],
+ "trimsList": [
+  {
+   "code": "Large Bronze cap 15mm",
+   "name": "Studs",
+   "cost": 0,
+   "unit": "",
+   "supplier": "100135"
+  },
+  {
+   "code": "Large Bronze socket",
+   "name": "Studs",
+   "cost": 0,
+   "unit": "",
+   "supplier": "100136"
+  }
+ ],
  "fabricsList": []
 }
