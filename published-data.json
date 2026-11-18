@@ -1,8 +1,8 @@
 {
  "publishedAt": "2026-11-18",
- "publishedTS": "2026-11-18T10:29:26.160Z",
+ "publishedTS": "2026-11-18T11:56:35.315Z",
  "qSeq": 37,
- "srSeq": 19,
+ "srSeq": 20,
  "prodSeq": {
   "OHAPB": 2,
   "CT": 1,
@@ -173,8 +173,8 @@
   },
   {
    "quoteRef": "Q0036",
-   "ref": "",
-   "status": "quote",
+   "ref": "SR0020",
+   "status": "approved",
    "created": "2026-11-16",
    "due": "2026-11-30",
    "customer": "Tom Hill",
@@ -236,10 +236,10 @@
      "cost": "0.07544"
     },
     {
-     "code": "CMP-BTN-P151-36-66",
-     "desc": "white button",
+     "code": "CMP-BTN-P3536-36-01",
+     "desc": "JONES 4 HOLE BUTTON P3536/36 WHITE",
      "qty": "10",
-     "cost": "0.19"
+     "cost": "0.15"
     },
     {
      "code": "CMP-OH-LBL-WASH-01",
@@ -294,8 +294,8 @@
    "variant": "OH1SSLV",
    "quoteMarkup": 60,
    "quoteShowSell": false,
-   "quotePrinted": false,
-   "quotePrintedAt": "",
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-11-18",
    "printed": false,
    "printedAt": "",
    "productCode": null,
@@ -307,7 +307,7 @@
    "ladies": false,
    "mtc": false,
    "size": "44",
-   "savedAt": "2026-11-17T16:00:48.738Z",
+   "savedAt": "2026-11-18T11:54:35.229Z",
    "threadOwn": false,
    "weightG": "",
    "commodity": "6203 33 1000",
@@ -316,8 +316,8 @@
    "logoImg": "",
    "placeImg": "",
    "logo2Img": "",
-   "srRaisedAt": "",
-   "sampleApprovedAt": ""
+   "srRaisedAt": "2026-11-18",
+   "sampleApprovedAt": "2026-11-18"
   },
   {
    "quoteRef": "",
