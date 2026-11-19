@@ -1,7 +1,7 @@
 {
  "publishedAt": "2026-11-19",
- "publishedTS": "2026-11-19T11:47:44.348Z",
- "qSeq": 38,
+ "publishedTS": "2026-11-19T12:46:27.578Z",
+ "qSeq": 39,
  "srSeq": 21,
  "prodSeq": {
   "OHAPB": 2,
@@ -13,6 +13,147 @@
  },
  "chgSeq": 20,
  "srs": [
+  {
+   "quoteRef": "Q0039",
+   "ref": "",
+   "status": "quote",
+   "created": "2026-11-19",
+   "due": "2026-11-26",
+   "customer": "The Waffle House",
+   "garment": "Apron",
+   "desc": "Black waist apron 2 x hip pocket with detachable strap — Oliver Harvey · Logo set to left pocket as worn. Logo set pre-make up. Note waist tie on separate routing card (ohstrapwaist)",
+   "brandType": "EMB",
+   "brandPlace": "The Waffle House logo set to left pocket as worn.  Thread - white. LOGO SET TO POCKET PRE-MAKE UP.",
+   "fabrics": [
+    {
+     "code": "PC2003ECO",
+     "name": "BLACK SUSTAINABLE 65/35 POLY/COTTON (X133 - AM125)",
+     "rating": "0.41",
+     "cost": "2.32",
+     "loc": "B1"
+    }
+   ],
+   "trims": [
+    {
+     "code": "CMP-THR-EP80-09700-03",
+     "desc": "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     "qty": "30",
+     "cost": "0.000714"
+    },
+    {
+     "code": "CMP-OH-LBL-WASH-01",
+     "desc": "OLIVER HARVEY WASH CARE LABEL 65% Recycled Polyester 35% Organic Cotton - 60 degee wash - 2 dot iron- Tumble Dry - P dry clean- Do not bleach",
+     "qty": "1",
+     "cost": "0.032"
+    },
+    {
+     "code": "LABELOH5771",
+     "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
+     "qty": "1",
+     "cost": "0.04335"
+    },
+    {
+     "code": "CMP-30ED-28-931",
+     "desc": "ANTIQUE BRASS EYELET 30MM — pair with CMP-30RD-28-931 ring",
+     "qty": "2",
+     "cost": "0.14985"
+    },
+    {
+     "code": "TAXTABOH07/01",
+     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "qty": "1",
+     "cost": "0.01678"
+    },
+    {
+     "code": "CMP-30RD-28-931",
+     "desc": "ANTIQUE BRASS RING FOR 30MM EYELET",
+     "qty": "2",
+     "cost": "0.1321308"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
+    },
+    {
+     "code": "PKG-OH-GPS-500X750-01",
+     "desc": "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "qty": "1",
+     "cost": "0.07544"
+    },
+    {
+     "code": "PKG-TAPE-MSK-25x50-01",
+     "desc": "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "qty": "0.9",
+     "cost": "0.0129"
+    }
+   ],
+   "meas": [
+    {
+     "label": "Width of skirt in cm",
+     "value": "70",
+     "value2": ""
+    },
+    {
+     "label": "Length from waist to hem in cm",
+     "value": "45",
+     "value2": ""
+    },
+    {
+     "label": "Pocket width x depth in cm",
+     "value": "18.5",
+     "value2": "19.5"
+    }
+   ],
+   "mfg": "Set eyelet re-inforcement pieces.\nDouble turn side seam, top and hem and topstitch 12mm. insert labels right side seam.\nSet hem to pocket. double turn 1 + 2cm and topstitch 1.8cm\nEdgestitch pocket to front. pockets set 16cm down from finished top edge and set 5cm in from finished side seam. Insert red OH tab to top of left side of left pocket as worn.\nV tack (triangle stitch) top of pockets to secure.",
+   "fin": "Set eyelets. centre of eyelet to be 3cm in from side seam and 3cm down from top edge.\nCheck,trim, press and fold.\nWrap in tissue. sticker set to bottom right hand corner.",
+   "machMins": "6.7",
+   "finMins": "4",
+   "cutBatch": "25",
+   "cutMins": 15,
+   "sampleQty": 2,
+   "markerMain": "OHAPP0631001",
+   "markerMesh": "",
+   "markerLen": "0.78",
+   "layQty": "2",
+   "hasMesh": false,
+   "meshLen": "",
+   "meshLay": "",
+   "hasCon": false,
+   "conFab": "",
+   "markerCon": "",
+   "conLen": "",
+   "conLay": "",
+   "lectra": "Ohapp0631 varient 0631",
+   "variant": "0631",
+   "quoteMarkup": 60,
+   "quoteShowSell": true,
+   "quotePrinted": true,
+   "quotePrintedAt": "2026-11-19",
+   "printed": false,
+   "printedAt": "",
+   "productCode": null,
+   "convertedAt": "",
+   "copiedFrom": "OHAPP0631153DS",
+   "version": 1,
+   "history": [],
+   "isOH": true,
+   "ladies": false,
+   "mtc": false,
+   "size": "",
+   "savedAt": "2026-11-19T12:44:27.309Z",
+   "threadOwn": false,
+   "chgRef": "",
+   "logoImg": "",
+   "placeImg": "",
+   "logo2Img": "",
+   "srRaisedAt": "",
+   "sampleApprovedAt": "",
+   "weightG": "",
+   "commodity": "6211 43 1000",
+   "salePrice": ""
+  },
   {
    "quoteRef": "",
    "ref": "",
@@ -139,7 +280,9 @@
    "chgRef": "C0020",
    "weightG": "",
    "commodity": "6203 33 1000",
-   "salePrice": "21.65"
+   "salePrice": "21.65",
+   "srRaisedAt": "",
+   "sampleApprovedAt": ""
   },
   {
    "quoteRef": "Q0038",
