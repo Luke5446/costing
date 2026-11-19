@@ -1627,7 +1627,7 @@ function pcOpen(i){
   if(s.archived) h+='<div class="pcok" style="background:#eef0f3;color:#44546A;border-color:#cbd2dc">&#128451; <strong>Archived</strong> '+pcE(pcFmtD(s.archivedAt)||'')+(s.archiveNote?' \u2014 '+pcE(s.archiveNote):'')+'. Never taken to an order; kept on file under the Archived tile.'+(PC_IS_EDITOR?' <button type="button" class="btn pcmini" style="background:#e8ecf3;color:var(--navy);margin-left:6px" onclick="pcUnarchive()">Unarchive</button>':'')+'</div>';
   if(s.copiedFromQuote && !s.ref) h+='<p class="pcnote" style="margin:0 0 8px">Copied from <strong>'+pcE(s.copiedFromQuote)+'</strong> \u2014 both quotes stay on file. Change the fabric (or anything else) and save.</p>';
   if(locked) h+='<div class="pcok">This sample has been converted to <strong>'+pcE(s.productCode)+'</strong> — it is searchable and printable but no longer editable.'
-    +(woLive?' <strong>Works order last edited '+pcE(pcFmtD(s.woEditedAt)||'—')+'</strong> in the Works Order Editor — that version is shown here and printed.':' Works order as converted on '+pcE(pcFmtD(s.convertedAt))+' — the buffer app has not published a newer version'+(PC_WO.live?'':' (or could not be reached)')+'.')+'</div>';
+    +(woLive?' <strong>Works order last edited '+pcE(pcFmtD(s.woEditedAt)||'—')+'</strong> in the Works Order Editor — that version is shown here and printed.'+(s.woSyncedAt?' Its marker and cutting details were written into this record on '+pcE(pcFmtD(s.woSyncedAt))+', so a copy for another colour or size starts from them.':''):' Works order as converted on '+pcE(pcFmtD(s.convertedAt))+' — the buffer app has not published a newer version'+(PC_WO.live?'':' (or could not be reached)')+'.')+'</div>';
   var pubCopy=pcPublishedCopy(s);
   if(PC_IS_EDITOR && pubCopy && pcCanon(pubCopy)!==pcCanon(s) && !s.draft){
     var pm=(pubCopy.productCode?2:0)+(pubCopy.ref?1:0), lm=(s.productCode?2:0)+(s.ref?1:0);
@@ -2466,6 +2466,7 @@ function pcCopyQuote(){
   if(PC_CUR<0||!PC_IS_EDITOR) return;
   var s0=PC.srs[PC_CUR];
   if(!s0.productCode) pcCollect(s0);
+  if(s0.productCode && pcLatestWO(s0)) s0=pcWithLatestWO(s0);   /* 19 Nov 2026: copy the live works order, not the stale record */
   var s=JSON.parse(JSON.stringify(s0)), from=s0.quoteRef||s0.ref||'';
   ['ref','srRaisedAt','convertedAt','sampleApprovedAt','printedAt','quotePrintedAt','due','chgRef','archived','archivedAt','archiveNote',
    'family','specialBase','editScope','sourceCode','baseCode','prodCodeDraft','woEditedAt','woLive'].forEach(function(k){ delete s[k]; });
@@ -2575,6 +2576,7 @@ function pcWoFetch(cb){
       var st={}; Object.keys(d.styleEdits).forEach(function(k){ if(d.styleEdits[k]) st[String(k).toUpperCase()]=d.styleEdits[k]; });
       PC_WO.styles=st; PC_WO.charts=d.chartEdits||{}; PC_WO.at=pcToday(); PC_WO.live=true;
       pcIdbSet('pcWoEdits',JSON.stringify({savedAt:PC_WO.at,styles:st,charts:PC_WO.charts}));
+      pcWoSyncRecords();
       /* a product record open in the form shows the live works order */
       if(PC_CUR>=0 && PC.srs[PC_CUR] && PC.srs[PC_CUR].productCode) pcOpen(PC_CUR);
       if(cb)cb();
@@ -2582,6 +2584,36 @@ function pcWoFetch(cb){
     .catch(function(){ if(cb)cb(); });
 }
 function pcLatestWO(s){ if(!s||!s.productCode) return null; return PC_WO.styles[String(s.productCode).toUpperCase()]||null; }
+/* 19 Nov 2026: the cutting details (markers, lengths, lay, mesh and contrast) in this app's record shape, from a
+   Production plan style record (styleEdits or STYLE_MASTER). Shared by the copies and the write-back below. */
+var PC_CUT_KEYS=['markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','hasCon','conFab','markerCon','conLen','conLay'];
+function pcCutFrom(o, st){
+  var str=function(v){ return (v==null||v==='')?'':String(v); };
+  o.markerMain=st.markerMain||''; o.markerMesh=st.markerMesh||''; o.markerLen=str(st.markerLen); o.layQty=str(st.layQty);
+  o.hasMesh=!!st.hasMesh; o.meshLen=str(st.meshLen); o.meshLay=str(st.meshLay);
+  o.hasCon=!!(st.hasCon||st.markerCon); o.conFab=st.conFab||''; o.markerCon=st.markerCon||''; o.conLen=str(st.conLen); o.conLay=str(st.conLay);
+  return o;
+}
+/* 19 Nov 2026 (Luke): once the Production plan has published a works order for a converted product, its cutting
+   details are written back into the record here, so published-data.json (and so the Works Order Editor's
+   "from costing" list) carries the same marker and length as the planner, and a new colour copied from the
+   record cannot bring an old marker across. Only the cutting details move; everything else on a locked record
+   stays as converted. Editor PCs only, and the change is saved (and auto-published by a token PC) like any other. */
+function pcWoSyncRecords(){
+  if(!PC_IS_EDITOR || !PC_WO.live || !PC || !PC.srs) return 0;
+  var n=0;
+  PC.srs.forEach(function(s){
+    var st=pcLatestWO(s); if(!st) return;
+    if(!st.markerMain && st.markerLen==null) return;            /* the planner has no cutting details yet - nothing to take */
+    var live=pcCutFrom({}, st), diff=false;
+    PC_CUT_KEYS.forEach(function(k){ if(String(s[k]==null?'':s[k])!==String(live[k]==null?'':live[k])) diff=true; });
+    if(!diff) return;
+    PC_CUT_KEYS.forEach(function(k){ s[k]=live[k]; });
+    s.woSyncedAt=pcToday(); s.woSyncedFrom=pcWoDate(st)||''; s.savedAt=pcNow(); n++;
+  });
+  if(n){ pcSaveData(); if(typeof pcRender==='function'){ try{ pcRender(); }catch(e){} } }
+  return n;
+}
 function pcWoDate(st){ return st?(st.editedAt||st.importedAt||''):''; }
 /* the buffer app's copy of a product, in this app's record shape, for showing and printing */
 function pcWithLatestWO(s){
@@ -2729,6 +2761,7 @@ function pcCopyBuild(src, code){
     s.machMins=st.machMins!=null?String(st.machMins):''; s.finMins=st.finMins!=null?String(st.finMins):'';
     s.cutBatch=st.cutBatch!=null?String(st.cutBatch):''; s.cutMins=st.cutMins!=null?st.cutMins:15;
     s.lectra=st.lectra||''; s.variant=st.variant||'';
+    pcCutFrom(s, st);   /* 19 Nov 2026: the marker, lay and mesh / contrast details come across too (they used to start blank) */
     s.isOH=code.indexOf('OH')===0; s.ladies=/^OHL/.test(code);
     /* garment type from the code stem: OHCJ…, OHLCJ… (ladies), CICJ… (short sleeve) and plain CJ… are all chef jackets */
     var gm=/^(?:OH)?L?(?:CI)?([A-Z]{2})/.exec(code);
@@ -2737,6 +2770,9 @@ function pcCopyBuild(src, code){
     var own=pcOwnProduct(code); if(own){ s.mtc=!!own.mtc; if(own.garment) s.garment=own.garment; }
   } else {
     var o=src.st;
+    /* 19 Nov 2026: a converted product is copied from the Production plan's published version - the one this app
+       already shows and prints - so a marker corrected in the Works Order Editor is not copied stale into a new colour */
+    if(o.productCode && pcLatestWO(o)){ o=pcWithLatestWO(o); s.copiedCutFrom='planner'; }
     ['garment','desc','brandType','brandPlace','mfg','fin','machMins','finMins','cutBatch','cutMins','sampleQty',
      'markerMain','markerMesh','markerLen','layQty','hasMesh','meshLen','meshLay','hasCon','conFab','markerCon','conLen','conLay','lectra','variant','quoteMarkup','quoteShowSell','isOH','ladies','mtc','size',
      'logoImg','logo2Img','placeImg']   /* the customer logo and placement photo go with the branding text, else a new size prints without its embroidery */
