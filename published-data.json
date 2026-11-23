@@ -1,6 +1,6 @@
 {
- "publishedAt": "2026-11-19",
- "publishedTS": "2026-11-19T15:55:03.127Z",
+ "publishedAt": "2026-11-23",
+ "publishedTS": "2026-11-23T15:34:42.488Z",
  "qSeq": 39,
  "srSeq": 21,
  "prodSeq": {
@@ -423,7 +423,7 @@
    "fabrics": [
     {
      "code": "",
-     "name": "yellow printed stripestripe printed fabric",
+     "name": "yellow printed stripe fabric from Manchester Manufacturing",
      "rating": "1.0",
      "cost": "20.00",
      "loc": "A4"
@@ -441,18 +441,6 @@
      "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
      "qty": "1",
      "cost": "0.04335"
-    },
-    {
-     "code": "TAXTABOH07/01",
-     "desc": "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
-     "qty": "1",
-     "cost": "0.01678"
-    },
-    {
-     "code": "CMP-OH-NTT-25-03",
-     "desc": "BLACK OH NON TANGLE TAPE TIE 25MM cut length 0.39m",
-     "qty": "0.39",
-     "cost": "0.25171"
     },
     {
      "code": "CMP-STD-PST-9B-287",
@@ -525,7 +513,7 @@
      "value2": "2.5"
     }
    ],
-   "mfg": "Cut hanger tape at 8cm. set centrally to bib facing into lower edge. tack in position taking 1.5cm seam of tape at each end . hanger loop to measure 5cm from end to end. see diagram.\nSet bib facing.\nStitch down bib facing to form 5.5cm topstitch of front bib. note ensure this topstitching is an even width from top of bib and equal at each side as if it is unlevel it will show when the straps are set.\n6mm topstitch top of bib.\nSet eyelet re-inforcement pieces.\nSet towel loop. cut at 39cm and fold in half. set to armhole curve at 10cm from side seam cut edge left side as worn. oliver harvey to read down. stitch down towel loop to follow armhole stitching.\nDouble turn armholes and topstitch 6mm.\nDouble turn side seams and hem topstitch 12mm.\nSet pocket hem. double turn and topstich 2cm\nSet hip pockets. set bottom of pocket 24cm up from finished hem and 5cm in from finished side seam. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position. set left pocket fold over and mark for right pocket. ensure pocket set parallel to side seam.\nTriangle stitch at top of pocket mouth to secure\nMake detachable strap - bag out both ends. Fold in raw wedges and edgestitch long edge.",
+   "mfg": "Cut hanger tape at 8cm. set centrally to bib facing into lower edge. tack in position taking 1.5cm seam of tape at each end . hanger loop to measure 5cm from end to end. see diagram.\nSet bib facing.\nStitch down bib facing to form 5.5cm topstitch of front bib. note ensure this topstitching is an even width from top of bib and equal at each side as if it is unlevel it will show when the straps are set.\n6mm topstitch top of bib.\nSet eyelet re-inforcement pieces.\nDouble turn armholes and topstitch 6mm.\nDouble turn side seams and hem topstitch 12mm.\nSet pocket hem. double turn and topstitch 2cm\nSet hip pockets. set bottom of pocket 24cm up from finished hem and 5cm in from finished side seam. insert oliver harvey red tab to top of pocket left side as worn. edgestitch pocket in position. set left pocket fold over and mark for right pocket. ensure pocket set parallel to side seam.\nTriangle stitch at top of pocket mouth to secure\nMake detachable strap - bag out both ends. Fold in raw wedges and edgestitch long edge.",
    "fin": "Set eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.\nCheck and ensure bib 5.5cm top stitching is equal at both sides of bib. set lower studs to bib. use marker. set centre of top stud 1.8cm from side of bib and 1.4cm down from top edge. set second stud 3cm spacing vertically down\nSet socket (male part) to top of bib.  Use marker\nSet cap (female part) to detachable strap\nCheck, press and fold apron.\nSet strap to apron at top of bib.\nSet into tissue and add product label",
    "machMins": "12",
    "finMins": "9",
@@ -550,8 +538,8 @@
    "quoteShowSell": true,
    "quotePrinted": true,
    "quotePrintedAt": "2026-11-17",
-   "printed": false,
-   "printedAt": "",
+   "printed": true,
+   "printedAt": "2026-11-23",
    "productCode": null,
    "convertedAt": "",
    "copiedFrom": "OHAPP053515DS",
@@ -561,7 +549,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-11-18T15:43:32.403Z",
+   "savedAt": "2026-11-23T15:32:41.591Z",
    "threadOwn": true,
    "chgRef": "",
    "logoImg": "",
