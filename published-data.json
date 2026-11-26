@@ -1,6 +1,6 @@
 {
  "publishedAt": "2026-11-26",
- "publishedTS": "2026-11-26T14:29:13.728Z",
+ "publishedTS": "2026-11-26T14:35:49.726Z",
  "qSeq": 39,
  "srSeq": 22,
  "prodSeq": {
@@ -9,7 +9,8 @@
   "CJB": 1,
   "COB": 3,
   "OHCJ": 2,
-  "CJ": 1
+  "CJ": 1,
+  "OHAP": 1
  },
  "chgSeq": 20,
  "srs": [
@@ -2322,7 +2323,7 @@
   {
    "quoteRef": "Q0024",
    "ref": "SR0015",
-   "status": "feedback",
+   "status": "production",
    "created": "2026-10-22",
    "due": "2026-11-09",
    "customer": "Johnsons",
@@ -2369,6 +2370,12 @@
      "desc": "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",
      "qty": "1",
      "cost": "0.04335"
+    },
+    {
+     "code": "CMP-LBL-NYL-25-01",
+     "desc": "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — cost per metre",
+     "qty": "0.03",
+     "cost": "0.039067"
     }
    ],
    "meas": [
@@ -2412,11 +2419,11 @@
    "quoteMarkup": 60,
    "quoteShowSell": true,
    "quotePrinted": true,
-   "quotePrintedAt": "2026-10-22",
+   "quotePrintedAt": "2026-11-26",
    "printed": true,
    "printedAt": "2026-10-29",
-   "productCode": null,
-   "convertedAt": "",
+   "productCode": "OHAP0001",
+   "convertedAt": "2026-11-26",
    "copiedFrom": "OHAPP065115",
    "version": 1,
    "history": [],
@@ -2424,7 +2431,7 @@
    "ladies": false,
    "mtc": false,
    "size": "",
-   "savedAt": "2026-11-26T14:27:13.059Z",
+   "savedAt": "2026-11-26T14:33:49.245Z",
    "threadOwn": true,
    "weightG": "",
    "commodity": "6211 43 1000",
@@ -2433,8 +2440,10 @@
    "placeImg": "",
    "logo2Img": "",
    "srRaisedAt": "2026-10-27",
-   "sampleApprovedAt": "",
-   "salePrice": ""
+   "sampleApprovedAt": "2026-11-26",
+   "salePrice": "17.00",
+   "specialBase": "OHAP0001",
+   "family": "special"
   },
   {
    "quoteRef": "Q0023",
